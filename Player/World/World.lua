@@ -12,6 +12,8 @@ require('mcm');
 
 -- intialize sound localization if needed
 useSoundLocalization = Config.world.enable_sound_localization or 0;
+useModelingMatchingLocalization = Config.world.enable_modelmatching_localization or 0;
+
 if (useSoundLocalization > 0) then
   require('SoundFilter');
 end

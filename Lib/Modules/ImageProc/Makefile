@@ -301,6 +301,30 @@ luaImageProc.cpp.s:
 	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/ImageProc/CMakeFiles/ImageProc.dir/build.make Modules/ImageProc/CMakeFiles/ImageProc.dir/luaImageProc.cpp.s
 .PHONY : luaImageProc.cpp.s
 
+lua_accumulate_ball.o: lua_accumulate_ball.cpp.o
+.PHONY : lua_accumulate_ball.o
+
+# target to build an object file
+lua_accumulate_ball.cpp.o:
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/ImageProc/CMakeFiles/ImageProc.dir/build.make Modules/ImageProc/CMakeFiles/ImageProc.dir/lua_accumulate_ball.cpp.o
+.PHONY : lua_accumulate_ball.cpp.o
+
+lua_accumulate_ball.i: lua_accumulate_ball.cpp.i
+.PHONY : lua_accumulate_ball.i
+
+# target to preprocess a source file
+lua_accumulate_ball.cpp.i:
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/ImageProc/CMakeFiles/ImageProc.dir/build.make Modules/ImageProc/CMakeFiles/ImageProc.dir/lua_accumulate_ball.cpp.i
+.PHONY : lua_accumulate_ball.cpp.i
+
+lua_accumulate_ball.s: lua_accumulate_ball.cpp.s
+.PHONY : lua_accumulate_ball.s
+
+# target to generate assembly for a file
+lua_accumulate_ball.cpp.s:
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/ImageProc/CMakeFiles/ImageProc.dir/build.make Modules/ImageProc/CMakeFiles/ImageProc.dir/lua_accumulate_ball.cpp.s
+.PHONY : lua_accumulate_ball.cpp.s
+
 lua_color_stats.o: lua_color_stats.cpp.o
 .PHONY : lua_color_stats.o
 
@@ -421,6 +445,30 @@ lua_goal_posts.cpp.s:
 	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/ImageProc/CMakeFiles/ImageProc.dir/build.make Modules/ImageProc/CMakeFiles/ImageProc.dir/lua_goal_posts.cpp.s
 .PHONY : lua_goal_posts.cpp.s
 
+lua_goal_posts_white.o: lua_goal_posts_white.cpp.o
+.PHONY : lua_goal_posts_white.o
+
+# target to build an object file
+lua_goal_posts_white.cpp.o:
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/ImageProc/CMakeFiles/ImageProc.dir/build.make Modules/ImageProc/CMakeFiles/ImageProc.dir/lua_goal_posts_white.cpp.o
+.PHONY : lua_goal_posts_white.cpp.o
+
+lua_goal_posts_white.i: lua_goal_posts_white.cpp.i
+.PHONY : lua_goal_posts_white.i
+
+# target to preprocess a source file
+lua_goal_posts_white.cpp.i:
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/ImageProc/CMakeFiles/ImageProc.dir/build.make Modules/ImageProc/CMakeFiles/ImageProc.dir/lua_goal_posts_white.cpp.i
+.PHONY : lua_goal_posts_white.cpp.i
+
+lua_goal_posts_white.s: lua_goal_posts_white.cpp.s
+.PHONY : lua_goal_posts_white.s
+
+# target to generate assembly for a file
+lua_goal_posts_white.cpp.s:
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/ImageProc/CMakeFiles/ImageProc.dir/build.make Modules/ImageProc/CMakeFiles/ImageProc.dir/lua_goal_posts_white.cpp.s
+.PHONY : lua_goal_posts_white.cpp.s
+
 lua_robots.o: lua_robots.cpp.o
 .PHONY : lua_robots.o
 
@@ -476,6 +524,9 @@ help:
 	@echo "... luaImageProc.o"
 	@echo "... luaImageProc.i"
 	@echo "... luaImageProc.s"
+	@echo "... lua_accumulate_ball.o"
+	@echo "... lua_accumulate_ball.i"
+	@echo "... lua_accumulate_ball.s"
 	@echo "... lua_color_stats.o"
 	@echo "... lua_color_stats.i"
 	@echo "... lua_color_stats.s"
@@ -491,6 +542,9 @@ help:
 	@echo "... lua_goal_posts.o"
 	@echo "... lua_goal_posts.i"
 	@echo "... lua_goal_posts.s"
+	@echo "... lua_goal_posts_white.o"
+	@echo "... lua_goal_posts_white.i"
+	@echo "... lua_goal_posts_white.s"
 	@echo "... lua_robots.o"
 	@echo "... lua_robots.i"
 	@echo "... lua_robots.s"

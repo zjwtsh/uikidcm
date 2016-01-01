@@ -147,3 +147,5 @@ occ.robot_pos = {occ.mapsize / 2, occ.mapsize * 4 / 5};
 
 --Use line information to fix angle
 world.use_line_angles = 1;
+world.enable_modelmatching_localization = 1;
+
