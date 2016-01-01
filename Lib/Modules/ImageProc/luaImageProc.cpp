@@ -658,9 +658,26 @@ static int lua_connected_regions_obs(lua_State *L) {
   return 1;
 }
 
+static int lua_entry_ballModeling(lua_State *L) {
+ 
+  return 0;
+}
+
+static int lua_update_ballModeling(lua_State *L) {
+  uint8_t *x = (uint8_t *) lua_touserdata(L, 1);
+  if ((x == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input image not light user data");
+  }
+  int mx = luaL_checkint(L, 2);
+  int nx = luaL_checkint(L, 3);
+  double headPitch = luaL_checknumber(L, 4);
+ 
+	return 0;
+}
+
 static int lua_connected_ballCandidates(lua_State *L) {
   static std::vector<Candidate> ballCandidates;
-	AccumulateParaIn paraIn;
+  AccumulateParaIn paraIn;
 
   uint8_t *x = (uint8_t *) lua_touserdata(L, 1);
   if ((x == NULL) || !lua_islightuserdata(L, 1)) {
