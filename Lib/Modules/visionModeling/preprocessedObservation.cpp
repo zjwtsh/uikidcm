@@ -3,21 +3,20 @@
 //#pragma comment(linker, "/NODEFAULTLIB:libcmt.lib")
 #include <iostream>
 #include <fstream>
+#include <stdint.h>
 
 #include "preprocessedObservation.h"
-#include "color_count.h"
 #include "block_bitor.h"
 #include "ConnectRegions.h"
 
-#include "lua_color_stats.h"
-#include "lua_goal_posts.h"
-#include "lua_goal_posts_white.h"
-#include "lua_field_lines.h"
-#include "lua_field_spots.h"
-#include "lua_field_occupancy.h"
+//#include "lua_color_stats.h"
+//#include "lua_goal_posts.h"
+//#include "lua_goal_posts_white.h"
+//#include "lua_field_lines.h"
+//#include "lua_field_spots.h"
+//#include "lua_field_occupancy.h"
+//#include "lua_robots.h"
 #include "lua_accumulate_ball.h"
-#include "lua_robots.h"
-
 
 preprocessedObservation::preprocessedObservation(
 			double cameraAngleSpead,
@@ -54,4 +53,10 @@ bool preprocessedObservation::refineObservation(uint8_t *label, int width, int h
 {
 	return true;
 }
+
+bool getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate)
+{
+	return true;
+}
+
 

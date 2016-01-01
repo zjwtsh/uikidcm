@@ -17,7 +17,7 @@
 //
 
 #include "nonlinearSystemPdf.h"
-#include "mobile_robot_wall_cts.h"
+#include "particleFilterConfig.h"
 #include <wrappers/rng/rng.h> // Wrapper around several rng libraries
 
 #define SYSMODEL_NUMCONDARGUMENTS_MOBILE 2
@@ -81,7 +81,7 @@ namespace BFL
     _additiveNoise.SampleFrom(noise, method, args);
 	//cout <<"move : " << conf <<endl; 
 	//cout << "noise: "<<noise.ValueGet() <<endl;
-	noiseVec = noise.ValueGet(); 
+	noiseVec = noise.ValueGet();
 	if(noiseVec(3)>4.0*sqrt(SIGMA_SYSTEM_NOISE_THETA))
 	{
 		noiseVec(3) = 2.0*sqrt(SIGMA_SYSTEM_NOISE_THETA)-M_PI;

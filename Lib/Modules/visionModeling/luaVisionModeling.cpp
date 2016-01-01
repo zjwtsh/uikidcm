@@ -25,18 +25,20 @@ extern "C" {
 #include <algorithm>
 #include <iostream>
 
+/*
 #include "color_count.h"
 #include "block_bitor.h"
 #include "ConnectRegions.h"
-
 #include "lua_color_stats.h"
 #include "lua_goal_posts.h"
 #include "lua_goal_posts_white.h"
 #include "lua_field_lines.h"
 #include "lua_field_spots.h"
 #include "lua_field_occupancy.h"
-#include "lua_accumulate_ball.h"
 #include "lua_robots.h"
+*/
+#include "lua_accumulate_ball.h"
+#include "ballModelingObject.h"
 
 static ballModelingObject * lua_checkvm(lua_State *L, int narg) {
   void *ud = luaL_checkudata(L, narg, "vm_mt");
@@ -107,11 +109,11 @@ static int lua_visionModeling_ball(lua_State *L) {
 	return 1;
 }
 
-static int lua_resetModeling_ball(lua_State *L) {
+static int lua_vm_modelingBall(lua_State *L) {
 	return 0;
 }
 
-static int lua_visionModeling_self(lua_State *L) {
+static int lua_vm_modelingSelf(lua_State *L) {
 	return 1;
 }
 
@@ -133,9 +135,16 @@ static int lua_vm_delete(lua_State *L) {
 	return 0;
 }
 
+static int lua_vm_destroy(lua_State *L) {
+	return 0;
+}
+
+static int lua_vm_tostring(lua_State *L) {
+	return 0;
+}
+
 static const struct luaL_reg visionModeling_lib [] = {
   {"new", lua_vm_create},
-  {"open", lua_vm_open},
   {"destroy", lua_vm_destroy},
   {NULL, NULL}
 };

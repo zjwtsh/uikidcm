@@ -139,29 +139,29 @@ ballModelingObject.cpp.s:
 	$(MAKE) -f CMakeFiles/VisionModeling.dir/build.make CMakeFiles/VisionModeling.dir/ballModelingObject.cpp.s
 .PHONY : ballModelingObject.cpp.s
 
-luaImageProc.o: luaImageProc.cpp.o
-.PHONY : luaImageProc.o
+luaVisionModeling.o: luaVisionModeling.cpp.o
+.PHONY : luaVisionModeling.o
 
 # target to build an object file
-luaImageProc.cpp.o:
-	$(MAKE) -f CMakeFiles/VisionModeling.dir/build.make CMakeFiles/VisionModeling.dir/luaImageProc.cpp.o
-.PHONY : luaImageProc.cpp.o
+luaVisionModeling.cpp.o:
+	$(MAKE) -f CMakeFiles/VisionModeling.dir/build.make CMakeFiles/VisionModeling.dir/luaVisionModeling.cpp.o
+.PHONY : luaVisionModeling.cpp.o
 
-luaImageProc.i: luaImageProc.cpp.i
-.PHONY : luaImageProc.i
+luaVisionModeling.i: luaVisionModeling.cpp.i
+.PHONY : luaVisionModeling.i
 
 # target to preprocess a source file
-luaImageProc.cpp.i:
-	$(MAKE) -f CMakeFiles/VisionModeling.dir/build.make CMakeFiles/VisionModeling.dir/luaImageProc.cpp.i
-.PHONY : luaImageProc.cpp.i
+luaVisionModeling.cpp.i:
+	$(MAKE) -f CMakeFiles/VisionModeling.dir/build.make CMakeFiles/VisionModeling.dir/luaVisionModeling.cpp.i
+.PHONY : luaVisionModeling.cpp.i
 
-luaImageProc.s: luaImageProc.cpp.s
-.PHONY : luaImageProc.s
+luaVisionModeling.s: luaVisionModeling.cpp.s
+.PHONY : luaVisionModeling.s
 
 # target to generate assembly for a file
-luaImageProc.cpp.s:
-	$(MAKE) -f CMakeFiles/VisionModeling.dir/build.make CMakeFiles/VisionModeling.dir/luaImageProc.cpp.s
-.PHONY : luaImageProc.cpp.s
+luaVisionModeling.cpp.s:
+	$(MAKE) -f CMakeFiles/VisionModeling.dir/build.make CMakeFiles/VisionModeling.dir/luaVisionModeling.cpp.s
+.PHONY : luaVisionModeling.cpp.s
 
 lua_accumulate_ball.o: lua_accumulate_ball.cpp.o
 .PHONY : lua_accumulate_ball.o
@@ -271,9 +271,9 @@ help:
 	@echo "... ballModelingObject.o"
 	@echo "... ballModelingObject.i"
 	@echo "... ballModelingObject.s"
-	@echo "... luaImageProc.o"
-	@echo "... luaImageProc.i"
-	@echo "... luaImageProc.s"
+	@echo "... luaVisionModeling.o"
+	@echo "... luaVisionModeling.i"
+	@echo "... luaVisionModeling.s"
 	@echo "... lua_accumulate_ball.o"
 	@echo "... lua_accumulate_ball.i"
 	@echo "... lua_accumulate_ball.s"

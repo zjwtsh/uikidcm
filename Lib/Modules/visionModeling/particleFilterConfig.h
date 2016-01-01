@@ -45,9 +45,15 @@
 #define MU_SYSTEM_NOISE_X 0.0 
 #define MU_SYSTEM_NOISE_Y 0.0 
 #define MU_SYSTEM_NOISE_VEL 0.0
+#define MU_SYSTEM_NOISE_THETA 0.0
 
 #define SIGMA_SYSTEM_NOISE_X pow(3.0 ,2)
 #define SIGMA_SYSTEM_NOISE_Y pow(3.0 ,2)
 #define SIGMA_SYSTEM_NOISE_VEL pow(1.0, 2)
+#define SIGMA_SYSTEM_NOISE_THETA pow(2*M_PI/180,2)
+
+// Measurement noise
+#define SIGMA_MEAS_NOISE pow(0.05,2)
+#define MU_MEAS_NOISE 0.0
 
 #endif //__MOBILE_ROBOT_CTS

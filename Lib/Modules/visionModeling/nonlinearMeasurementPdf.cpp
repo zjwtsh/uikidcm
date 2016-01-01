@@ -26,7 +26,6 @@
 namespace BFL
 {
   using namespace MatrixWrapper;
-  using namespace cv; 
   using namespace std;
 
   NonlinearMeasurementPdf::NonlinearMeasurementPdf(const Gaussian& measNoise)

@@ -10,6 +10,7 @@
 #include <model/measurementmodel.h>
 
 #include "particleFilterConfig.h"
+#include "lua_accumulate_ball.h"
 
 class preprocessedObservation
 {
@@ -31,6 +32,7 @@ public:
 			double noiseRate = 0.3,
 			double radiusRate = 1.2
 			);
+	bool getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate) const;
 
 protected:
 	double paraCameraAngleSpead;
@@ -41,7 +43,6 @@ protected:
 	std::vector<Candidate> ballCandidates;
 
 	/*
-	bool getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate) const;
 	void drawCurrentModel(MatrixWrapper::ColumnVector &state, cv::Mat &model);
 	void drawModelObservation(cv::Mat &img, MatrixWrapper::ColumnVector &state);
 	void drawModelObservation2(cv::Mat &img, MatrixWrapper::ColumnVector &state);
