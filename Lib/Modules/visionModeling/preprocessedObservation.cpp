@@ -48,10 +48,6 @@ void available_segments_init()
 }
 */
 
-
-
-
-
 preprocessedObservation::preprocessedObservation(
 			double cameraAngleSpead,
 			double physicalRadiusOfBall,
@@ -115,27 +111,28 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 	observationMatchRate = 0.0;
 	
 	int realweight = 0;//weight of the position
-  double tran_x = state(1);
+	double tran_x = state(1);
 	double tran_y=  state(2);
 	double tran_theta = state(3);
 	int valid_segments = (int)available_segments.size();
 
 	std::vector <Line_points> linepoint;//useful points to carculate weight
 	std::vector <SegmentStats> worked_segments;//segments in world coordinate
-	std::vector<SegmentStats> &s = available_segments;	
 	SegmentStats tempor;
 
 	//transfer the points from the robotic coordinate to world coordinate
 	for (int i = 0; i < valid_segments; i++)
 	{
-		double x0_temp=s[i].x0;
-		double y0_temp=s[i].y0;
-		double x1_temp=s[i].x1;
-		double y1_temp=s[i].y1;
+		double x0_temp=available_segments[i].x0;
+		double y0_temp=available_segments[i].y0;
+		double x1_temp=available_segments[i].x1;
+		double y1_temp=available_segments[i].y1;
+		
 		tempor.x0 = cos(tran_theta)*x0_temp - sin(tran_theta)*y0_temp + tran_x;
-	  tempor.y0 = sin(tran_theta)*x0_temp + cos(tran_theta)*y0_temp + tran_y;
+		tempor.y0 = sin(tran_theta)*x0_temp + cos(tran_theta)*y0_temp + tran_y;
 		tempor.x1 = cos(tran_theta)*x1_temp - sin(tran_theta)*y1_temp + tran_x;
 		tempor.y1 = sin(tran_theta)*x1_temp + cos(tran_theta)*y1_temp + tran_y;
+		
 		worked_segments.push_back(tempor);
 	}
 
@@ -270,7 +267,7 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 						Line_points TEMPRO1 = { i ,y_t ,num ,theta0 };
 						linepoint.push_back(TEMPRO1);
 						y_rt = y_rt + grad*divided_length;
-						std::cout << i << " " << y_t << " " << (p-1) << std::endl;
+						//std::cout << i << " " << y_t << " " << (p-1) << std::endl;
 					}
 				}
 				else if (grad < 0)
@@ -299,7 +296,7 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 		}
 	}
 
-	int point_size=(int)linepoint.size():
+	int point_size=(int)linepoint.size();
 
 	for (int num_0 = 0; num_0 < point_size; num_0++) {
 		double theta1= linepoint[num_0].theta / 10;

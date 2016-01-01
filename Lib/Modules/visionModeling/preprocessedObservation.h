@@ -62,13 +62,12 @@ public:
 
 protected:
 	void clearLutGraph(void);
-	void coor_trans(MatrixWrapper::ColumnVector state);
-	int plot_lines(void);
+	//void coor_trans(MatrixWrapper::ColumnVector state);
+	//int plot_lines(void);
 	//int coor_tans_and_plot_lines(MatrixWrapper::ColumnVector state) const;
 
 protected:
 	uint8_t ***lut_graph;
-	
 	int row;	//row of lut_graph
 	int col;	//column of lut_graph
 	int pag;	//page of lut_graph

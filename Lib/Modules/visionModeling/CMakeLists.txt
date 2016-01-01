@@ -10,7 +10,6 @@ include_directories(/usr/local/include/bfl)
 add_library(VisionModeling SHARED
 	preprocessedObservation.cpp
 	ballModelingObject.cpp
-	lua_accumulate_ball.cpp
 	luaVisionModeling.cpp
 	nonlinearMeasurementPdf.cpp
 	nonlinearSystemPdf.cpp)
