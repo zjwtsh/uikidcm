@@ -16,11 +16,12 @@ extern "C" {
 #include <math.h>
 #include <vector>
 
+#include "particleFilterConfig.h"
+#include "stateModelingObject.h"
 #include "preprocessedObservation.h"
 #include "ballModelingObject.h"
-#include "particleFilterConfig.h"
 
-bool ballModelingObject::ExtractLineInfoByLua(lua_State *L, int li)
+virtual bool ballModelingObject::UpdateStateInfoByLua(lua_State *L, int li)
 {
 	std::string str;
 	size_t sz = 0;
@@ -100,7 +101,7 @@ bool ballModelingObject::ExtractLineInfoByLua(lua_State *L, int li)
 	return true;
 }
 
-ballModelingObject::ballModelingObject()
+ballModelingObject::ballModelingObject():stateModelingObject()
 {
 	psys_pdf = NULL;
 	psys_model = NULL;
@@ -144,10 +145,16 @@ ballModelingObject::~ballModelingObject()
 	clearBootstrap();
 }
 
-bool ballModelingObject::InitializeBootStrapFilter(MatrixWrapper::ColumnVector initState)
+bool ballModelingObject::InitializeBootStrapFilter()
 {
+	MatrixWrapper::ColumnVector initState(3);
+	initState(1) = 0.0;
+	initState(2) = 0.0;
+	initState(3) = 0.0;
+
 	pobs = new preprocessedObservation(50*M_PI/180, 90, 5*M_PI/180, 0.3, 1.2);
 	pobs->getprolut2map();
+
 	//copy code from mouseBehaviorGenerator
 	MatrixWrapper::ColumnVector sys_noise_Mu(STATE_SIZE);
 	sys_noise_Mu(1) = MU_SYSTEM_NOISE_X;

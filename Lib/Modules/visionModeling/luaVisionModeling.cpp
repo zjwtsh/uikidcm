@@ -56,10 +56,6 @@ static int lua_vm_resetModeling(lua_State *L) {
 static int lua_vm_initModeling(lua_State *L) {
 	ballModelingObject *vm = lua_checkvm(L, 1);
 	
-	MatrixWrapper::ColumnVector initState(3);
-	initState(1) = 0.0;
-	initState(2) = 0.0;
-	initState(3) = 0.0;
 	vm->InitializeBootStrapFilter(initState);
 
 	return 0;
