@@ -73,14 +73,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/fa/Downloads/uikidcm/Lib && $(CMAKE_COMMAND) -E cmake_progress_start /home/fa/Downloads/uikidcm/Lib/CMakeFiles /home/fa/Downloads/uikidcm/Lib/Modules/Util/Shm/CMakeFiles/progress.marks
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f CMakeFiles/Makefile2 Modules/Util/Shm/all
+	cd /home/fa/Downloads/uikidcm/Lib && $(CMAKE_COMMAND) -E cmake_progress_start /home/fa/Downloads/uikidcm/Lib/CMakeFiles /home/fa/Downloads/uikidcm/Lib/Modules/CMakeFiles/progress.marks
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f CMakeFiles/Makefile2 Modules/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/fa/Downloads/uikidcm/Lib/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f CMakeFiles/Makefile2 Modules/Util/Shm/clean
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f CMakeFiles/Makefile2 Modules/clean
 .PHONY : clean
 
 # The main clean target
@@ -89,56 +89,18 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f CMakeFiles/Makefile2 Modules/Util/Shm/preinstall
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f CMakeFiles/Makefile2 Modules/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f CMakeFiles/Makefile2 Modules/Util/Shm/preinstall
+	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f CMakeFiles/Makefile2 Modules/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
 	cd /home/fa/Downloads/uikidcm/Lib && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
-
-# Convenience name for target.
-Modules/Util/Shm/CMakeFiles/shm.dir/rule:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f CMakeFiles/Makefile2 Modules/Util/Shm/CMakeFiles/shm.dir/rule
-.PHONY : Modules/Util/Shm/CMakeFiles/shm.dir/rule
-
-# Convenience name for target.
-shm: Modules/Util/Shm/CMakeFiles/shm.dir/rule
-.PHONY : shm
-
-# fast build rule for target.
-shm/fast:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/Util/Shm/CMakeFiles/shm.dir/build.make Modules/Util/Shm/CMakeFiles/shm.dir/build
-.PHONY : shm/fast
-
-luashm.o: luashm.cpp.o
-.PHONY : luashm.o
-
-# target to build an object file
-luashm.cpp.o:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/Util/Shm/CMakeFiles/shm.dir/build.make Modules/Util/Shm/CMakeFiles/shm.dir/luashm.cpp.o
-.PHONY : luashm.cpp.o
-
-luashm.i: luashm.cpp.i
-.PHONY : luashm.i
-
-# target to preprocess a source file
-luashm.cpp.i:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/Util/Shm/CMakeFiles/shm.dir/build.make Modules/Util/Shm/CMakeFiles/shm.dir/luashm.cpp.i
-.PHONY : luashm.cpp.i
-
-luashm.s: luashm.cpp.s
-.PHONY : luashm.s
-
-# target to generate assembly for a file
-luashm.cpp.s:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/Util/Shm/CMakeFiles/shm.dir/build.make Modules/Util/Shm/CMakeFiles/shm.dir/luashm.cpp.s
-.PHONY : luashm.cpp.s
 
 # Help Target
 help:
@@ -148,10 +110,6 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... shm"
-	@echo "... luashm.o"
-	@echo "... luashm.i"
-	@echo "... luashm.s"
 .PHONY : help
 
 

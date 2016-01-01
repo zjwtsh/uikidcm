@@ -53,7 +53,7 @@ static int lua_vm_resetBallModeling(lua_State *L) {
 	return 0;
 }
 
-static int lua_visionModeling_ball(lua_State *L) {
+static int lua_vm_modelingBall(lua_State *L) {
 	ballModelingObject *vm = lua_checkvm(L, 1);
 
 	//parameters transfered from lua
@@ -109,16 +109,11 @@ static int lua_visionModeling_ball(lua_State *L) {
 	return 1;
 }
 
-static int lua_vm_modelingBall(lua_State *L) {
-	return 0;
-}
-
 static int lua_vm_modelingSelf(lua_State *L) {
 	return 1;
 }
 
 static int lua_vm_create(lua_State *L) {
-	
 	ballModelingObject **ud = (ballModelingObject **)
 		lua_newuserdata(L, sizeof(ballModelingObject *));
 	
