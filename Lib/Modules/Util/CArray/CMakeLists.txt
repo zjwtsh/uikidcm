@@ -14,3 +14,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 # set library prefix to "" otherwise it will create libcarray.so
 set_target_properties(carray PROPERTIES PREFIX "")
 
+install_targets(/ carray)
+

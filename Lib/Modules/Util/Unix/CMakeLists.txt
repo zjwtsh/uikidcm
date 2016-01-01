@@ -23,3 +23,5 @@ set_target_properties(unix PROPERTIES PREFIX "")
 set_target_properties(getch PROPERTIES PREFIX "")
 set_target_properties(stty PROPERTIES PREFIX "")
 
+install_targets(/ unix getch stty)
+

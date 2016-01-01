@@ -15,3 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 set_target_properties(Comm PROPERTIES PREFIX "")
 
 target_link_libraries(Comm m)
+
+install_targets(/ Comm)
+
+

@@ -29,3 +29,5 @@ set_target_properties(ImageProc PROPERTIES PREFIX "")
 # link to math library 
 target_link_libraries(ImageProc m)
 
+install_targets(/ ImageProc)
+

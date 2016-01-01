@@ -205,30 +205,6 @@ luaVisionModeling.cpp.s:
 	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/visionModeling/CMakeFiles/VisionModeling.dir/build.make Modules/visionModeling/CMakeFiles/VisionModeling.dir/luaVisionModeling.cpp.s
 .PHONY : luaVisionModeling.cpp.s
 
-lua_accumulate_ball.o: lua_accumulate_ball.cpp.o
-.PHONY : lua_accumulate_ball.o
-
-# target to build an object file
-lua_accumulate_ball.cpp.o:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/visionModeling/CMakeFiles/VisionModeling.dir/build.make Modules/visionModeling/CMakeFiles/VisionModeling.dir/lua_accumulate_ball.cpp.o
-.PHONY : lua_accumulate_ball.cpp.o
-
-lua_accumulate_ball.i: lua_accumulate_ball.cpp.i
-.PHONY : lua_accumulate_ball.i
-
-# target to preprocess a source file
-lua_accumulate_ball.cpp.i:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/visionModeling/CMakeFiles/VisionModeling.dir/build.make Modules/visionModeling/CMakeFiles/VisionModeling.dir/lua_accumulate_ball.cpp.i
-.PHONY : lua_accumulate_ball.cpp.i
-
-lua_accumulate_ball.s: lua_accumulate_ball.cpp.s
-.PHONY : lua_accumulate_ball.s
-
-# target to generate assembly for a file
-lua_accumulate_ball.cpp.s:
-	cd /home/fa/Downloads/uikidcm/Lib && $(MAKE) -f Modules/visionModeling/CMakeFiles/VisionModeling.dir/build.make Modules/visionModeling/CMakeFiles/VisionModeling.dir/lua_accumulate_ball.cpp.s
-.PHONY : lua_accumulate_ball.cpp.s
-
 nonlinearMeasurementPdf.o: nonlinearMeasurementPdf.cpp.o
 .PHONY : nonlinearMeasurementPdf.o
 
@@ -320,9 +296,6 @@ help:
 	@echo "... luaVisionModeling.o"
 	@echo "... luaVisionModeling.i"
 	@echo "... luaVisionModeling.s"
-	@echo "... lua_accumulate_ball.o"
-	@echo "... lua_accumulate_ball.i"
-	@echo "... lua_accumulate_ball.s"
 	@echo "... nonlinearMeasurementPdf.o"
 	@echo "... nonlinearMeasurementPdf.i"
 	@echo "... nonlinearMeasurementPdf.s"

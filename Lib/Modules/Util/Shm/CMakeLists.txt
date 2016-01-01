@@ -17,3 +17,5 @@ set_target_properties(shm PROPERTIES PREFIX "")
 # link to rt for shared memory ipc
 target_link_libraries(shm rt)
 
+install_targets(/ shm)
+
