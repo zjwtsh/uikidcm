@@ -7,13 +7,13 @@ require('vector')
 camera = {};
 camera.ncamera = 1;
 camera.switchFreq = 0; --unused for OP
-camera.width = 640;
-camera.height = 480;
-camera.x_center = 328;
-camera.y_center = 248;
+camera.width = 1280;
+camera.height = 960;
+camera.x_center = 656;
+camera.y_center = 496;
 
-camera.focal_length = 533; -- in pixels
-camera.focal_base = 640; -- image width used in focal length calculation
+camera.focal_length = 1066; -- in pixels
+camera.focal_base = 1280; -- image width used in focal length calculation
 
 --[[
 queryctrl: "White Balance Temperature" 0x98091a

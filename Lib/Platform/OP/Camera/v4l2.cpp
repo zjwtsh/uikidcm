@@ -36,14 +36,14 @@
 #define V4L2_CID_RAW_BITS_PER_PIXEL 0x0A046D72
 #endif
 #define DHT_SIZE 432
-#define	MAX_YUYV_SIZE	614400
+#define	MAX_YUYV_SIZE	2457600
 
 //added
 
 int video_fd = -1;
 int nbuffer = 2;
-int width = 320;
-int height = 240;
+int width = 1280;
+int height = 960;
 char invert = 0;
 int handle;
 //int width = 640;
@@ -66,7 +66,7 @@ std::map<std::string, struct v4l2_querymenu> menuMap;
 std::vector<struct buffer> buffers;
 
 struct JpgBuffer {
-  char buf[640*480*2];
+  char buf[1280*960*2];
   int size;
 };
 
@@ -389,11 +389,11 @@ int v4l2_uninit_mmap() {
 int v4l2_init(int resolution) {
 
   if( resolution == 1 ){
-    width = 640;
-    height = 480;
+    width = 1280;
+    height = 960;
   } else {
-    width = 320;
-    height = 240;
+    width = 1280;
+    height = 960;
   }
 
   struct v4l2_capability video_cap;
