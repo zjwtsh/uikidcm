@@ -89,7 +89,7 @@ vcm.set_debug_store_all_images(Config.vision.store_all_images);
 -- Timing
 count = 0;
 lastImageCount = {0,0};
-t0 = unix.time()
+t0 = unix.time();
 
 function entry()
   --Temporary value.. updated at body FSM at next frame
@@ -113,7 +113,15 @@ function entry()
   -- Load the lookup table
   print('loading lut: '..Config.camera.lut_file);
   camera.lut = carray.new('c', 262144);
-  load_lut(Config.camera.lut_file);
+  load_lut_camera(Config.camera.lut_file);
+
+  print('loading ball lut: '..Config.camera.lut_ball_file);
+  camera.lut_ball = carray.new('c', 262144);
+  load_lut_ball(Config.camera.lut_ball_file);
+
+  print('creating splitted ball lut');
+  camera.splittedBallLut = carray.new('c', 262144);
+  camera.splittedBallLut = split_ball_lut();
 
   --ADDED to prevent crashing with old camera config
   if Config.camera.lut_file_obs == null then
@@ -231,6 +239,10 @@ function update()
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
+    labelBall.data = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+                                            carray.pointer(camera.splittedBallLut),
+                                            camera.width/2,
+                                            camera.height);
   end
 
   -- determine total number of pixels of each color/label
@@ -477,7 +489,7 @@ function bboxArea(bbox)
   return (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1);
 end
 
-function load_lut(fname)
+function load_lut_camera(fname)
   local cwd = unix.getcwd();
   if string.find(cwd, "WebotsController") then
     cwd = cwd.."/Player";
@@ -488,6 +500,17 @@ function load_lut(fname)
   local s = f:read("*a");
   for i = 1,string.len(s) do
     camera.lut[i] = string.byte(s,i,i);
+  end
+end
+
+function load_lut_ball(fname)
+  local cwd = unix.getcwd();
+  cwd = cwd.."/Data/";
+  local f = io.open(cwd..fname, "r");
+  assert(f, "Could not open lut ball file");
+  local s = f:read("*a");
+  for i = 1,string.len(s) do
+    camera.lut_ball[i] = string.byte(s,i,i);
   end
 end
 
@@ -519,3 +542,108 @@ function save_rgb(rgb)
   end
   f:close();
 end
+
+function split_ball_lut()
+  splittedBallLut = carray.new('c', 262144);
+  vpBall, lutBall, vpWhite, lutWhite, vpBlack, lutBlack = create_diff_lut();
+
+  vpMat1, lutMat1 = substract_lut(lutBall, lutWhite, 1, 16);  --Ball Without White
+  vpMat2, lutMat2 = substract_lut(lutBall, lutBlack, 1, 4);   -- Ball Without Black
+
+  vpWhiteInBall, lutWhiteInBall = substract_lut(lutBall, lutMat1, 1, 1); --White only in ball
+  vpBlackInBall, lutBlackInBall = substract_lut(lutBall, lutMat2, 1, 1); --Black only in ball
+  vpColorInBall, lutColorInBall = substract_lut(lutMat2, lutWhiteInBall, 1, 1); --Color in ball
+  
+  for i = 1, 64 do
+    for j = 1, 64 do
+      for k = 1, 64 do
+        splittedBallLut[i*64*64 + j*64 + k] = tostring(lutWhiteInBall[i][j][k]*4 + lutBlackInBall[i][j][k]*2 + lutColorInBall[i][j][k]);
+      end
+    end
+  end
+  return splittedBallLut;
+end
+
+function substract_lut(lut1, lut2, color1, color2)
+  lut = {};
+  validPoints = {};
+  for i = 1, 64 do
+    lut[i] = {};
+    for j = 1, 64 do
+      lut[i][j] = {};
+      for k = 1, 64 do
+        if lut1[i][j][k] == color1 then
+          if lut2[i][j][k] ~= color2 then
+            lut[i][j][k] = color1;
+            validPoints = vector.new({i, j, k, color1});
+          end
+        else
+          lut[i][j][k] = 0;
+        end
+      end
+    end
+  end
+  return validPoints, lut; 
+end
+
+-- Create lutBall, include all ball color; lutWhite, include white and green; and lutBlack, only include black;
+function create_diff_lut()
+  lutBall = {};
+  lutWhite = {};
+  lutBlack = {};
+  vpBall = {};
+  vpWhite = {};
+  vpBlack = {};
+  x = 0;
+  y = 0;
+  for i = 1, 64 do
+    lutBall[i] = {};
+    lutWhite[i] = {};
+    lutBlack[i] = {};
+    for j = 1, 64 do
+      lutBall[i][j] = {};
+      lutWhite[i][j] = {};
+      lutBlack[i][j] = {};
+      for k = 1, 64 do
+        
+        if camera.lut_ball[i*64*64 + j*64 + k] ~= 0 then
+          lutBall[i][j][k] = camera.lut_ball[i*64*64 + j*64 + k];
+          vpBall[x] = vector.new({i, j, k, camera.lut_ball[i*64*64 + j*64 + k]});
+          x += 1;
+        else
+          lutBall[i][j][k] = 0;
+        end
+
+        if camera.lut[i*64*64 + j*64 + k] ~= 0 then
+          lutWhite[i][j][k] = camera.lut[i*64*64 + j*64 + k];
+          vpWhite[y] = vector.new({i, j, k, camera.lut[i*64*64 + j*64 + k]});
+          y += 1;
+        else
+          lutWhite[i][j][k] = 0;
+        end
+
+        lutBlack[i][j][k] = 0;
+      end
+    end
+  end
+  vpBlack, lutBlack = create_black_lut(lutBlack);
+
+  return vpBall, lutBall, vpWhite, lutWhite, vpBlack, lutBlack;
+end
+
+-- can merge into function create_diff_lut to save time
+function create_black_lut(lutBlack) 
+  vpBlack = {};
+  z = 0;
+  for i = 29, 35 do
+    for j = 29, 35 do
+      for k = 1, 10 do
+        lutBlack[i][j][z] = 4;
+        vpBlack[z] = vector.new({i, j, k, 4});
+        z += 1;
+      end
+    end
+  end
+  return vpBlack, lutBlack;
+end
+

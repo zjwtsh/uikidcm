@@ -65,30 +65,4 @@ camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={250}};
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
 camera.lut_file = 'lut_160420.raw';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+camera.lut_ball_file = 'lut_172171.raw';

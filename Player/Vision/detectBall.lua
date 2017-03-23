@@ -36,7 +36,7 @@ th_headAngle = Config.vision.ball.th_headAngle or 30*math.pi/180;
 
 function detect(color)
 	
-	t001 = unix.time();	--b51
+	t = unix.time();	--b51
 --  enable_obs_challenge = Config.obs_challenge or 0;
 --  if enable_obs_challenge == 1 then
 --    colorCount = Vision.colorCount_obs;
@@ -229,7 +229,5 @@ function detect(color)
   print(string.format(
 	"Ball detected\nv: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
 --]]
-	t003 = unix.time();
   return ball;
 end
-
