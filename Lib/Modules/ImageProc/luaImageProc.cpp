@@ -718,6 +718,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"color_count", lua_color_count},
   {"color_count_obs", lua_color_count_obs},
   {"color_stats", lua_color_stats},
+  {"ball_color_stats", lua_ball_color_stats},
   {"tilted_color_stats", lua_tilted_color_stats},
   {"block_bitor", lua_block_bitor},
   {"block_bitor_obs", lua_block_bitor_obs},

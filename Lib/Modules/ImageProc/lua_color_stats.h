@@ -3,5 +3,6 @@
 
 int lua_color_stats(lua_State *L);
 int lua_tilted_color_stats(lua_State *L);
+int lua_ball_color_stats(lua_State *L);
 
 #endif

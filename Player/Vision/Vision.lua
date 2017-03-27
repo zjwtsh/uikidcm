@@ -50,6 +50,9 @@ if use_gps_only==0 then
   labelA.m = camera.width/2;
   labelA.n = camera.height/2;
   labelA.npixel = labelA.m*labelA.n;
+
+  labelA.ballPixel = labelA.npixel;
+
   if  webots == 1 then
     labelA.m = camera.width;
     labelA.n = camera.height;
@@ -239,7 +242,7 @@ function update()
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
-    labelBall.data = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+    labelA.ballData = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                             carray.pointer(camera.splittedBallLut),
                                             camera.width/2,
                                             camera.height);
@@ -247,6 +250,7 @@ function update()
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
+  ballColorCount = ImageProc.color_count(labelA.ballData, labelA.ballPixel);
 
 
   -- bit-or the segmented image
@@ -476,6 +480,31 @@ function bboxStats(color, bboxB, rollAngle, scale)
   end
 end
 
+function ballBboxStats(color, bboxB, rollAngle, scale)
+  scale = scale or scaleB;
+  bboxA = {};
+  bboxA[1] = scale*bboxB[1];
+  bboxA[2] = scale*bboxB[2] + scale - 1;
+  bboxA[3] = scale*bboxB[3];
+  bboxA[4] = scale*bboxB[4] + scale - 1;
+  if rollAngle then
+ --hack: shift boundingbox 1 pix helps goal detection
+ --not sure why this thing is happening...
+
+--    bboxA[1]=bboxA[1]+1;
+      bboxA[2]=bboxA[2]+1;
+
+    return ImageProc.tilted_color_stats(
+	labelA.ballData, labelA.m, labelA.n, color, bboxA,rollAngle);
+  else
+    return ImageProc.color_stats(labelA.ballData, labelA.m, labelA.n, color, bboxA);
+  end
+end
+
+function ballColorBboxStats(color, bboxA)
+  return ImageProc.ball_color_stats(labelA.ballData, labelA.m, labelA.n, color, bboxA);
+end
+
 function bboxB2A(bboxB)
   bboxA = {};
   bboxA[1] = scaleB*bboxB[1];
@@ -545,14 +574,14 @@ end
 
 function split_ball_lut()
   splittedBallLut = carray.new('c', 262144);
-  vpBall, lutBall, vpWhite, lutWhite, vpBlack, lutBlack = create_diff_lut();
+  local vpBall, local lutBall, local vpWhite, local lutWhite, local vpBlack, local lutBlack = create_diff_lut();
 
-  vpMat1, lutMat1 = substract_lut(lutBall, lutWhite, 1, 16);  --Ball Without White
-  vpMat2, lutMat2 = substract_lut(lutBall, lutBlack, 1, 4);   -- Ball Without Black
+  local vpMat1, local lutMat1 = substract_lut(lutBall, lutWhite, 1, 16);  --Ball Without White
+  local vpMat2, local lutMat2 = substract_lut(lutBall, lutBlack, 1, 4);   -- Ball Without Black
 
-  vpWhiteInBall, lutWhiteInBall = substract_lut(lutBall, lutMat1, 1, 1); --White only in ball
-  vpBlackInBall, lutBlackInBall = substract_lut(lutBall, lutMat2, 1, 1); --Black only in ball
-  vpColorInBall, lutColorInBall = substract_lut(lutMat2, lutWhiteInBall, 1, 1); --Color in ball
+  local vpWhiteInBall, local lutWhiteInBall = substract_lut(lutBall, lutMat1, 1, 1); --White only in ball
+  local vpBlackInBall, local lutBlackInBall = substract_lut(lutBall, lutMat2, 1, 1); --Black only in ball
+  local vpColorInBall, local lutColorInBall = substract_lut(lutMat2, lutWhiteInBall, 1, 1); --Color in ball
   
   for i = 1, 64 do
     for j = 1, 64 do
@@ -565,8 +594,9 @@ function split_ball_lut()
 end
 
 function substract_lut(lut1, lut2, color1, color2)
-  lut = {};
-  validPoints = {};
+  local lut = {};
+  local validPoints = {};
+
   for i = 1, 64 do
     lut[i] = {};
     for j = 1, 64 do
@@ -588,14 +618,15 @@ end
 
 -- Create lutBall, include all ball color; lutWhite, include white and green; and lutBlack, only include black;
 function create_diff_lut()
-  lutBall = {};
-  lutWhite = {};
-  lutBlack = {};
-  vpBall = {};
-  vpWhite = {};
-  vpBlack = {};
-  x = 0;
-  y = 0;
+  local lutBall = {};
+  local lutWhite = {};
+  local lutBlack = {};
+  local vpBall = {};
+  local vpWhite = {};
+  local vpBlack = {};
+  local x = 1;
+  local y = 1;
+
   for i = 1, 64 do
     lutBall[i] = {};
     lutWhite[i] = {};
@@ -633,8 +664,8 @@ end
 
 -- can merge into function create_diff_lut to save time
 function create_black_lut(lutBlack) 
-  vpBlack = {};
-  z = 0;
+  local vpBlack = {};
+  local z = 1;
   for i = 29, 35 do
     for j = 29, 35 do
       for k = 1, 10 do
