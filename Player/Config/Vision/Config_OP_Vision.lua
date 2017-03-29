@@ -63,7 +63,7 @@ vision.subsampling2 = 1; --1/4 sized image
 --Vision parameter values
 
 vision.ball={};
-vision.ball.diameter = 0.07;  --Diameter of the ball in meters.
+vision.ball.diameter = 0.14;  --Diameter of the ball in meters.
 vision.ball.th_min_color = 9;  --Minimum count of colorCount.
 vision.ball.th_min_color2 = 9;  --Minimum area of ball.propsA.area
 vision.ball.th_min_fill_rate = 0.1;  --Minimum rate of fill_rate.

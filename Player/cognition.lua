@@ -72,7 +72,7 @@ end
 
 function update()
   count = count + 1;
-  print("imuangle :",Body.get_sensor_imuAngle()[3]*180/math.pi);
+--  print("imuangle :",Body.get_sensor_imuAngle()[3]*180/math.pi);
   tstart = unix.time();
 
   -- update vision 

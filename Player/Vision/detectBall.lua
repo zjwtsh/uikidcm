@@ -64,13 +64,14 @@ ORIGINAL_BALL_RADIUS = 140;
 Dxy = {vector.new({-1, 0}), vector.new({0, 1}), vector.new({1, 0}), vector.new({0, -1})};
 
 function detect(color)
+  print('Detect ball');
 	
 	t = unix.time();	--b51
 --  enable_obs_challenge = Config.obs_challenge or 0;
 --  if enable_obs_challenge == 1 then
 --    colorCount = Vision.colorCount_obs;
 --  else
-    colorCount = Vision.ballColorCount;
+--    colorCount = Vision.ballColorCount;
 --  end
 
   --headAngle = Body.get_head_position();
@@ -80,12 +81,17 @@ function detect(color)
   ball.detect = 0;
   local ballWhite = {};
   local ballOthers = {};
-  local ballOthers.propsA = {};
-  local ballBlack.propsA = {};
-  local ballBlack.propsA = {};
-  local ballProbsBBox = {};
-  local whiteStartCount = 1;
+  local ballBlack = {};
+  ballOthers.propsA = {};
+  ballBlack.propsA = {};
+  ballBlack.propsA = {};
+  ballProbsBBox = {};
+  whiteStartCount = 1;
+  colorCount = Vision.ballColorCount;
 
+  local ballWhiteProps = {};
+  local ballBlackProps = {};
+  local ballOthersProps = {};
   --[[
   vcm.add_debug_message(string.format("\nBall: pixel count: %d\n",
 	colorCount[color]));
@@ -105,6 +111,7 @@ function detect(color)
 
   if (colorCount[colorBallWhite] < th_min_color_white or colorCount[colorBallBlack] < th_min_color_black or colorCount[colorBallOthers] < th_min_color_others) then  	
     vcm.add_debug_message("pixel count fail");
+    print('pixel count fail');
     return ball;  	
   end
 
@@ -128,15 +135,17 @@ function detect(color)
 -- ballPropsB = ImageProc.connected_regions(labelB.data, labelB.m, 
 --	labelB.n, HeadTransform.get_horizonB(),color);
 
-
 --  if (#ballPropsB == 0) then return ball; end
-  if (#ballWhiteProps == 0 or #ballBlackProps == 0 or #ballOthersProps == 0) then return ball; end
+  if (#ballWhiteProps == 0 or #ballBlackProps == 0 or #ballOthersProps == 0) then 
+    print('ball props zero'); 
+    return ball; 
+  end
 
   local ballOthersCount = 1;
   for i = 1, #ballOthersProps do
     if ballOthersProps[i].area < th_max_color_others then
       ballOthers.propsA[ballOthersCount] = Vision.ballBboxStats(colorBallOthers, ballOthersProps[i].boundingBox)
-      ballOthersCount += 1;
+      ballOthersCount = ballOthersCount + 1;
     end
   end
 
@@ -144,7 +153,7 @@ function detect(color)
   for i = 1, #ballBlackProps do
     if ballBlackProps[i].area < th_max_color_black then
       ballBlack.propsA[ballBlackCount] = Vision.ballBboxStats(colorBallBlack, ballBlackProps[i].boundingBox)
-      ballBlackCount += 1;
+      ballBlackCount = ballBlackCount + 1;
     end
   end
 
@@ -154,6 +163,7 @@ function detect(color)
       whiteStartCount = i+1;
     else
       break;
+    end
   end
 
   if whiteStartCount <= #ballWhiteProps then
@@ -161,7 +171,7 @@ function detect(color)
       local z = 1;
       whiteCheckPassed = true;
       ballWhite.propsA = Vision.ballBboxStats(colorBallWhite, ballWhiteProps[i].boundingBox);
-      ballWhite.bboxA = Vision.bboxB2A(ballPropsB[i].boundingBox);
+      ballWhite.bboxA = Vision.bboxB2A(ballWhiteProps[i].boundingBox);
       local fill_rate_white = ballWhite.propsA.area / Vision.bboxArea(ballWhite.propsA.boundingBox);
       if fill_rate_white > th_max_white_fillrate or fill_rate_white < th_min_white_fillrate then
         whiteCheckPassed = false;
@@ -199,6 +209,7 @@ function detect(color)
 
     end -- end of whiteRegions connect check
   end -- end white probs pixel counts check
+  print('#ballProbsBBox');
 
 -- Check max 5 largest blobs 
 --  for i=1,math.min(5,#ballPropsB) do
@@ -213,7 +224,7 @@ function detect(color)
 --    ball.bboxA = Vision.bboxB2A(ballPropsB[i].boundingBox);
     ball.bboxA = ballProbsBBox[i];
     local fill_rate = ball.propsA.area / 
-	Vision.bboxArea(ball.propsA.boundingBox);
+	                    Vision.bboxArea(ball.propsA.boundingBox);
     local white_percentage = ball.propsA.whiteArea / ball.propsA.area;
     local others_percentage = ball.propsA.othersArea / ball.propsA.area;
     local black_percentage = ball.propsA.blackArea / ball.propsA.area;
@@ -319,6 +330,7 @@ function detect(color)
     if check_passed then
       break;
     end
+
   end --End loop
 
   if not check_passed then
@@ -385,142 +397,4 @@ function enlarge_bbox()
     math.max(bbox1[4], bbox2[4])
   });
   return enlargedBbox;
-end
-
-function region_relationship_build()
-  clusterNum = #infoOfCluster;
-  for i = 1, clusterNum do
-    for j = 1, clusterNum do
-      relationMap[i][j] = 0;
-    end
-  end
-  for i = 1, clusterNum do
-
-    currCluster = vector.new({infoOfCluster[i][3], infoOfCluster[i][4], infoOfCluster[i][5], infoOfCluster[i][6]});
-
-    for j = i+1, clusterNum do
-      tryingCluster = vector.new({infoOfCluster[j][3], infoOfCluster[j][4], infoOfCluster[j][5], infoOfCluster[j][6]});
-      enlargedAABB = vector.new({math.min(currCluster[1], tryingCluster[1]), math.min(currCluster[2], tryingCluster[2]), math.max(currCluster[3], tryingCluster[3]), math.max(currCluster[4], tryingCluster[4])});
-
-      clusterCenterY = (enlargedAABB[2] + enlargedAABB[4])/2;
-      lineAngle = atan(clusterCenterY-height/2, Vision.focalA) + headAngle[2];
-      if lineAngle < -10/180*math.pi then
-        relationMap[i][j] = 2;
-        relationMap[j][i] = 2;
-      else if lineAngle < 5/180*math.pi then
-        lineAngle = 5/180*math.pi
-      end
-
-      totalLengthx = currCluster[3] - currCluster[1] + tryingCluster[3] - tryingCluster[1];
-      totalLengthy = currCluster[4] - currCluster[2] + tryingCluster[4] - tryingCluster[2];
-      if relationMap[i][j] ~= 2 and totalLengthx + 2 >= enlargedAABB[3] - enlargedAABB[1] and totalLengthy + 2 >= enlargedAABB[4] - enlargedAABB[2] then
-        relationMap[i][j] = 1;
-        relationMap[j][i] = 1;
-      end
-
-    end -- for j end
-  end -- for i end
-end
-
-function same_color_connected()
-  growQueue = {};
-  x = 1;
-  width = Vision.labelA.m;
-  height = Vision.labelA.n;
-
-  for i = 1, width do
-    pointProcFlag[i] = {};
-  end
-
-  for i = 1, width do
-    for j = 1, height do
-      if (Vision.labelA.ballData[i][j] ~= 0 and pointProcFlag[i][j] == nil) then
-        tag = Vision.labelA.ballData[i][j];
-        pointProcFlag[i][j] = 1;
-        growQueue[1] = vector.new({i, j});
-        corners = {vector.new({i, i}), vector.new({j, j})};
-        nStart = 1;
-        nEnd = 2;
-        while(nStart < nEnd) do
-          currPt = growQueue[nStart]
-          for k = 1, 4 do
-            newPt = currPt + Dxy[k];
-            if (newPt[1] <= width and newPt[1] >=1
-              and newPt[2] <= height and newPt[2] >=1) then
-              if(pointProcFlag[newPt[1]][newPt[2]] == nil and Vision.labelA.ballData[newPt[1]][newPt[2]] == tag) then
-                growQueue[2] = newPt;
-                nEnd += 1;
-                pointProcFlag[newPt[1]][newPt[2]] = 1;
-              else
-                if k == 1 then
-                  if currPt[1] < corners[1][1] then
-                    corners[1][1] = currPt[1];
-                  end
-                elseif k == 2 then
-                  if currPt[2] > corners[2][2] then
-                    corners[2][2] = currPt[2];
-                  end
-                elseif k == 3 then
-                  if currPt[1] > corners[1][2] then
-                    corners[1][2] = currPt[1];
-                  end
-                elseif k == 4 then
-                  if currPt[2] < corners[2][1] then
-                    corners[2][1] = currPt[2];
-                  end
-                end -- switch k end
-              end --  pointProcFlag and tag check end
-
-            else
-              if k == 1 then
-                if currPt[1] < corners[1][1] then
-                  corners[1][1] = currPt[1];
-                end
-              elseif k == 2 then
-                if currPt[2] > corners[2][2] then
-                  corners[2][2] = currPt[2];
-                end
-              elseif k == 3 then
-                if currPt[1] > corners[1][2] then
-                  corners[1][2] = currPt[1];
-                end
-              elseif k == 4 then
-                if currPt[2] < corners[2][1] then
-                  corners[2][1] = currPt[2];
-                end
-              end -- switch k end
-
-            end -- point width height check end
-          end -- neighbor points check end
-          nStart = nStart + 1;
-        end -- while end
-
-        clusterCenterY = (corners[2][1] + corners[2][2])/2;
-        lineAngle = atan(clusterCenterY - height/2, Vision.focalA) + headAngle[2];
-
-        if lineAngle < -10/180*math.pi then
-          lineAngle = -3; --for continue
-        else
-
-          if lineAngle < 5/180*math.pi and lineAngle > -10/180*math.pi then
-            lineAngle = 5/180*math.pi;
-          end
-          maxDiameter = ORIGINAL_BALL_RADIUS * sin(lineAngle);
-          maxNoisy = 0.2 * maxDiameter;
-          currDiameter = max(math.abs(corners[1][1] - corners[1][2]), math.abs(corners[2][1] - corners[2][2]));
-          if nEnd > maxNoisy and currDiameter < 1.2 * maxDiameter then
-            infoOfCluster[x] = vector.new({tag, nEnd-1, corners[1][1], corners[1][2], corners[2][1], corners[2][2]});
-            x += 1;
-          end
-
---[[
-          infoOfCluster[x] = vector.new({tag, nEnd-1, corners[1][1], corners[1][2], corners[2][1], corners[2][2]});
-          x += 1;
-]]--
-
-        end
-      
-      end -- point tag check end
-    end -- for j = 1 to height end
-  end -- for i = 1 to width end
 end

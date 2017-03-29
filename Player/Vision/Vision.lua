@@ -574,19 +574,30 @@ end
 
 function split_ball_lut()
   splittedBallLut = carray.new('c', 262144);
-  local vpBall, local lutBall, local vpWhite, local lutWhite, local vpBlack, local lutBlack = create_diff_lut();
+  vpBall, lutBall, vpWhite, lutWhite, vpBlack, lutBlack = create_diff_lut();
 
-  local vpMat1, local lutMat1 = substract_lut(lutBall, lutWhite, 1, 16);  --Ball Without White
-  local vpMat2, local lutMat2 = substract_lut(lutBall, lutBlack, 1, 4);   -- Ball Without Black
+  vpMat1, lutMat1 = substract_lut(lutBall, lutWhite, 1, 16);  --Ball Without White
+  vpMat2, lutMat2 = substract_lut(lutBall, lutBlack, 1, 4);   -- Ball Without Black
 
-  local vpWhiteInBall, local lutWhiteInBall = substract_lut(lutBall, lutMat1, 1, 1); --White only in ball
-  local vpBlackInBall, local lutBlackInBall = substract_lut(lutBall, lutMat2, 1, 1); --Black only in ball
-  local vpColorInBall, local lutColorInBall = substract_lut(lutMat2, lutWhiteInBall, 1, 1); --Color in ball
-  
+  vpWhiteInBall, lutWhiteInBall = substract_lut(lutBall, lutMat1, 1, 1); --White only in ball
+  vpBlackInBall, lutBlackInBall = substract_lut(lutBall, lutMat2, 1, 1); --Black only in ball
+  vpColorInBall, lutColorInBall = substract_lut(lutMat2, lutWhiteInBall, 1, 1); --Color in ball
+    
   for i = 1, 64 do
     for j = 1, 64 do
       for k = 1, 64 do
-        splittedBallLut[i*64*64 + j*64 + k] = tostring(lutWhiteInBall[i][j][k]*4 + lutBlackInBall[i][j][k]*2 + lutColorInBall[i][j][k]);
+        --[[
+        if lutWhiteInBall[i][j][k] == nil then
+          print("i = "..i..' j = '..j..' k = '..k);
+          lutWhiteInBall[i][j][k] = 0;
+        end
+        if lutBlackInBall[i][j][k] == nil then
+          print("i = "..i..' j = '..j..' k = '..k);
+          lutBlackInBall[i][j][k] = 0;
+        end
+        ]]--
+
+        splittedBallLut[(i-1)*64*64 + (j-1)*64 + k] = tostring(lutWhiteInBall[i][j][k]*4 + lutBlackInBall[i][j][k]*2 + lutColorInBall[i][j][k]);
       end
     end
   end
@@ -606,6 +617,8 @@ function substract_lut(lut1, lut2, color1, color2)
           if lut2[i][j][k] ~= color2 then
             lut[i][j][k] = color1;
             validPoints = vector.new({i, j, k, color1});
+          else
+            lut[i][j][k] = 0;
           end
         else
           lut[i][j][k] = 0;
@@ -636,19 +649,18 @@ function create_diff_lut()
       lutWhite[i][j] = {};
       lutBlack[i][j] = {};
       for k = 1, 64 do
-        
-        if camera.lut_ball[i*64*64 + j*64 + k] ~= 0 then
-          lutBall[i][j][k] = camera.lut_ball[i*64*64 + j*64 + k];
-          vpBall[x] = vector.new({i, j, k, camera.lut_ball[i*64*64 + j*64 + k]});
-          x += 1;
+        if camera.lut_ball[(i-1)*64*64 + (j-1)*64 + k] ~= 0 then
+          lutBall[i][j][k] = camera.lut_ball[(i-1)*64*64 + (j-1)*64 + k];
+          vpBall[x] = vector.new({i, j, k, camera.lut_ball[(i-1)*64*64 + (j-1)*64 + k]});
+          x = x + 1;
         else
           lutBall[i][j][k] = 0;
         end
 
-        if camera.lut[i*64*64 + j*64 + k] ~= 0 then
-          lutWhite[i][j][k] = camera.lut[i*64*64 + j*64 + k];
-          vpWhite[y] = vector.new({i, j, k, camera.lut[i*64*64 + j*64 + k]});
-          y += 1;
+        if camera.lut[(i-1)*64*64 + (j-1)*64 + k] ~= 0 then
+          lutWhite[i][j][k] = camera.lut[(i-1)*64*64 + (j-1)*64 + k];
+          vpWhite[y] = vector.new({i, j, k, camera.lut[(i-1)*64*64 + (j-1)*64 + k]});
+          y = y + 1;
         else
           lutWhite[i][j][k] = 0;
         end
@@ -671,7 +683,7 @@ function create_black_lut(lutBlack)
       for k = 1, 10 do
         lutBlack[i][j][z] = 4;
         vpBlack[z] = vector.new({i, j, k, 4});
-        z += 1;
+        z = z+1;
       end
     end
   end
