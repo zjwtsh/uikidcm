@@ -678,9 +678,9 @@ end
 function create_black_lut(lutBlack) 
   local vpBlack = {};
   local z = 1;
-  for i = 29, 35 do
+  for i = 1, 10 do
     for j = 29, 35 do
-      for k = 1, 10 do
+      for k = 29, 35 do
         lutBlack[i][j][z] = 4;
         vpBlack[z] = vector.new({i, j, k, 4});
         z = z+1;

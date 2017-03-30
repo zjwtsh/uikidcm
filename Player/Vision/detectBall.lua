@@ -47,13 +47,13 @@ th_max_color_black = 1000/4;  --估计的最大值
 th_max_color_white = 3000/4;
 th_max_color_others = 1000/4;
 
-th_min_white_fillrate = 0.20;
+th_min_white_fillrate = 0.35;
 th_min_others_fillrate = 0.35;
 th_min_black_fillrate = 0.01;
 
 th_max_white_fillrate = 0.65;
 th_max_others_fillrate = 0.65;
-th_max_others_fillrate = 0.2;
+th_max_black_fillrate = 0.2;
 
 th_headAngle = Config.vision.ball.th_headAngle or 30*math.pi/180;
 
@@ -79,8 +79,8 @@ function detect(color)
   --print("headAngle detectball:",headAngle[1]*180/math.pi, headAngle[2]*180/math.pi);
   local ball = {};
   ball.detect = 0;
-  local ballWhite = {};
-  local ballOthers = {};
+  ballWhite = {};
+  ballOthers = {};
   local ballBlack = {};
   ballOthers.propsA = {};
   ballBlack.propsA = {};
@@ -112,9 +112,11 @@ function detect(color)
   if (colorCount[colorBallWhite] < th_min_color_white or colorCount[colorBallBlack] < th_min_color_black or colorCount[colorBallOthers] < th_min_color_others) then  	
     vcm.add_debug_message("pixel count fail");
     print('pixel count fail');
+    print(colorCount[colorBallWhite], colorCount[colorBallBlack], colorCount[colorBallOthers]);
     return ball;  	
   end
 
+  print(colorCount[colorBallWhite], colorCount[colorBallBlack], colorCount[colorBallOthers]);
   -- find connected components of ball pixels
 --  if enable_obs_challenge == 1 then
 --    ballPropsB = ImageProc.connected_regions_obs(Vision.labelB.data_obs, Vision.labelB.m, 
@@ -137,6 +139,7 @@ function detect(color)
 
 --  if (#ballPropsB == 0) then return ball; end
   if (#ballWhiteProps == 0 or #ballBlackProps == 0 or #ballOthersProps == 0) then 
+--  if (#ballWhiteProps == 0 or #ballOthersProps == 0) then 
     print('ball props zero'); 
     return ball; 
   end
@@ -168,6 +171,7 @@ function detect(color)
 
   if whiteStartCount <= #ballWhiteProps then
     for i = whiteStartCount, #ballWhiteProps do
+      print("white Start Count = "..whiteStartCount.." #ballWhiteProps = "..#ballWhiteProps);
       local z = 1;
       whiteCheckPassed = true;
       ballWhite.propsA = Vision.ballBboxStats(colorBallWhite, ballWhiteProps[i].boundingBox);
@@ -176,8 +180,10 @@ function detect(color)
       if fill_rate_white > th_max_white_fillrate or fill_rate_white < th_min_white_fillrate then
         whiteCheckPassed = false;
       else
+        print("white fill rate true, rate = "..fill_rate_white);
         ballOthersInWhite = Vision.ballBboxStats(colorBallOthers, ballWhiteProps[i].boundingBox);
         if ballOthersInWhite.area < 10 then
+          print("no others in WHite, others = "..ballOthersInWhite.area);
           whiteCheckPassed = false;
         else
           for j = 1, #ballOthers.propsA do
@@ -185,6 +191,9 @@ function detect(color)
               whiteCheckPassed = false;
             else
               newBbox = enlarge_bbox(ballWhite.propsA.boundingBox, ballOthers.propsA[j].boundingBox);
+              ballProbsBBox[z] = newBbox;
+              z = z+1;
+              print("closed region z = "..z);
               ballBlackInWhite = Vision.ballBboxStats(colorBallBlack, newBbox);
               if ballBlackInWhite.area < 3 then
                 whiteCheckPassed = false;
@@ -202,21 +211,21 @@ function detect(color)
         end -- end ball other counts in white check
       end -- end of fill_rate_white check
 
-      if whiteCheckPassed then
-        ballProbsBBox[z] = newBbox;
-        z = z+1;
-      end
+--      if whiteCheckPassed then
+--        ballProbsBBox[z] = newBbox;
+--        z = z+1;
+--        print("z = "..z);
+--      end
 
     end -- end of whiteRegions connect check
   end -- end white probs pixel counts check
-  print('#ballProbsBBox');
 
 -- Check max 5 largest blobs 
 --  for i=1,math.min(5,#ballPropsB) do
 --  for i=1,math.min(5,#ballProbsBBox) do
   for i=1, #ballProbsBBox do
-    vcm.add_debug_message(string.format(
-	"Ball: checking blob %d/%d\n",i,#ballPropsB));
+    --vcm.add_debug_message(string.format(
+	--"Ball: checking blob %d/%d\n",i,#ballPropsB));
 
     check_passed = true;
 --    ball.propsB = ballPropsB[i];
@@ -231,13 +240,17 @@ function detect(color)
 
     vcm.add_debug_message(string.format("Area:%d\nFill rate:%2f\n",
        ball.propsA.area,fill_rate));
+    print(string.format("Area:%d\nFill rate:%2f\n",
+       ball.propsA.area,fill_rate));
 
     if ball.propsA.area < th_min_color2 then
       --Area check
       vcm.add_debug_message("Area check fail\n");
+      print("Area check fail\n");
       check_passed = false;
     elseif fill_rate < th_min_fill_rate and fill_rate > th_max_fill_rate then
       --Fill rate check
+      print("Fillrate check fail\n");
       vcm.add_debug_message("Fillrate check fail\n");
       check_passed = false;
     else
@@ -246,6 +259,7 @@ function detect(color)
         or others_percentage < 0.35 or others_percentage > 0.7
         or black_percentage < 0.01 or others_percentage > 0.3 then
         vcm.add_debug_message("Color Area check fail\n");
+        print("Color Area check fail\n");
         check_passed = false;
       else
 
@@ -254,7 +268,7 @@ function detect(color)
         -- Find the centroid of the ball
         ballCentroid = ball.propsA.centroid;
         
-        --print("ballCentroid :"..ballCentroid[1],ballCentroid[2]);
+        print("ballCentroid :"..ballCentroid[1],ballCentroid[2]);
         
         -- Coordinates of ball
         scale = math.max(dArea/diameter, ball.propsA.axisMajor/diameter);
@@ -383,13 +397,13 @@ end
 
 function region_closed_check(bbox1, bbox2)
   if bbox2[1] > bbox1[2] or bbox2[2] < bbox1[1]
-    or bbox2[3] > bbox1[4] or bbox2[4] < bbox[3] then
+    or bbox2[3] > bbox1[4] or bbox2[4] < bbox1[3] then
     return false;
   end
   return true;
 end
 
-function enlarge_bbox()
+function enlarge_bbox(bbox1, bbox2)
   enlargedBbox = vector.new({
     math.min(bbox1[1], bbox2[1]), 
     math.max(bbox1[2], bbox2[2]), 
