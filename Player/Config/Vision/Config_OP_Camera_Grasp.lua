@@ -68,13 +68,13 @@ camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={1250}};
 ]]--
 
-camera.param[1] = {key='brightness',    val={110}};
+camera.param[1] = {key='brightness',    val={35}};
 camera.param[2] = {key='contrast',      val={35}};
 camera.param[3] = {key='saturation',    val={35}};
 camera.param[4] = {key='gain',          val={90}};
-camera.param[5] = {key='white balance temperature', val={800}};
+camera.param[5] = {key='white balance temperature', val={2800}};
 camera.param[6] = {key='sharpness',     val={0}};
-camera.param[7] = {key='exposure (absolute)',      val={600}};
+camera.param[7] = {key='exposure (absolute)',      val={100}};
 if use_arbitrary_ball then
   camera.lut_file = 'gateline0318.raw';
   camera.lut_ball_file = 'FieldandBall0318.raw';
