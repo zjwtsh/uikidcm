@@ -51,13 +51,6 @@ if use_gps_only==0 then
   labelA.n = camera.height/2;
   labelA.npixel = labelA.m*labelA.n;
 
-  labelA.ballPixel = labelA.npixel;
-
-  if  webots == 1 then
-    labelA.m = camera.width;
-    labelA.n = camera.height;
-    labelA.npixel = labelA.m*labelA.n;
-  end
   scaleB = Config.vision.scaleB;
   labelB = {};
   labelB.m = labelA.m/scaleB;
@@ -242,16 +235,10 @@ function update()
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
-    labelA.ballData = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
-                                            carray.pointer(camera.splittedBallLut),
-                                            camera.width/2,
-                                            camera.height);
   end
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
-  ballColorCount = ImageProc.color_count(labelA.ballData, labelA.ballPixel);
-
 
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
@@ -480,27 +467,6 @@ function bboxStats(color, bboxB, rollAngle, scale)
   end
 end
 
-function ballBboxStats(color, bboxB, rollAngle, scale)
-  scale = scale or scaleB;
-  bboxA = {};
-  bboxA[1] = scale*bboxB[1];
-  bboxA[2] = scale*bboxB[2] + scale - 1;
-  bboxA[3] = scale*bboxB[3];
-  bboxA[4] = scale*bboxB[4] + scale - 1;
-  if rollAngle then
- --hack: shift boundingbox 1 pix helps goal detection
- --not sure why this thing is happening...
-
---    bboxA[1]=bboxA[1]+1;
-      bboxA[2]=bboxA[2]+1;
-
-    return ImageProc.tilted_color_stats(
-	labelA.ballData, labelA.m, labelA.n, color, bboxA,rollAngle);
-  else
-    return ImageProc.color_stats(labelA.ballData, labelA.m, labelA.n, color, bboxA);
-  end
-end
-
 function ballColorBboxStats(color, bboxA)
   return ImageProc.ball_color_stats(labelA.ballData, labelA.m, labelA.n, color, bboxA);
 end
@@ -586,17 +552,6 @@ function split_ball_lut()
   for i = 1, 64 do
     for j = 1, 64 do
       for k = 1, 64 do
-        --[[
-        if lutWhiteInBall[i][j][k] == nil then
-          print("i = "..i..' j = '..j..' k = '..k);
-          lutWhiteInBall[i][j][k] = 0;
-        end
-        if lutBlackInBall[i][j][k] == nil then
-          print("i = "..i..' j = '..j..' k = '..k);
-          lutBlackInBall[i][j][k] = 0;
-        end
-        ]]--
-
         splittedBallLut[(i-1)*64*64 + (j-1)*64 + k] = tostring(lutWhiteInBall[i][j][k]*4 + lutBlackInBall[i][j][k]*2 + lutColorInBall[i][j][k]);
       end
     end
