@@ -36,10 +36,6 @@ count = 0;
 nProcessedImages = 0;
 tUpdate = unix.time();
 
-if (string.find(Config.platform.name,'Webots')) then
-  webots = true;
-end
-
 function broadcast()
   broadcast_enable = vcm.get_camera_broadcast();
   if broadcast_enable>0 then
@@ -85,11 +81,9 @@ function update()
     World.update_vision();
 
     if (nProcessedImages % 200 == 0) then
-      if not webots then
-        print('fps: '..(200 / (unix.time() - tUpdate)));
-        Detection.print_time(); 
-        tUpdate = unix.time();
-      end
+      print('fps: '..(200 / (unix.time() - tUpdate)));
+      Detection.print_time(); 
+      tUpdate = unix.time();
     end
   end
  
