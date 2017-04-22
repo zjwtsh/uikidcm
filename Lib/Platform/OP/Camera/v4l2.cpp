@@ -285,7 +285,6 @@ int v4l2_set_ctrl(const char *name, int value) {
     return -1;
   }
 
-
   int v4l2_cid_base=0x00980900;
 
   fprintf(stderr, "Setting ctrl %s, id %d\n", name,(ictrl->second).id-v4l2_cid_base);
@@ -295,7 +294,6 @@ int v4l2_set_ctrl(const char *name, int value) {
   int ret=xioctl(video_fd, VIDIOC_S_CTRL, &ctrl);
   return ret;
 }
-
 
 //added to manually set parameters not shown on query lists
 int v4l2_set_ctrl_by_id(int id, int value){
@@ -454,31 +452,6 @@ int v4l2_init(int resolution) {
   v4l2_query_ctrl(V4L2_CID_BASE,
       V4L2_CID_BASE+500);
 
-  /*
-  // Flip the video
-  // This control is not supported
-  struct v4l2_queryctrl queryctrl;
-  memset( &queryctrl, 0, sizeof(queryctrl) );
-  queryctrl.id = V4L2_CID_VFLIP;
-  printf("Video FD: %d.  CID: %x\n", video_fd, queryctrl.id);
-  if (0 == ioctl (video_fd, VIDIOC_QUERYCTRL, &queryctrl)) {
-  if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED)
-  printf("Disabled the VFLIP control...\n");
-  printf ("Control %s\n", queryctrl.name);
-  } else {
-  if (errno == EINVAL)
-  printf("Error in the Input Value...\n");
-  perror ("VIDIOC_QUERYCTRL");
-  exit (EXIT_FAILURE);
-  }
-  struct v4l2_control ctrl;
-  ctrl.id = V4L2_CID_VFLIP;
-  ctrl.value = 1;
-  int ret = xioctl(video_fd, VIDIOC_S_CTRL, &ctrl);
-  printf("Return value on VFLIP: %d\n", ret);
-   */
-
-
   // Initialize memory map
   v4l2_init_mmap();
   handle = SsbSipJPEGDecodeInit();
@@ -520,25 +493,12 @@ void * v4l2_get_buffer(int index, size_t *length) {
 //  }
 //  printf("before decode buffers[index].start :%08x\n",buffers[index].start);
   jpgBuffer.size = 0;
-//  SaveJpgBuf((unsigned char *)buffers[index].start, (int )buffers[index].length);
+
 	SaveJpgBuf((unsigned char *)buffers[index].start, buf0->bytesused);
-//  printf("before handle\n");
-  //handle = SsbSipJPEGDecodeInit();
-//  printf("after handle\n");
+
   void *yuyvBuf[nbuffer-1];
   yuyvBuf[index] = (void *)Decompress(jpgBuffer.buf, jpgBuffer.size);
-//  buffers[index].start = 
-//      mmap(0, // start anywhere
-//          sizeof(temp),
-//          PROT_READ | PROT_WRITE, // required
-//          MAP_SHARED, // recommended
-//          video_fd,
-//          *temp);
-  //Decompress(jpgBuffer.buf, jpgBuffer.size);
-  //SsbSipJPEGDecodeDeInit(handle);
-//  printf("after decode yuyBuf[index] :%08x ,%08x\n",yuyvBuf[index], index);
-  //SsbSipJPEGDecodeDeInit(handle);
-//  return buffers[index].start;
+
   if( invert==1 ) {
     return (void *) 
 	yuyv_rotate( (uint8_t*)yuyvBuf[index], width, height );
@@ -570,13 +530,6 @@ int v4l2_read_frame() {
   // Give out the pointer, and hope they give it back to us soon!
   void *ptr = buffers[buf.index].start;
   
-/*  char *Jpgbuf;
-  handle = SsbSipJPEGDecodeInit();
-  int bufsize = buffers[buf.index].length;
-  memcpy(Jpgbuf, ptr, bufsize);
-  char *temp = Decompress((unsigned char *)Jpgbuf, bufsize);
-	memcpy(buffers[buf.index].start,temp,buffers[buf.index].length);
-*/
   if (xioctl(video_fd, VIDIOC_QBUF, &buf) == -1){
     fprintf(stderr, "QBUF Problem %d\n", errno);
     fprintf(stderr, "Buf Index: %d\n",buf.index);
@@ -678,58 +631,6 @@ uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
 		
 	return frame2;
 }
- 
-/*uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
-  int i;
-  //SJ: I maintain a second buffer here
-  //So that we do not directly rewrite on camera buffer address
-
-  static uint8_t frame2[640*480*4];
-
-  //printf("WIDTH HEIGHT:%d %d\n",width,height);
-
-  int siz = width*height/2;
-  for (int i=0;i<siz/2;i++){
-    int index_1 = i*4;
-    int index_2 = (siz-1-i)*4;
-    uint8_t x1,x2,x3,x4;
-    frame2[index_2] = frame[index_1+2];
-    frame2[index_2+1] = frame[index_1+1];
-    frame2[index_2+2] = frame[index_1];
-    frame2[index_2+3] = frame[index_1+3];
-
-    frame2[index_1]=frame[index_2+2];
-    frame2[index_1+1]=frame[index_2+1];
-    frame2[index_1+2]=frame[index_2];
-    frame2[index_1+3]=frame[index_2+3];
-
-  }
-  return frame2;
-*/
-
-/*
-  uint32_t* frame32 = (uint32_t*)frame;
-
-  // Swap top and bottom
-  for(i=0;i<height/2;i++){
-
-    uint32_t* row1addr = frame32+i*width/2;
-    uint32_t* row2addr = frame32+(height-1-i)*width/2;
-    row_swap( row1addr, row2addr, width );
-  
-    // Swap the yuyv byte order for the swapped rows
-    int j;
-    for(j=0;j<width/4;j++){// width/4 since frame32 is width/2 long
-      yuyv_px_swap( (uint8_t*)(row1addr+j), (uint8_t*)(row1addr+width/2-1-j) );
-    }
-    for(j=0;j<width/4;j++){// width/4 since frame32 is width/2 long
-      yuyv_px_swap( (uint8_t*)(row2addr+j), (uint8_t*)(row2addr+width/2-1-j) );
-    }
-
-  }
-*/
-
-//}
 
 int IsHuffman(unsigned char *buf)
 {
