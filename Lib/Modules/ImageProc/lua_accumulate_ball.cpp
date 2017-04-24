@@ -187,12 +187,102 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
   }
 
   std::vector<uint8_t> candidateRegionCenter(infoOfCluster.size(), 0);
-  std::vector<uint8_t> connectRegion;
+  std::vector<uint8_t> connectRegion, nextConnectRegion, targetRegion;
 
   for (int i = 0; i < infoOfCluster.size(); i++)
   {
     if (candidateRegionCenter[i] = 3)
       continue;
+
+	bool isRunning = true;
+
+	connectRegion.assign(relationMap[i].begin(), relationMap[i].end());
+	connectRegion[i] = 3;
+
+	nextConnectRegion.assign(connectRegion.begin(), connectRegion.end());
+
+	while (isRunning)
+	{
+	  isRunning = false;
+	  for (int j = 0; j < infoOfCluster.size(); j++)
+	  {
+		if (connectRegion[j] == 1)
+		{
+		  targetRegion.assign(relationMap[j].begin(), relationMap[j].end());
+		  for (int k = 0; k < infoOfCluster.size(); k++)
+		  {
+			if (targetRegion[k] != 0)
+			{
+			  if (targetRegion[k] == 2)
+			  {
+			  	connectRegion[k] = targetRegion[k];
+			  	nextConnectRegion[k] = targetRegion[k];
+			  }
+			  else if (connectRegion[k] == 0)
+			  {
+			  	nextConnectRegion[k] = targetRegion[k];
+				isRunning = true;
+			  }
+			}
+		  }
+		  connectRegion[j] = 3;
+		  nextConnectRegion[j] = 3;
+		}
+	  }
+	  connectRegion.assign(nextConnectRegion.begin(), nextConnectRegion.end());
+	}// while end
+
+	std::vector<Cluster>  connectResult;
+	for (int j = 0; j < infoOfCluster.size(); j++)
+	{
+	  if (connectRegion[j] != 0)
+	  {
+		if (connectRegion[j] == 3)
+		{
+		  connectResult.push_back(infoOfCluster[j]);
+		  candidateRegionCenter[j] = connectRegion[j];
+		}
+		else if (candidateRegionCenter[j] != 3)
+		{
+		  candidateRegionCenter[j] = connectRegion[j];
+		}
+	  }
+	}
+
+	int bkCntr = 0;
+	int wtCntr = 0;
+	int blCntr = 0;
+    std::vector<Array2D> ballBBox(2);
+
+	for (int i = 0; i < connectResult.size(); i++)
+	{
+	  ballBBox[0].x = min(connectResult[i].bBox[0].x, ballBBox[0].x);
+	  ballBBox[0].y = min(connectResult[i].bBox[0].y, ballBBox[0].y);
+	  ballBBox[1].x = min(connectResult[i].bBox[1].x, ballBBox[1].x);
+	  ballBBox[1].x = min(connectResult[i].bBox[1].y, ballBBox[1].y);
+	  switch connectResult[i].colorTag:
+	  {
+	    case 1:
+		  blCntr += connectResult[i].colorCount;
+	  	  break;
+	    case 2:
+		  bkCntr += connectResult[i].colorCount;
+	  	  break;
+	    case 4:
+		  wtCntr += connectResult[i].colorCount;
+	  	  break;
+	  }
+	}
+	int totalCntr = bkCntr + wtCntr + blCntr;
+	float rate = blCntr/totalCntr;
+	if (rate < 0.9 && rate > 0.1)
+	{
+	  rate = wtCntr / totalCntr;
+	  if (rate < 0.9 || rate > 0.1)
+	  	continue;
+	}
+	else
+	  continue;
   }
 
 }
