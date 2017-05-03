@@ -506,6 +506,23 @@ void * v4l2_get_buffer(int index, size_t *length) {
 		  return yuyvBuf[index];
 }
 
+void * v4l2_get_buffer_from_file(int index, size_t *length) {
+  if (length != NULL)
+    *length = buffers[index].length;
+  jpgBuffer.size = 0;
+
+	SaveJpgBuf((unsigned char *)buffers[index].start, buf0->bytesused);
+
+  void *yuyvBuf[nbuffer-1];
+  yuyvBuf[index] = (void *)Decompress(jpgBuffer.buf, jpgBuffer.size);
+
+  if( invert==1 ) {
+    return (void *) 
+	yuyv_rotate( (uint8_t*)yuyvBuf[index], width, height );
+  }
+		  return yuyvBuf[index];
+}
+
 int v4l2_read_frame() {
   struct v4l2_buffer buf;
   buf0 = &buf;
