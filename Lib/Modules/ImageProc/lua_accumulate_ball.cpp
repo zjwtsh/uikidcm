@@ -14,6 +14,8 @@ extern "C" {
 #include <math.h>
 #include <vector>
 
+#define POW(x)  x*x
+
 static std::vector<Array2D> fourConn(4) = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
 
 std::vector<Cluster>  infoOfCluster;
@@ -194,95 +196,111 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
     if (candidateRegionCenter[i] = 3)
       continue;
 
-	bool isRunning = true;
+    bool isRunning = true;
 
-	connectRegion.assign(relationMap[i].begin(), relationMap[i].end());
-	connectRegion[i] = 3;
-
-	nextConnectRegion.assign(connectRegion.begin(), connectRegion.end());
-
-	while (isRunning)
-	{
-	  isRunning = false;
-	  for (int j = 0; j < infoOfCluster.size(); j++)
-	  {
-		if (connectRegion[j] == 1)
-		{
-		  targetRegion.assign(relationMap[j].begin(), relationMap[j].end());
-		  for (int k = 0; k < infoOfCluster.size(); k++)
-		  {
-			if (targetRegion[k] != 0)
-			{
-			  if (targetRegion[k] == 2)
-			  {
-			  	connectRegion[k] = targetRegion[k];
-			  	nextConnectRegion[k] = targetRegion[k];
-			  }
-			  else if (connectRegion[k] == 0)
-			  {
-			  	nextConnectRegion[k] = targetRegion[k];
-				isRunning = true;
-			  }
-			}
-		  }
-		  connectRegion[j] = 3;
-		  nextConnectRegion[j] = 3;
-		}
-	  }
-	  connectRegion.assign(nextConnectRegion.begin(), nextConnectRegion.end());
-	}// while end
-
-	std::vector<Cluster>  connectResult;
-	for (int j = 0; j < infoOfCluster.size(); j++)
-	{
-	  if (connectRegion[j] != 0)
-	  {
-		if (connectRegion[j] == 3)
-		{
-		  connectResult.push_back(infoOfCluster[j]);
-		  candidateRegionCenter[j] = connectRegion[j];
-		}
-		else if (candidateRegionCenter[j] != 3)
-		{
-		  candidateRegionCenter[j] = connectRegion[j];
-		}
-	  }
-	}
-
-	int bkCntr = 0;
-	int wtCntr = 0;
-	int blCntr = 0;
+    connectRegion.assign(relationMap[i].begin(), relationMap[i].end());
+    connectRegion[i] = 3;
+    
+    nextConnectRegion.assign(connectRegion.begin(), connectRegion.end());
+    
+    while (isRunning)
+    {
+      isRunning = false;
+      for (int j = 0; j < infoOfCluster.size(); j++)
+      {
+        if (connectRegion[j] == 1)
+        {
+          targetRegion.assign(relationMap[j].begin(), relationMap[j].end());
+          for (int k = 0; k < infoOfCluster.size(); k++)
+          {
+            if (targetRegion[k] != 0)
+            {
+              if (targetRegion[k] == 2)
+              {
+                connectRegion[k] = targetRegion[k];
+                nextConnectRegion[k] = targetRegion[k];
+              }
+              else if (connectRegion[k] == 0)
+              {
+                nextConnectRegion[k] = targetRegion[k];
+                isRunning = true;
+              }
+            }
+          }
+          connectRegion[j] = 3;
+          nextConnectRegion[j] = 3;
+        }
+      }
+      connectRegion.assign(nextConnectRegion.begin(), nextConnectRegion.end());
+    }// while end
+    
+    std::vector<Cluster>  connectResult;
+    for (int j = 0; j < infoOfCluster.size(); j++)
+    {
+      if (connectRegion[j] != 0)
+      {
+        if (connectRegion[j] == 3)
+        {
+          connectResult.push_back(infoOfCluster[j]);
+          candidateRegionCenter[j] = connectRegion[j];
+        }
+        else if (candidateRegionCenter[j] != 3)
+        {
+          candidateRegionCenter[j] = connectRegion[j];
+        }
+      }
+    }
+    
+    int bkCntr = 0;
+    int wtCntr = 0;
+    int blCntr = 0;
     std::vector<Array2D> ballBBox(2);
+    
+    for (int i = 0; i < connectResult.size(); i++)
+    {
+      ballBBox[0].x = min(connectResult[i].bBox[0].x, ballBBox[0].x);
+      ballBBox[0].y = min(connectResult[i].bBox[0].y, ballBBox[0].y);
+      ballBBox[1].x = min(connectResult[i].bBox[1].x, ballBBox[1].x);
+      ballBBox[1].x = min(connectResult[i].bBox[1].y, ballBBox[1].y);
+      switch connectResult[i].colorTag:
+      {
+        case 1:
+          blCntr += connectResult[i].colorCount;
+      	  break;
+        case 2:
+          bkCntr += connectResult[i].colorCount;
+      	  break;
+        case 4:
+          wtCntr += connectResult[i].colorCount;
+      	  break;
+      }
+    }
+    int totalCntr = bkCntr + wtCntr + blCntr;
+    float rate = blCntr/totalCntr;
+    if (rate < 0.9 && rate > 0.1)
+    {
+      rate = wtCntr / totalCntr;
+      if (rate < 0.9 || rate > 0.1)
+     	  continue;
+    }
+    else
+      continue;
 
-	for (int i = 0; i < connectResult.size(); i++)
-	{
-	  ballBBox[0].x = min(connectResult[i].bBox[0].x, ballBBox[0].x);
-	  ballBBox[0].y = min(connectResult[i].bBox[0].y, ballBBox[0].y);
-	  ballBBox[1].x = min(connectResult[i].bBox[1].x, ballBBox[1].x);
-	  ballBBox[1].x = min(connectResult[i].bBox[1].y, ballBBox[1].y);
-	  switch connectResult[i].colorTag:
-	  {
-	    case 1:
-		  blCntr += connectResult[i].colorCount;
-	  	  break;
-	    case 2:
-		  bkCntr += connectResult[i].colorCount;
-	  	  break;
-	    case 4:
-		  wtCntr += connectResult[i].colorCount;
-	  	  break;
-	  }
-	}
-	int totalCntr = bkCntr + wtCntr + blCntr;
-	float rate = blCntr/totalCntr;
-	if (rate < 0.9 && rate > 0.1)
-	{
-	  rate = wtCntr / totalCntr;
-	  if (rate < 0.9 || rate > 0.1)
-	  	continue;
-	}
-	else
-	  continue;
+    clusterCenter.y = (ballBBox[0].y + ballBBox[1].y)/2;
+    lineAngle = atan(-clusterCenter.y - n/2)/focus_length + camera_title; //need fix
+    maxRadius = ORIGINAL_BALL_RADIUS * sin(lineAngle);  // need fix
+    maxNoisy = 0.3 * maxRadius; 
+    currRadius = max(abs(ballBBox[0].x - ballBBox[1].x), abs(ballBBox[0].y - ballBBox[1].y));
+    
+    if (currRadius < 0.3 * maxRadius)
+      continue;
+
+    float Kcolor = 0.33;
+    float Kground = 2.0;  // need fix
+    float Kradius = 0.33;
+
+    float evaluation = Kcolor * (POW(float(blCntr)/totalCntr - 0.4) + POW(float(wtCntr)/totalCntr - 0.4) + POW(float(bkCntr)/totalCntr - 0.2)) + Kradius * POW(float(currRadius)/maxRadius - 1);  //  need fix
+
   }
 
 }

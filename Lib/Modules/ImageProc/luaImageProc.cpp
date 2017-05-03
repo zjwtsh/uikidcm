@@ -68,8 +68,6 @@ static int lua_subsample_yuyv2yuyv(lua_State *L){
   return 1;
 }
 
-
-
 static int lua_subsample_yuyv2yuv(lua_State *L){
   // Structure this is an array of 8bit channels
   // Y,U,V,Y,U,V
