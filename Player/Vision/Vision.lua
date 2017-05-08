@@ -235,6 +235,10 @@ function update()
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
+    labelBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
+                                          carray.pointer(camera.splittedBallLut),
+                                          camera.width/2,
+                                          camera.height);
   end
 
   -- determine total number of pixels of each color/label

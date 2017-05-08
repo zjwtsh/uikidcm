@@ -11,18 +11,37 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <math.h>
 #include <vector>
 
-#define POW(x)  x*x
+#include "lua_accumulate_ball.h"
+#include "RadonTransform.h"
 
-static std::vector<Array2D> fourConn(4) = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+#define POW(x)  x*x
+#define VISION_ANGLE_WIDTH 60/180*M_PI
+#define FOCUS_LENGTH 480/2/tan(VISION_ANGLE_WIDTH/2)
+#define CAMERA_TILT 80/180*M_PI
+
+#define ORIGINAL_BALL_RADIUS 140
+
+//static std::vector<Array2D> fourConn(4) = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
 
 std::vector<Cluster>  infoOfCluster;
 std::vector<std::vector<uint8_t> > relationMap;
 
-int lua_accumulate_ball(uint8_t *label, int width, int height)
+int Max(int a, int b) {return a<b?b:a;};
+int Min(int a, int b) {return a<b?a:b;};
+
+int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label, int width, int height)
 {
+  static std::vector<Array2D> fourConn;//{{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+  fourConn.resize(4);
+  fourConn.push_back({-1, 0});
+  fourConn.push_back({0, 1});
+  fourConn.push_back({1, 0});
+  fourConn.push_back({0, -1});
+
   int m = width;
   int n = height;
 
@@ -43,7 +62,7 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
       {
         int nStart = 0;
         int nEnd = 1;
-        tag = label[i*m + j];
+        int tag = label[i*m + j];
         pointProcFlag[i*m + j] = 1;
         growQueue.push_back({i, j});
         corners[0] = {i, j};
@@ -58,7 +77,7 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
             if (newPt.x <= m && newPt.x >= 0 
                 && newPt.y <= n && newPt.y >=0)
             {
-              if (pointProcFlag[newPt.x*m + newPt.y] ==0 
+              if (pointProcFlag[newPt.x*m + newPt.y] == 0
                   && label[newPt.x*m + newPt.y] == tag)
               {
                 growQueue.push_back(newPt);
@@ -67,7 +86,7 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
               }
               else
               {
-                switch k:
+                switch (k)
                 {
                   case 1:
                     if (currPt.x < corners[0].x)
@@ -92,7 +111,7 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
             }
             else
             {
-              switch k:
+              switch (k)
               {
                 case 1:
                   if (currPt.x < corners[0].x)
@@ -118,20 +137,20 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
           nStart++;
         } // while end
         clusterCenter.y = (corners[0].y + corners[1].y)/2;
-        lineAngle = atan(-clusterCenter.y - n/2)/focus_length + camera_title; //need fix
-        if (lineAngle < 5/180*math.M_PI)
+        lineAngle = atan((-clusterCenter.y - n/2)/FOCUS_LENGTH) + CAMERA_TILT; //need fix
+        if (lineAngle < 5/180*M_PI)
           continue;
         
         maxRadius = ORIGINAL_BALL_RADIUS * sin(lineAngle);  // need fix
         maxNoisy = 0.3 * maxRadius; 
-        currRadius = max(abs(corners[0].x - corners[1].x), abs(corners[0].y - corners[1].y));
+        currRadius = Max(abs(corners[0].x - corners[1].x), abs(corners[0].y - corners[1].y));
 
         if (nEnd > maxNoisy && currRadius < 1.2 * maxRadius)
         {
           singleCluster.colorTag = tag;
           singleCluster.colorCount = nEnd;
-          singleCluster.bBox[0] = corners[0];
-          singleCluster.bBox[1] = corners[1];
+          singleCluster.bBox.push_back(corners[0]);
+          singleCluster.bBox.push_back(corners[1]);
           infoOfCluster.push_back(singleCluster);
         }
       } // if label != 0 end
@@ -152,13 +171,13 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
 
       tryingCluster = infoOfCluster[j];
 
-      enlargedBBox[0].x = min(currCluster.bBox[0].x, tryingCluster.bBox[0].x);
-      enlargedBBox[0].y = min(currCluster.bBox[0].y, tryingCluster.bBox[0].y);
-      enlargedBBox[1].x = max(currCluster.bBox[0].x, tryingCluster.bBox[0].x);
-      enlargedBBox[1].y = max(currCluster.bBox[0].y, tryingCluster.bBox[0].y);
+      enlargedBBox[0].x = Min(currCluster.bBox[0].x, tryingCluster.bBox[0].x);
+      enlargedBBox[0].y = Min(currCluster.bBox[0].y, tryingCluster.bBox[0].y);
+      enlargedBBox[1].x = Max(currCluster.bBox[0].x, tryingCluster.bBox[0].x);
+      enlargedBBox[1].y = Max(currCluster.bBox[0].y, tryingCluster.bBox[0].y);
 
       clusterCenter.y = (enlargedBBox[0].y + enlargedBBox[1].y)/2;
-      lineAngle = atan(clusterCenter.y - n/2)/focus_length + camera_title;    // need fix
+      lineAngle = atan(clusterCenter.y - n/2)/FOCUS_LENGTH + CAMERA_TILT;    // need fix
 
       if (lineAngle < 5/180*M_PI)
       {
@@ -168,7 +187,7 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
       }
 
       maxRadius = ORIGINAL_BALL_RADIUS * sin(lineAngle);  // need fix
-      currRadius = max(abs(enlargedBBox[0].x - enlargedBBox[1].x), abs(enlargedBBox[0].y - enlargedBBox[1].y));
+      currRadius = Max(abs(enlargedBBox[0].x - enlargedBBox[1].x), abs(enlargedBBox[0].y - enlargedBBox[1].y));
 
       if (currRadius > 1.2*maxRadius)
       {
@@ -258,11 +277,11 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
     
     for (int i = 0; i < connectResult.size(); i++)
     {
-      ballBBox[0].x = min(connectResult[i].bBox[0].x, ballBBox[0].x);
-      ballBBox[0].y = min(connectResult[i].bBox[0].y, ballBBox[0].y);
-      ballBBox[1].x = min(connectResult[i].bBox[1].x, ballBBox[1].x);
-      ballBBox[1].x = min(connectResult[i].bBox[1].y, ballBBox[1].y);
-      switch connectResult[i].colorTag:
+      ballBBox[0].x = Min(connectResult[i].bBox[0].x, ballBBox[0].x);
+      ballBBox[0].y = Min(connectResult[i].bBox[0].y, ballBBox[0].y);
+      ballBBox[1].x = Min(connectResult[i].bBox[1].x, ballBBox[1].x);
+      ballBBox[1].x = Min(connectResult[i].bBox[1].y, ballBBox[1].y);
+      switch (connectResult[i].colorTag)
       {
         case 1:
           blCntr += connectResult[i].colorCount;
@@ -287,10 +306,10 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
       continue;
 
     clusterCenter.y = (ballBBox[0].y + ballBBox[1].y)/2;
-    lineAngle = atan(-clusterCenter.y - n/2)/focus_length + camera_title; //need fix
+    lineAngle = atan(-clusterCenter.y - n/2)/FOCUS_LENGTH + CAMERA_TILT; //need fix
     maxRadius = ORIGINAL_BALL_RADIUS * sin(lineAngle);  // need fix
     maxNoisy = 0.3 * maxRadius; 
-    currRadius = max(abs(ballBBox[0].x - ballBBox[1].x), abs(ballBBox[0].y - ballBBox[1].y));
+    currRadius = Max(abs(ballBBox[0].x - ballBBox[1].x), abs(ballBBox[0].y - ballBBox[1].y));
     
     if (currRadius < 0.3 * maxRadius)
       continue;
@@ -301,6 +320,8 @@ int lua_accumulate_ball(uint8_t *label, int width, int height)
 
     float evaluation = Kcolor * (POW(float(blCntr)/totalCntr - 0.4) + POW(float(wtCntr)/totalCntr - 0.4) + POW(float(bkCntr)/totalCntr - 0.2)) + Kradius * POW(float(currRadius)/maxRadius - 1);  //  need fix
 
+    ballCandidates.push_back({ballBBox, blCntr, wtCntr, bkCntr, evaluation});
   }
+  return ballCandidates.size();
 
 }

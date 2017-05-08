@@ -42,12 +42,12 @@
 
 int video_fd = -1;
 int nbuffer = 2;
-int width = 1280;
-int height = 960;
+//int width = 1280;
+//int height = 960;
 char invert = 0;
 int handle;
-//int width = 640;
-//int height = 480;
+int width = 640;
+int height = 480;
 
 
 pthread_mutex_t camera_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -387,11 +387,15 @@ int v4l2_uninit_mmap() {
 int v4l2_init(int resolution) {
 
   if( resolution == 1 ){
-    width = 1280;
-    height = 960;
+    //width = 1280;
+    //height = 960;
+    width = 640;
+    height = 480;
   } else {
-    width = 1280;
-    height = 960;
+    //width = 1280;
+    //height = 960;
+    width = 640;
+    height = 480;
   }
 
   struct v4l2_capability video_cap;

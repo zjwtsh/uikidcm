@@ -67,13 +67,15 @@ function detect(color)
 --    ballPropsB = ImageProc.connected_regions_obs(Vision.labelB.data_obs, Vision.labelB.m, 
 --                                              Vision.labelB.n, color);
 --  else
-    ballPropsB = ImageProc.connected_regions(Vision.labelB.data, Vision.labelB.m, 
-                                              Vision.labelB.n, color);
+--    ballPropsB = ImageProc.connected_regions(Vision.labelB.data, Vision.labelB.m, 
+--                                              Vision.labelB.n, color);
 --  end
 --  util.ptable(ballPropsB);
 --TODO: horizon cutout
 -- ballPropsB = ImageProc.connected_regions(labelB.data, labelB.m, 
 --	labelB.n, HeadTransform.get_horizonB(),color);
+
+  ballPropsB = Vision.labelBall;
 
 
   if (#ballPropsB == 0) then return ball; end

@@ -32,6 +32,7 @@ extern "C" {
 #include "lua_field_lines.h"
 #include "lua_field_spots.h"
 #include "lua_field_occupancy.h"
+#include "lua_accumulate_ball.h"
 #include "lua_robots.h"
 
 //Downsample camera YUYV image for monitor
@@ -229,6 +230,7 @@ static int lua_yuyv_to_label(lua_State *L) {
 
 static int lua_yuyv_to_label_ball(lua_State *L) {
   static std::vector<uint8_t> label;
+  static std::vector<Candidate> ballCandidates;
 
   // 1st Input: Original YUYV-format input image
   uint32_t *yuyv = (uint32_t *) lua_touserdata(L, 1);
@@ -272,7 +274,67 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
   }
 
   // accumate ball
-  lua_accumate_ball(&label[0]);
+  int nball = lua_accumulate_ball(ballCandidates ,&label[0], m, n/2);
+
+  lua_createtable(L, nball, 0);
+  for (int i = 0; i < nball; i++) {
+    lua_createtable(L, 0, 3);
+
+    /*
+    // area field
+    lua_pushstring(L, "area");
+    lua_pushnumber(L, props[i].area);
+    lua_settable(L, -3);
+
+    // centroid field
+    lua_pushstring(L, "centroid");
+    double centroidI = (double)props[i].sumI/props[i].area;
+    double centroidJ = (double)props[i].sumJ/props[i].area;
+    //double centroidJ = (double)props[i].sumJ/props[i].area + rowOffset;
+    lua_createtable(L, 2, 0);
+    lua_pushnumber(L, centroidI);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, centroidJ);
+    lua_rawseti(L, -2, 2);
+    lua_settable(L, -3);
+    */
+
+    // area field
+    lua_pushstring(L, "blCntr");
+    lua_pushnumber(L, ballCandidates[i].blCntr);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "wtCntr");
+    lua_pushnumber(L, ballCandidates[i].wtCntr);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "bkCntr");
+    lua_pushnumber(L, ballCandidates[i].bkCntr);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "evaluation");
+    lua_pushnumber(L, ballCandidates[i].evaluation);
+    lua_settable(L, -3);
+
+    // boundingBox field
+    lua_pushstring(L, "boundingBox");
+    lua_createtable(L, 2, 0);
+    lua_pushnumber(L, ballCandidates[i].bBox[0].x);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, ballCandidates[i].bBox[1].x);
+    lua_rawseti(L, -2, 2);
+    lua_pushnumber(L, ballCandidates[i].bBox[0].y);
+    //lua_pushnumber(L, props[i].minJ + rowOffset);
+    lua_rawseti(L, -2, 3);
+    lua_pushnumber(L, ballCandidates[i].bBox[1].y);
+    //lua_pushnumber(L, props[i].maxJ + rowOffset);
+    lua_rawseti(L, -2, 4);
+    lua_settable(L, -3);
+
+    lua_rawseti(L, -2, i+1);
+
+  }
+
   // Pushing light data
 //  lua_pushlightuserdata(L, &label[0]);
   return 1;
@@ -762,6 +824,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"rgb_to_label_obs", lua_rgb_to_label_obs},
   {"yuyv_to_label", lua_yuyv_to_label},
   {"yuyv_to_label_obs", lua_yuyv_to_label_obs},
+  {"yuyv_to_label_ball", lua_yuyv_to_label_ball},
   {"index_to_label", lua_index_to_label},
   {"color_count", lua_color_count},
   {"color_count_obs", lua_color_count_obs},
