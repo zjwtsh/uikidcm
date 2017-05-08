@@ -17,7 +17,7 @@ typedef struct {
   double joint[20];
 } CAMERA_STATUS;
 
-#define VIDEO_DEVICE "/dev/video3"
+#define VIDEO_DEVICE "/dev/video1"
 
 /* Exposed C functions to Lua */
 typedef unsigned char uint8;
@@ -48,12 +48,11 @@ static int lua_get_image(lua_State *L) {
   int buf_num = v4l2_read_frame();
   if( buf_num < 0 ){
     lua_pushnumber(L,buf_num);
-//	printf("buf_num < 0 \n");
     return 1;
   }
-//	printf("before get image\n");
+
   uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
-//	printf("after get image\n");
+
   // Increment the count
   count++;
 
@@ -75,7 +74,7 @@ static int lua_get_image(lua_State *L) {
   for (int ji = 0; ji < 20; ji++) {
     cameraStatus->joint[ji] = 0;
   }
-//	printf("push image userdata\n");
+
   lua_pushlightuserdata(L, image);
   return 1;
 }
