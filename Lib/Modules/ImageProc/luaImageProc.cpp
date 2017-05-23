@@ -274,30 +274,14 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
   }
 
   // accumate ball
-  int nball = lua_accumulate_ball(ballCandidates ,&label[0], m, n/2);
+  printf("accumulate start\n");
+  //int nball = lua_accumulate_ball(ballCandidates ,&label[0], m, n/2);
+  printf("accumulate end\n");
 
+	/*
   lua_createtable(L, nball, 0);
   for (int i = 0; i < nball; i++) {
     lua_createtable(L, 0, 3);
-
-    /*
-    // area field
-    lua_pushstring(L, "area");
-    lua_pushnumber(L, props[i].area);
-    lua_settable(L, -3);
-
-    // centroid field
-    lua_pushstring(L, "centroid");
-    double centroidI = (double)props[i].sumI/props[i].area;
-    double centroidJ = (double)props[i].sumJ/props[i].area;
-    //double centroidJ = (double)props[i].sumJ/props[i].area + rowOffset;
-    lua_createtable(L, 2, 0);
-    lua_pushnumber(L, centroidI);
-    lua_rawseti(L, -2, 1);
-    lua_pushnumber(L, centroidJ);
-    lua_rawseti(L, -2, 2);
-    lua_settable(L, -3);
-    */
 
     // area field
     lua_pushstring(L, "blCntr");
@@ -332,11 +316,11 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
     lua_settable(L, -3);
 
     lua_rawseti(L, -2, i+1);
-
   }
+	*/
 
   // Pushing light data
-//  lua_pushlightuserdata(L, &label[0]);
+	lua_pushlightuserdata(L, &label[0]);
   return 1;
 }
 

@@ -33,14 +33,19 @@ std::vector<std::vector<uint8_t> > relationMap;
 int Max(int a, int b) {return a<b?b:a;};
 int Min(int a, int b) {return a<b?a:b;};
 
+/*
+仔细看了下代码,中间存在很多问题值得修正,请仔细参看语句后方的注释
+*/
+
 int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label, int width, int height)
 {
-  static std::vector<Array2D> fourConn;//{{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+  static std::vector<Array2D> fourConn;	//此处不需要static,也不需要resize, 临时变量直接push_back即可
   fourConn.resize(4);
   fourConn.push_back({-1, 0});
   fourConn.push_back({0, 1});
   fourConn.push_back({1, 0});
-  fourConn.push_back({0, -1});
+  fourConn.push_back({0, -1});			//确认这种写法可行？最好还是生成一个Arrary2D的对象再push_back
+  ballCandidates.resize(0);				//参见C++标准库，这里应该使用类似clear的函数，具体的查询一下书
 
   int m = width;
   int n = height;
@@ -54,17 +59,17 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 
   float lineAngle, maxRadius, maxNoisy, currRadius;
 
-  for (int i = 0; i < m; i ++)
+  for (int i = 0; i < m; i ++)			//此处的关键问题：m和n是否写反了，最外层应该循环height
   {
-    for (int j = 0; j < n; j++)
+    for (int j = 0; j < n; j++)			//此处里层应该循环width	
     {
-      if (label[i*m + j] != 0 && pointProcFlag[i*m + j] == 0)
+      if (label[i*m + j] != 0 && pointProcFlag[i*m + j] == 0)	//如果m和n正确，这里的寻址才正确
       {
         int nStart = 0;
         int nEnd = 1;
         int tag = label[i*m + j];
         pointProcFlag[i*m + j] = 1;
-        growQueue.push_back({i, j});
+        growQueue.push_back({i, j});							//还是需要生成Array2D临时对象的问题
         corners[0] = {i, j};
         corners[1] = {i, j};
         while (nStart < nEnd)
@@ -74,19 +79,19 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
           {
             newPt.x = currPt.x + fourConn[i].x;
             newPt.y = currPt.y + fourConn[i].y;
-            if (newPt.x <= m && newPt.x >= 0 
-                && newPt.y <= n && newPt.y >=0)
+            if (newPt.x <= m && newPt.x >= 0 					//这里的newPt.x < m newPt.x>=0
+                && newPt.y <= n && newPt.y >=0)					//这里的newPt.y < n newPt.x>=0
             {
-              if (pointProcFlag[newPt.x*m + newPt.y] == 0
+              if (pointProcFlag[newPt.x*m + newPt.y] == 0		//应该是newPt.y*m+newPt.x,后续类似
                   && label[newPt.x*m + newPt.y] == tag)
               {
                 growQueue.push_back(newPt);
                 nEnd++;
-                pointProcFlag[newPt.x*m + newPt.y] = 1;
+                pointProcFlag[newPt.x*m + newPt.y] = 1;			//应该是newPt.y*m+newPt.x,后续类似
               }
               else
               {
-                switch (k)
+                switch (k)										//k的取值范围是0, 1, 2, 3与Matlab不同
                 {
                   case 1:
                     if (currPt.x < corners[0].x)
@@ -149,14 +154,17 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         {
           singleCluster.colorTag = tag;
           singleCluster.colorCount = nEnd;
-          singleCluster.bBox.push_back(corners[0]);
+          singleCluster.bBox.push_back(corners[0]);								//这里直接声明一个数组即可，不需要vector
           singleCluster.bBox.push_back(corners[1]);
           infoOfCluster.push_back(singleCluster);
         }
       } // if label != 0 end
     } // for j = height end
   } // for i = width end
-
+	/*
+		上面这部分单独调试，通过以后再调下面的部分，不要一起运行
+	*/
+	
   relationMap.resize(infoOfCluster.size());
   std::vector<Array2D> enlargedBBox(2);
 
@@ -322,6 +330,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 
     ballCandidates.push_back({ballBBox, blCntr, wtCntr, bkCntr, evaluation});
   }
+  printf("ballCandidates size = %d\n", ballCandidates.size());
   return ballCandidates.size();
 
 }

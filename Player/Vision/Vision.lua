@@ -18,6 +18,9 @@ require('Body');
 
 obs_challenge_enable = Config.obs_challenge or 0;
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
+black_depth = Config.vision.black_depth or 10
+black_width = Config.vision.black_width or 8
+lut_stage = Config.vision.lut_stage or 64
 
 currVel = vector.zeros(3);
 
@@ -107,17 +110,18 @@ function entry()
   
   --set to switch cameras. 
   -- Load the lookup table
-  print('loading lut: '..Config.camera.lut_file);
-  camera.lut = carray.new('c', 262144);
-  load_lut_camera(Config.camera.lut_file);
+  print('loading environment lut: '..Config.camera.lut_file);
+  camera.lut = load_general_lut(Config.camera.lut_file);
 
   print('loading ball lut: '..Config.camera.lut_ball_file);
-  camera.lut_ball = carray.new('c', 262144);
-  load_lut_ball(Config.camera.lut_ball_file);
+  camera.lut_ball = load_general_lut(Config.camera.lut_ball_file);
+	--writeSplittedBallLut('ballLut.txt', camera.lut_ball)
 
   print('creating splitted ball lut');
-  camera.splittedBallLut = carray.new('c', 262144);
-  camera.splittedBallLut = split_ball_lut();
+  camera.splittedBallLut = split_ball_lut(camera.lut,camera.lut_ball);
+	--writeSplittedBallLut('splittedLut.txt', camera.splittedBallLut)
+	--print('exiting the test routine')
+	--os.exit()
 
   --ADDED to prevent crashing with old camera config
   if Config.camera.lut_file_obs == null then
@@ -513,6 +517,43 @@ function load_lut_ball(fname)
   end
 end
 
+function writeSplittedBallLut(fname,lutContents)
+  local cwd = unix.getcwd();
+  cwd = cwd.."/Data/";
+
+  local f = io.open(cwd..fname, "w");
+  assert(f, "Could not open lut file");
+
+	local lutLength = #lutContents;
+  for i = 1, lutLength do
+    f:write(lutContents[i], ",");
+  end
+
+	f:write("\n");
+	
+end
+
+function load_general_lut(fname)
+	local ta = carray.new('c',262144)
+
+  local cwd = unix.getcwd();
+  if string.find(cwd, "WebotsController") then
+    cwd = cwd.."/Player";
+  end
+  cwd = cwd.."/Data/";
+
+  local f = io.open(cwd..fname, "r");
+  assert(f, "Could not open lut file");
+  local s = f:read("*a");
+
+	print('raw file length ='.. string.len(s))
+  for i = 1,string.len(s) do
+    ta[i] = string.byte(s,i,i);
+  end
+	
+	return ta;
+end
+
 function load_lut_obs(fname)
   local cwd = unix.getcwd();
   if string.find(cwd, "WebotsController") then
@@ -542,27 +583,42 @@ function save_rgb(rgb)
   f:close();
 end
 
-function split_ball_lut()
-  splittedBallLut = carray.new('c', 262144);
-  vpBall, lutBall, vpWhite, lutWhite, vpBlack, lutBlack = create_diff_lut();
+function isAlsoBlackColor(u,v,y)
+	uvRange = {(lut_stage-black_width)/2,(lut_stage+black_width)/2}
+	if((u-uvRange[1])*(u+uvRange[1])<0 and
+			(v-uvRange[1])*(v+uvRange[1])<0 and
+			y<black_depth) then
+		return true;
+	end
+	return false;
+end
 
-  vpMat1, lutMat1 = substract_lut(lutBall, lutWhite, 1, 16);  --Ball Without White
-  vpMat2, lutMat2 = substract_lut(lutBall, lutBlack, 1, 4);   -- Ball Without Black
+function split_ball_lut(envLut, ballLut)
+  local ta = carray.new('c', 262144);
 
-  vpWhiteInBall, lutWhiteInBall = substract_lut(lutBall, lutMat1, 1, 1); --White only in ball
-  vpBlackInBall, lutBlackInBall = substract_lut(lutBall, lutMat2, 1, 1); --Black only in ball
-  vpColorInBall, lutColorInBall = substract_lut(lutMat2, lutWhiteInBall, 1, 1); --Color in ball
-    
-  for i = 1, 64 do
+	for i = 1, 64 do
     for j = 1, 64 do
       for k = 1, 64 do
-        splittedBallLut[(i-1)*64*64 + (j-1)*64 + k] = tostring(lutWhiteInBall[i][j][k]*4 + lutBlackInBall[i][j][k]*2 + lutColorInBall[i][j][k]);
+				local ind = (i-1)*64*64 + (j-1)*64 + k;
+				ta[ind] = ballLut[ind];
+				if (ta[ind]==1) then
+					if(envLut[ind]==2 or envLut[ind]==16) then
+						ta[ind] = 4
+					elseif(isAlsoBlackColor(i,j,k)) then
+						ta[ind] = 2
+					end
+				end
       end
     end
   end
-  return splittedBallLut;
+
+	print("splitted lut for the ball is")
+	print(ta)
+
+  return ta;
 end
 
+--[[
 function substract_lut(lut1, lut2, color1, color2)
   local lut = {};
   local validPoints = {};
@@ -633,19 +689,18 @@ function create_diff_lut()
   return vpBall, lutBall, vpWhite, lutWhite, vpBlack, lutBlack;
 end
 
--- can merge into function create_diff_lut to save time
-function create_black_lut(lutBlack) 
-  local vpBlack = {};
-  local z = 1;
-  for i = 1, 10 do
-    for j = 29, 35 do
-      for k = 29, 35 do
-        lutBlack[i][j][z] = 4;
-        vpBlack[z] = vector.new({i, j, k, 4});
-        z = z+1;
-      end
-    end
-  end
-  return vpBlack, lutBlack;
+-- this function can be omitted because it is an rect area
+function create_black_lut(stage, tag, blackWidth, blackDepth)
+	local ta = carray.new(stage*stage*stage);
+	local uvRange=fix([(stage-blackWidth)/2,(stage+blackWidth)/2]);
+
+for i = uvRange(1):uvRange(2)
+    for j = uvRange(1):uvRange(2)
+        for k = 1:blackDepth
+            lut(i,j,k)=uint8(tag);
+            validPoints=[validPoints;i,j,k,lut(i,j,k)];
+  
+  return ta;
 end
+--]]
 
