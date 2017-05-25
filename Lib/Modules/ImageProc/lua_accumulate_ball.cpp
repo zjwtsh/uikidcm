@@ -12,6 +12,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <iostream>
 #include <math.h>
 #include <vector>
 
@@ -30,6 +31,9 @@ extern "C" {
 std::vector<Cluster>  infoOfCluster;
 std::vector<std::vector<uint8_t> > relationMap;
 
+int x[4] = {-1, 0, 1, 0};
+int y[4] = {0, 1, 0, -1};
+
 int Max(int a, int b) {return a<b?b:a;};
 int Min(int a, int b) {return a<b?a:b;};
 
@@ -39,16 +43,20 @@ int Min(int a, int b) {return a<b?a:b;};
 
 int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label, int width, int height)
 {
-  static std::vector<Array2D> fourConn;	//此处不需要static,也不需要resize, 临时变量直接push_back即可
-  fourConn.resize(4);
-  fourConn.push_back({-1, 0});
-  fourConn.push_back({0, 1});
-  fourConn.push_back({1, 0});
-  fourConn.push_back({0, -1});			//确认这种写法可行？最好还是生成一个Arrary2D的对象再push_back
-  ballCandidates.resize(0);				//参见C++标准库，这里应该使用类似clear的函数，具体的查询一下书
+  std::vector<Array2D> fourConn;	//此处不需要static,也不需要resize, 临时变量直接push_back即可
+  Array2D tmpArray;
+  for (int i = 0; i < 4; i++)
+  {
+    tmpArray.x = x[i];
+    tmpArray.y = y[i];
+    fourConn.push_back(tmpArray);
+    //std::cout << "foucor " << i << " .x: "  << fourConn[i].x << " .y: " << fourConn[i].y << std::endl;
+  }
+  ballCandidates.clear();				//参见C++标准库，这里应该使用类似clear的函数，具体的查询一下书
 
   int m = width;
   int n = height;
+  //std::cout << "width = " << width << " height = " << height << std::endl;
 
   std::vector<uint8_t> pointProcFlag(m*n, 0); // need fix
   std::vector<Array2D> growQueue;
@@ -58,17 +66,18 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
   Cluster singleCluster, currCluster, tryingCluster;
 
   float lineAngle, maxRadius, maxNoisy, currRadius;
+  int tmp =0;
 
   for (int i = 0; i < m; i ++)			//此处的关键问题：m和n是否写反了，最外层应该循环height
   {
     for (int j = 0; j < n; j++)			//此处里层应该循环width	
     {
-      if (label[i*m + j] != 0 && pointProcFlag[i*m + j] == 0)	//如果m和n正确，这里的寻址才正确
+      if (label[j*m + i] != 0 && pointProcFlag[j*m + i] == 0)	//如果m和n正确，这里的寻址才正确
       {
         int nStart = 0;
         int nEnd = 1;
-        int tag = label[i*m + j];
-        pointProcFlag[i*m + j] = 1;
+        int tag = label[j*m + i];
+        pointProcFlag[j*m + i] = 1;
         growQueue.push_back({i, j});							//还是需要生成Array2D临时对象的问题
         corners[0] = {i, j};
         corners[1] = {i, j};
@@ -79,33 +88,33 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
           {
             newPt.x = currPt.x + fourConn[i].x;
             newPt.y = currPt.y + fourConn[i].y;
-            if (newPt.x <= m && newPt.x >= 0 					//这里的newPt.x < m newPt.x>=0
-                && newPt.y <= n && newPt.y >=0)					//这里的newPt.y < n newPt.x>=0
+            if (newPt.x < m && newPt.x >= 0 					//这里的newPt.x < m newPt.x>=0
+                && newPt.y < n && newPt.y >=0)					//这里的newPt.y < n newPt.x>=0
             {
-              if (pointProcFlag[newPt.x*m + newPt.y] == 0		//应该是newPt.y*m+newPt.x,后续类似
-                  && label[newPt.x*m + newPt.y] == tag)
+              if (pointProcFlag[newPt.y*m + newPt.x] == 0		//应该是newPt.y*m+newPt.x,后续类似
+                  && label[newPt.y*m + newPt.x] == tag)
               {
                 growQueue.push_back(newPt);
                 nEnd++;
-                pointProcFlag[newPt.x*m + newPt.y] = 1;			//应该是newPt.y*m+newPt.x,后续类似
+                pointProcFlag[newPt.y*m + newPt.x] = 1;			//应该是newPt.y*m+newPt.x,后续类似
               }
               else
               {
                 switch (k)										//k的取值范围是0, 1, 2, 3与Matlab不同
                 {
-                  case 1:
+                  case 0:
                     if (currPt.x < corners[0].x)
                       corners[0].x = currPt.x;
                     break;
-                  case 2:
+                  case 1:
                     if (currPt.y > corners[1].y)
                       corners[1].y = currPt.y;
                     break;
-                  case 3:
+                  case 2:
                     if (currPt.x > corners[1].x)
                       corners[1].x = currPt.x;
                     break;
-                  case 4:
+                  case 3:
                     if (currPt.y < corners[0].y)
                       corners[0].y = currPt.y;
                     break;
@@ -118,19 +127,19 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
             {
               switch (k)
               {
-                case 1:
+                case 0:
                   if (currPt.x < corners[0].x)
                     corners[0].x = currPt.x;
                   break;
-                case 2:
+                case 1:
                   if (currPt.y > corners[1].y)
                     corners[1].y = currPt.y;
                   break;
-                case 3:
+                case 2:
                   if (currPt.x > corners[1].x)
                     corners[1].x = currPt.x;
                   break;
-                case 4:
+                case 3:
                   if (currPt.y < corners[0].y)
                     corners[0].y = currPt.y;
                   break;
@@ -154,8 +163,8 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         {
           singleCluster.colorTag = tag;
           singleCluster.colorCount = nEnd;
-          singleCluster.bBox.push_back(corners[0]);								//这里直接声明一个数组即可，不需要vector
-          singleCluster.bBox.push_back(corners[1]);
+          for(int ii = 0; ii < 2; ii++)
+            singleCluster.bBox[ii] = corners[ii];								//这里直接声明一个数组即可，不需要vector
           infoOfCluster.push_back(singleCluster);
         }
       } // if label != 0 end
@@ -164,7 +173,11 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 	/*
 		上面这部分单独调试，通过以后再调下面的部分，不要一起运行
 	*/
-	
+  //for (int i = 0; i < infoOfCluster.size(); i++)
+  //  std::cout << "infoOfCluster [" << i << "]: colorTag " << infoOfCluster[i].colorTag
+  //    << " colorCount " << infoOfCluster[i].colorCount << " upleft.x,y " <<  infoOfCluster[i].bBox[0].x
+  //    << " " << infoOfCluster[i].bBox[0].y << "downright.x,y " << infoOfCluster[i].bBox[1].x << " " 
+  //    << infoOfCluster[i].bBox[1].y << std::endl;
   relationMap.resize(infoOfCluster.size());
   std::vector<Array2D> enlargedBBox(2);
 
@@ -181,8 +194,8 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 
       enlargedBBox[0].x = Min(currCluster.bBox[0].x, tryingCluster.bBox[0].x);
       enlargedBBox[0].y = Min(currCluster.bBox[0].y, tryingCluster.bBox[0].y);
-      enlargedBBox[1].x = Max(currCluster.bBox[0].x, tryingCluster.bBox[0].x);
-      enlargedBBox[1].y = Max(currCluster.bBox[0].y, tryingCluster.bBox[0].y);
+      enlargedBBox[1].x = Max(currCluster.bBox[1].x, tryingCluster.bBox[1].x);
+      enlargedBBox[1].y = Max(currCluster.bBox[1].y, tryingCluster.bBox[1].y);
 
       clusterCenter.y = (enlargedBBox[0].y + enlargedBBox[1].y)/2;
       lineAngle = atan(clusterCenter.y - n/2)/FOCUS_LENGTH + CAMERA_TILT;    // need fix
@@ -281,7 +294,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     int bkCntr = 0;
     int wtCntr = 0;
     int blCntr = 0;
-    std::vector<Array2D> ballBBox(2);
+    Array2D ballBBox[2];
     
     for (int i = 0; i < connectResult.size(); i++)
     {

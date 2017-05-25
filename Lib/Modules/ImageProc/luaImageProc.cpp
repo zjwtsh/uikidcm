@@ -275,7 +275,7 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
 
   // accumate ball
   printf("accumulate start\n");
-  //int nball = lua_accumulate_ball(ballCandidates ,&label[0], m, n/2);
+  int nball = lua_accumulate_ball(ballCandidates ,&label[0], m, n/2);
   printf("accumulate end\n");
 
 	/*
