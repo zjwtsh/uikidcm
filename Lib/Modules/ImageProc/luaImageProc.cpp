@@ -278,7 +278,6 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
   int nball = lua_accumulate_ball(ballCandidates ,&label[0], m, n/2);
   printf("accumulate end\n");
 
-	/*
   lua_createtable(L, nball, 0);
   for (int i = 0; i < nball; i++) {
     lua_createtable(L, 0, 3);
@@ -317,7 +316,6 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
 
     lua_rawseti(L, -2, i+1);
   }
-	*/
 
   // Pushing light data
 	lua_pushlightuserdata(L, &label[0]);

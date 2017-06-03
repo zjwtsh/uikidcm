@@ -7,6 +7,10 @@
 
 #include "timeScalar.h"
 #include <string.h>
+#include <iostream>
+#include <fcntl.h>
+#include <unistd.h>
+#include <memory.h>
 #include "v4l2.h"
 #include "OPCam.h"
 
@@ -22,6 +26,8 @@ typedef struct {
 /* Exposed C functions to Lua */
 typedef unsigned char uint8;
 typedef unsigned int uint32;
+
+uint32* image = NULL;
 
 CAMERA_STATUS *cameraStatus = NULL;
 int init = 0;
@@ -51,8 +57,8 @@ static int lua_get_image(lua_State *L) {
     return 1;
   }
 
-  uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
-
+  //uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
+  
   // Increment the count
   count++;
 
@@ -108,6 +114,7 @@ static int lua_init(lua_State *L){
   int res = 1;
   v4l2_init( res );
   cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));// Allocate our camera statu
+
   return 1;
 }
 
@@ -215,6 +222,16 @@ int luaopen_OPCam (lua_State *L) {
       v4l2_init( res );
       v4l2_stream_on();
       cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));// Allocate our camera statu
+  /************* Read Image From File******************/
+  char *fileName = "/home/nvidia/yuyvImg.jpg";
+  image= (uint32 *)malloc(614400);
+  int fd = open(fileName, O_RDONLY);
+  std::cout << "fd = ((((((((((((((((: " << fd << std::endl;
+  read(fd, image, 614400);
+  close(fd);
+  
+  /*******************************************/
+
       /// TODO: free this
     }
   }

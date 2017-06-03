@@ -26,8 +26,6 @@ extern "C" {
 
 #define ORIGINAL_BALL_RADIUS 140
 
-//static std::vector<Array2D> fourConn(4) = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
-
 std::vector<Cluster>  infoOfCluster;
 std::vector<std::vector<uint8_t> > relationMap;
 
@@ -58,7 +56,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
   int n = height;
   //std::cout << "width = " << width << " height = " << height << std::endl;
 
-  std::vector<uint8_t> pointProcFlag(m*n, 0); // need fix
+  std::vector<uint8_t> pointProcFlag(m*n, 0);
   std::vector<Array2D> growQueue;
   std::vector<Array2D> corners(2);
 
@@ -158,6 +156,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         maxRadius = ORIGINAL_BALL_RADIUS * sin(lineAngle);  // need fix
         maxNoisy = 0.3 * maxRadius; 
         currRadius = Max(abs(corners[0].x - corners[1].x), abs(corners[0].y - corners[1].y));
+        std::cout << "currRadius = " <<  currRadius << std::endl;
 
         if (nEnd > maxNoisy && currRadius < 1.2 * maxRadius)
         {
@@ -166,6 +165,10 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
           for(int ii = 0; ii < 2; ii++)
             singleCluster.bBox[ii] = corners[ii];								//这里直接声明一个数组即可，不需要vector
           infoOfCluster.push_back(singleCluster);
+          std::cout << "singleCluster.tag: " << singleCluster.colorTag 
+            << " singleCluster.colorCount: " << singleCluster.colorCount
+            << " corner[1].x: " << corners[0].x << " corners[1].y: " << corners[0].y
+            << " corners[2].x: " << corners[1].x << " corners[2].y: " << corners[1].y << std::endl;
         }
       } // if label != 0 end
     } // for j = height end
@@ -173,11 +176,11 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 	/*
 		上面这部分单独调试，通过以后再调下面的部分，不要一起运行
 	*/
-  //for (int i = 0; i < infoOfCluster.size(); i++)
-  //  std::cout << "infoOfCluster [" << i << "]: colorTag " << infoOfCluster[i].colorTag
-  //    << " colorCount " << infoOfCluster[i].colorCount << " upleft.x,y " <<  infoOfCluster[i].bBox[0].x
-  //    << " " << infoOfCluster[i].bBox[0].y << "downright.x,y " << infoOfCluster[i].bBox[1].x << " " 
-  //    << infoOfCluster[i].bBox[1].y << std::endl;
+  for (int i = 0; i < infoOfCluster.size(); i++)
+    std::cout << "infoOfCluster [" << i << "]: colorTag " << infoOfCluster[i].colorTag
+      << " colorCount " << infoOfCluster[i].colorCount << " upleft.x,y " <<  infoOfCluster[i].bBox[0].x
+      << " " << infoOfCluster[i].bBox[0].y << "downright.x,y " << infoOfCluster[i].bBox[1].x << " " 
+      << infoOfCluster[i].bBox[1].y << std::endl;
   relationMap.resize(infoOfCluster.size());
   std::vector<Array2D> enlargedBBox(2);
 
@@ -341,7 +344,17 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 
     float evaluation = Kcolor * (POW(float(blCntr)/totalCntr - 0.4) + POW(float(wtCntr)/totalCntr - 0.4) + POW(float(bkCntr)/totalCntr - 0.2)) + Kradius * POW(float(currRadius)/maxRadius - 1);  //  need fix
 
-    ballCandidates.push_back({ballBBox, blCntr, wtCntr, bkCntr, evaluation});
+    Candidate candidate_;
+    for (int ii = 0; ii < 2; ii++)
+    {
+      candidate_.bBox[ii].x = ballBBox[ii].x;
+      candidate_.bBox[ii].x = ballBBox[ii].x;
+    }
+    candidate_.blCntr     = blCntr;
+    candidate_.wtCntr     = wtCntr;
+    candidate_.bkCntr     = bkCntr;
+    candidate_.evaluation = evaluation;
+    ballCandidates.push_back(candidate_);
   }
   printf("ballCandidates size = %d\n", ballCandidates.size());
   return ballCandidates.size();
