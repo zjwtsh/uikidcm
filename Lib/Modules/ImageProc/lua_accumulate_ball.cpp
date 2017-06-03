@@ -156,7 +156,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         maxRadius = ORIGINAL_BALL_RADIUS * sin(lineAngle);  // need fix
         maxNoisy = 0.3 * maxRadius; 
         currRadius = Max(abs(corners[0].x - corners[1].x), abs(corners[0].y - corners[1].y));
-        std::cout << "currRadius = " <<  currRadius << std::endl;
+        //std::cout << "currRadius = " <<  currRadius << std::endl;
 
         if (nEnd > maxNoisy && currRadius < 1.2 * maxRadius)
         {
@@ -356,7 +356,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     candidate_.evaluation = evaluation;
     ballCandidates.push_back(candidate_);
   }
-  printf("ballCandidates size = %d\n", ballCandidates.size());
+  //printf("ballCandidates size = %d\n", ballCandidates.size());
   return ballCandidates.size();
 
 }

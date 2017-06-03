@@ -57,7 +57,7 @@ static int lua_get_image(lua_State *L) {
     return 1;
   }
 
-  //uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
+  uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
   
   // Increment the count
   count++;
@@ -223,12 +223,12 @@ int luaopen_OPCam (lua_State *L) {
       v4l2_stream_on();
       cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));// Allocate our camera statu
   /************* Read Image From File******************/
-  char *fileName = "/home/nvidia/yuyvImg.jpg";
-  image= (uint32 *)malloc(614400);
-  int fd = open(fileName, O_RDONLY);
-  std::cout << "fd = ((((((((((((((((: " << fd << std::endl;
-  read(fd, image, 614400);
-  close(fd);
+  //char *fileName = "/home/nvidia/yuyvImg.jpg";
+  //image= (uint32 *)malloc(614400);
+  //int fd = open(fileName, O_RDONLY);
+  //std::cout << "fd = ((((((((((((((((: " << fd << std::endl;
+  //read(fd, image, 614400);
+  //close(fd);
   
   /*******************************************/
 
