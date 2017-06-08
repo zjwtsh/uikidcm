@@ -7,10 +7,6 @@
 
 #include "timeScalar.h"
 #include <string.h>
-#include <iostream>
-#include <fcntl.h>
-#include <unistd.h>
-#include <memory.h>
 #include "v4l2.h"
 #include "OPCam.h"
 
@@ -21,13 +17,11 @@ typedef struct {
   double joint[20];
 } CAMERA_STATUS;
 
-#define VIDEO_DEVICE "/dev/video1"
+#define VIDEO_DEVICE "/dev/video3"
 
 /* Exposed C functions to Lua */
 typedef unsigned char uint8;
 typedef unsigned int uint32;
-
-uint32* image = NULL;
 
 CAMERA_STATUS *cameraStatus = NULL;
 int init = 0;
@@ -54,11 +48,12 @@ static int lua_get_image(lua_State *L) {
   int buf_num = v4l2_read_frame();
   if( buf_num < 0 ){
     lua_pushnumber(L,buf_num);
+//	printf("buf_num < 0 \n");
     return 1;
   }
-
+//	printf("before get image\n");
   uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
-  
+//	printf("after get image\n");
   // Increment the count
   count++;
 
@@ -80,7 +75,7 @@ static int lua_get_image(lua_State *L) {
   for (int ji = 0; ji < 20; ji++) {
     cameraStatus->joint[ji] = 0;
   }
-
+//	printf("push image userdata\n");
   lua_pushlightuserdata(L, image);
   return 1;
 }
@@ -114,7 +109,6 @@ static int lua_init(lua_State *L){
   int res = 1;
   v4l2_init( res );
   cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));// Allocate our camera statu
-
   return 1;
 }
 
@@ -222,16 +216,6 @@ int luaopen_OPCam (lua_State *L) {
       v4l2_init( res );
       v4l2_stream_on();
       cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));// Allocate our camera statu
-  /************* Read Image From File******************/
-  //char *fileName = "/home/nvidia/yuyvImg.jpg";
-  //image= (uint32 *)malloc(614400);
-  //int fd = open(fileName, O_RDONLY);
-  //std::cout << "fd = ((((((((((((((((: " << fd << std::endl;
-  //read(fd, image, 614400);
-  //close(fd);
-  
-  /*******************************************/
-
       /// TODO: free this
     }
   }
