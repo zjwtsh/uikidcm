@@ -34,9 +34,9 @@ th_ground_boundingbox=Config.vision.ball.th_ground_boundingbox;
 th_min_green1=Config.vision.ball.th_min_green1;
 th_min_green2=Config.vision.ball.th_min_green2;
 th_max_aspect_ratio = 1.7;
-th_min_aspect_ratio = 0.8;
+th_min_aspect_ratio = 0.5;
 
-check_for_ground = Config.vision.ball.check_for_ground;
+ball_check_for_ground = Config.vision.ball.check_for_ground;
 check_for_field = Config.vision.ball.check_for_field or 0;
 field_margin = Config.vision.ball.field_margin or 0;
 
@@ -57,8 +57,8 @@ function detect(color)
   --print("headangle detectball:",headAngle[1]*180/math.pi, headAngle[2]*180/math.pi);
   local ball = {};
   ball.detect = 0;
-  vcm.add_debug_message(string.format("\nBall: pixel count: %d\n",
-	colorCount[color]));
+--  vcm.add_debug_message(string.format("\nBall: pixel count: %d\n",
+--	colorCount[color]));
   
 --  print(string.format("\nBall: pixel count: %d\n",
 --	      colorCount[color]));
@@ -66,7 +66,7 @@ function detect(color)
 
   -- threshold check on the total number of ball pixels in the image
   if (colorCount[color] < th_min_color) then  	
-    vcm.add_debug_message("pixel count fail");
+--    vcm.add_debug_message("pixel count fail");
     return ball;  	
   end
 
@@ -75,8 +75,7 @@ function detect(color)
 --    ballPropsB = ImageProc.connected_regions_obs(Vision.labelB.data_obs, Vision.labelB.m, 
 --                                              Vision.labelB.n, colorWhite);
 --  else
-    ballPropsB = ImageProc.connected_regions(Vision.labelB.data, Vision.labelB.m, 
-                                              Vision.labelB.n, colorWhite);
+    local ballPropsB = ImageProc.connected_regions(Vision.labelB.data, Vision.labelB.m, Vision.labelB.n, colorWhite);
 --  end
 --  util.ptable(ballPropsB);
 --TODO: horizon cutout
@@ -86,13 +85,13 @@ function detect(color)
 --  ballPropsB = Vision.labelBall;
 
 
-  if (#ballPropsB == 0) then return ball; end
+  if (not ballPropsB or #ballPropsB == 0) then return ball; end
 
 -- Check max 5 largest blobs 
   --for i=1,math.min(5,#ballPropsB) do
   for i=1, #ballPropsB do
-    vcm.add_debug_message(string.format(
-	"Ball: checking blob %d/%d\n",i,#ballPropsB));
+--    vcm.add_debug_message(string.format(
+--	"Ball: checking blob %d/%d\n",i,#ballPropsB));
 
     check_passed = true;
     ball.propsB = ballPropsB[i];
@@ -106,14 +105,14 @@ function detect(color)
     local black_rate = props_black.area / ball.propsA.area;
 
     local fill_rate = (ball.propsA.area + props_black.area) / Vision.bboxArea(ball.propsA.boundingBox);
-    vcm.add_debug_message(string.format("Area:%d\nFill rate:%2f\n",
-       ball.propsA.area+props_black.area,fill_rate));
+--    vcm.add_debug_message(string.format("Area:%d\nFill rate:%2f\n",
+--       ball.propsA.area+props_black.area,fill_rate));
 
     if ball.propsA.area > th_max_color2 then
       check_passed = false;
     elseif ball.propsA.area < th_min_color2 then
       --Area check
-      vcm.add_debug_message("Area check fail\n");
+      --vcm.add_debug_message("Area check fail\n");
       check_passed = false;
     elseif fill_rate < th_min_fill_rate then
       --Fill rate check
@@ -142,12 +141,12 @@ function detect(color)
       v = HeadTransform.coordinatesA(ballCentroid, scale);
       --print("ballv"..v[1],v[2]);	--168
       v_inf = HeadTransform.coordinatesA(ballCentroid,0.1);
-      vcm.add_debug_message(string.format(
-	"Ball v0: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
+--      vcm.add_debug_message(string.format(
+--	"Ball v0: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
 
       if v[3] > th_height_max or v[3] < th_height_min then
         --Ball height check
-        vcm.add_debug_message("Height check fail\n");
+--        vcm.add_debug_message("Height check fail\n");
         check_passed = false;
       end
 
@@ -155,19 +154,19 @@ function detect(color)
         ball_dist_inf = math.sqrt(v_inf[1]*v_inf[1] + v_inf[2]*v_inf[2])
         height_th_inf = th_height_max + ball_dist_inf * math.tan(10*math.pi/180)
         if v_inf[3] > height_th_inf then        
-           -- Vision:add_debug_message(string.format('Horizon check fail, %.2f>%.2f\n',v_inf[3],height_th_inf));
+           -- vcm:add_debug_message(string.format('Horizon check fail, %.2f>%.2f\n',v_inf[3],height_th_inf));
            check_passed = false;
         end
 
         pose=wcm.get_pose();
         posexya=vector.new( {pose.x, pose.y, pose.a} );
-        ballGlobal = util.pose_global(ballv,posexya); 
+        ballGlobal = util.pose_global({v[1],v[2],0},posexya); 
         if ballGlobal[1]>Config.world.xMax * 2.0 or
            ballGlobal[1]<-Config.world.xMax* 2.0 or
            ballGlobal[2]>Config.world.yMax * 2.0 or
            ballGlobal[2]<-Config.world.yMax* 2.0 then
            if (v[1]*v[1] + v[2]*v[2] > max_distance*max_distance) then          
-             Vision:add_debug_message("On-the-field check fail\n");
+--             vcm:add_debug_message("On-the-field check fail\n");
              check_passed = false;
            end
         end
@@ -177,12 +176,12 @@ function detect(color)
         if check_passed and v[3] > 0.3 then
              -- print('v3 is '..v[3])
              -- print('reached')
-           -- Vision:add_debug_message(string.format('Failure: Ball Height Check Fail \n')); 
+           -- vcm:add_debug_message(string.format('Failure: Ball Height Check Fail \n')); 
 		     check_passed = false
         end
 
         if check_passed and v[3] > height_th then
-          -- Vision:add_debug_message(string.format('Height check fail\n',v[3],height_th))
+          -- vcm:add_debug_message(string.format('Height check fail\n',v[3],height_th))
           check_passed = false; 
         end     
 
@@ -201,7 +200,7 @@ function detect(color)
                                   Vision.labelA.m, Vision.labelA.n, colorField, fieldBBox_left);
              
             if (fieldBBoxStats_left.area/left_area < th_min_green1) then
-              Vision:add_debug_message(string.format("Failure: left green check\n"));
+              --vcm.add_debug_message(string.format("Failure: left green check\n"));
 				      check_passed = false;
             end
           else
@@ -219,7 +218,7 @@ function detect(color)
                                   Vision.labelA.m, Vision.labelA.n, colorField, fieldBBox_right);
              
             if (fieldBBoxStats_right.area/right_area < th_min_green1) then
-              Vision:add_debug_message(string.format("Failure: right green check\n"));
+              --vcm:add_debug_message(string.format("Failure: right green check\n"));
               check_passed = false;
             end
           else
@@ -236,7 +235,7 @@ function detect(color)
          
             local fieldBBoxStats_top = ImageProc.color_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, colorField, fieldBBox_top);
             if (fieldBBoxStats_top.area/top_green_area < th_min_green1) then
-              Vision:add_debug_message(string.format("Failure: top green check\n"));
+              --vcm:add_debug_message(string.format("Failure: top green check\n"));
 				      check_passed = false;
             end
           else
@@ -246,6 +245,7 @@ function detect(color)
         end -- End ground check
       end -- End check_pass check
     end --End all check
+    if check_passed then break end
   end --End loop
 
   if not check_passed then
@@ -287,8 +287,8 @@ function detect(color)
   ball.dr = 0.25*ball.r;
   ball.da = 10*math.pi/180;
 
-  vcm.add_debug_message(string.format(
-	"Ball detected\nv: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
+--  vcm.add_debug_message(string.format(
+--	"Ball detected\nv: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
 --[[
   print(string.format(
 	"Ball detected\nv: %.2f %.2f %.2f\n",v[1],v[2],v[3]));
