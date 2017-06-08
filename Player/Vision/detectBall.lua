@@ -27,7 +27,7 @@ th_max_fill_rate=Config.vision.ball.th_max_fill_rate; -- 0.9
 th_min_black_rate=0.1;
 th_max_black_rate = 0.5;
 th_min_black_area = 3;
-max_distance = 3.5;
+max_distance = 4.5;
 th_height_max=Config.vision.ball.th_height_max;   -- 0.3
 th_height_min = -0.2;
 th_ground_boundingbox=Config.vision.ball.th_ground_boundingbox; -- {-10,10,-10,15}
@@ -105,7 +105,7 @@ function detect(color)
       v = HeadTransform.coordinatesA(ballCentroid, scale);
       v_inf = HeadTransform.coordinatesA(ballCentroid,0.1);
 
-      if v[3] > th_height_max or v[3] < th_height_min then
+      if v[3] < th_height_min or v[3] > th_height_max then
         --Ball height check
         check_passed = false;
       end
@@ -113,7 +113,7 @@ function detect(color)
       if check_passed then
         ball_dist_inf = math.sqrt(v_inf[1]*v_inf[1] + v_inf[2]*v_inf[2])
         height_th_inf = th_height_max + ball_dist_inf * math.tan(10*math.pi/180)
-        if v_inf[3] > height_th_inf then        
+        if v_inf[3] > height_th_inf then
            check_passed = false;
         end
 
