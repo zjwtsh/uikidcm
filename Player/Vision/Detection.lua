@@ -133,12 +133,12 @@ function update()
     goalYellow.detect=0;
     goalCyan.detect=0;
     tstart = unix.time();
-    goalYellow = detectGoal.detect(colorYellow,colorCyan);
+    goalYellow = detectGoal.detect(colorWhite);
     TgoalYellow = unix.time() - tstart;
 
     if yellowGoals == 0 then
       tstart = unix.time();
-      goalCyan = detectGoal.detect(colorCyan,colorYellow);
+      goalCyan = detectGoal.detect(colorWhite);
       TgoalCyan = unix.time() - tstart;
     end
   end
