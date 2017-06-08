@@ -55,7 +55,7 @@ vision.print_time = 1;
 --OP specific
 ----------------------------
 -- Use tilted bounding box?
-vision.use_tilted_bbox = 1;
+vision.use_tilted_bbox = 0;
 -- Subsample main image for monitor?
 vision.subsampling = 0;  --1/2 sized image
 vision.subsampling2 = 1; --1/4 sized image
@@ -84,7 +84,7 @@ vision.goal.th_min_color_count=100;
 vision.goal.th_nPostB = 10;
 vision.goal.th_min_area = 40;
 vision.goal.th_min_orientation = 60*math.pi/180;
-vision.goal.th_min_fill_extent=0.65;
+vision.goal.th_min_fill_extent={0.35, 0.65};
 vision.goal.th_aspect_ratio={2.5,15};
 vision.goal.th_edge_margin= 5;
 vision.goal.th_bottom_boundingbox=0.9;
@@ -101,10 +101,10 @@ vision.goal.far_goal_threshold= 4.0; --The range we triangulate
 --vision.goal.distanceFactorYellow = 1; 
 
 --VT field goals 
-vision.goal.distanceFactorCyan = 1.4; 
-vision.goal.distanceFactorYellow = 1.1; 
+vision.goal.distanceFactor = 1.5; 
+vision.goal.distanceFactorGoalie = 1; 
 
-vision.goal.use_centerpost = 1;
+vision.goal.use_centerpost = 0;
 vision.goal.check_for_ground = 1;
 
 --SJ: I added landmark threshold values here
@@ -128,17 +128,5 @@ vision.corner={};
 vision.corner.dist_threshold = 100; --10 pixel
 vision.corner.length_threshold = 15;
 vision.corner.min_center_dist = 1.5;
-
-
-
-
-
---------------------
---Mexico values
-
-vision.goal.distanceFactorCyan = 1.15; 
-vision.goal.distanceFactorYellow = 1.1; 
-vision.landmark.distanceFactorCyan = 1.05; 
-vision.landmark.distanceFactorYellow = 1.05; 
 
 vision.ball.th_headAngle = 30*math.pi/180;  --Minimum angle of headAngle[2].

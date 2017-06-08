@@ -29,6 +29,7 @@ extern "C" {
 
 #include "lua_color_stats.h"
 #include "lua_goal_posts.h"
+#include "lua_goal_posts_white.h"
 #include "lua_field_lines.h"
 #include "lua_field_spots.h"
 #include "lua_field_occupancy.h"
@@ -817,6 +818,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"connected_regions", lua_connected_regions},
   {"connected_regions_obs", lua_connected_regions_obs},
   {"goal_posts", lua_goal_posts},
+  {"goal_posts_white", lua_goal_posts_white},
   {"tilted_goal_posts", lua_tilted_goal_posts},
   {"field_lines", lua_field_lines},
   {"field_spots", lua_field_spots},
