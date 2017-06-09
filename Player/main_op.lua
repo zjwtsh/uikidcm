@@ -58,18 +58,9 @@ if(Config.platform.name == 'OP') then
   Body.set_rleg_hardness({0.6,0.6,0.6,0,0,0});
 end 
 
-
--- Enable Webots specific
-if (string.find(Config.platform.name,'Webots')) then
-  webots = true;
-end
-
 init = false;
 calibrating = false;
-ready = false;
-if( webots or darwin) then
-  ready = true;
-end
+ready = true;
 
 smindex = 0;
 initToggle = true;
@@ -101,42 +92,12 @@ else
   cur_role = 0; --Default goalie
 end
 
-
-
-button_role,button_state = 0,0;
-tButtonRole = 0;
-
 function update()
   count = count + 1;
   t = Body.get_time();
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
   vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
-
-  --Check pause button Releases
-  if (Body.get_change_role() == 1) then
-    button_role=1;
-    if (t-tButtonRole>2.0) then --Button pressed for 2 sec
-      waiting = 1-waiting;
-      if waiting==0 then
-        Speak.talk('Playing');
-        Motion.event("standup");
-	--Change role to active 
-        if cur_role==0 then
-	  gcm.set_team_role(0); --Active goalie
-	else
-	  gcm.set_team_role(1); --Active player
-	end
-      else
-        Speak.talk('Waiting');
-        Motion.event("sit");
-      end
-      tButtonRole = t;
-    end
-  else
-    button_role= 0;
-    tButtonRole = t;
-  end
 
   if waiting>0 then --Waiting mode, check role change
     gcm.set_game_paused(1);
@@ -160,16 +121,10 @@ function update()
       Body.set_larm_command({0,0,-math.pi/2});
       Body.set_larm_hardness({0,0,0.5});
     end
-    if (Body.get_change_state() == 1) then
-      button_state=1;
-    else
-      if button_state==1 then --Button released
-        cur_role = 1 - cur_role;
-      end
-      button_state=0;
-    end
+
     Motion.update();
     Body.update();
+
   else --Playing mode, update state machines  
     gcm.set_game_paused(0);
     GameFSM.update();
@@ -183,29 +138,9 @@ function update()
   if (count % 50 == 0) then
 --    print('fps: '..(50 / (unix.time() - tUpdate)));
     tUpdate = unix.time();
-    -- update battery indicator
     Body.set_indicator_batteryLevel(Body.get_battery_level());
   end
   
-end
-
--- if using Webots simulator just run update
-if (webots) then
-  require('cognition');
-  cognition.entry();
-
-  -- set game state to Playing
-  gcm.set_game_state(3);
-
-  while (true) do
-    -- update cognitive process
-    cognition.update();
-    -- update motion process
-    update();
-
-    io.stdout:flush();
-  end
-
 end
 
 if( darwin ) then

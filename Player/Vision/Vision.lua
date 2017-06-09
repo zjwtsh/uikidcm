@@ -239,10 +239,10 @@ function update()
                                           carray.pointer(camera.lut),
                                           camera.width/2,
                                           camera.height);
-    labelBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
-                                          carray.pointer(camera.splittedBallLut),
-                                          camera.width/2,
-                                          camera.height);
+--    labelBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
+--                                          carray.pointer(camera.splittedBallLut),
+--                                          camera.width/2,
+--                                          camera.height);
   end
 
   -- determine total number of pixels of each color/label
@@ -251,42 +251,7 @@ function update()
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
-  -- perform label process for obstacle specific lut
-  if enable_lut_for_obstacle == 1 then
-    -- label A
-    if webots == 1 then
-      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
-    else
-      labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(camera.lut_obs), camera.width/2, camera.height);
-    end
-    -- count color pixels
-    colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
-    -- label B
-    labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
-  end
-
   update_shm(status, headAngles)
-
-  -- Learn ball color from mask and rebuild colortable
-  if obs_challenge_enable == 1 then
---    print('enable obs challenge')
-    if vcm.get_image_learn_lut() == 1 then
-      print("learn new colortable for random ball from mask");
-      vcm.set_image_learn_lut(0);
-      mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
-      if webots == 1 then
-        print("learn in webots")
-        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
---        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut));
-      else
-        print("learn in op")
-        lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
-                                                labelA.m, labelA.n);
-      end
-      print(type(mask),type(labelB.data))
-    end
-  end
 
   vcm.refresh_debug_message();
 
