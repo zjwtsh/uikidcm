@@ -25,6 +25,13 @@ typedef struct
   float evaluation;
 }Candidate;
 
-int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label, int width, int height);
+typedef struct 
+{
+	double cameraTilt;
+	double cameraAngleSpead;
+	double physicalRadiusOfBall;
+}AccumulateParaIn;
+
+int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label, int width, int height, AccumulateParaIn &paraIn);
 
 #endif

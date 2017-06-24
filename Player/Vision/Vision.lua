@@ -235,14 +235,15 @@ function update()
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
   else
 
-    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
-                                          carray.pointer(camera.lut),
-                                          camera.width/2,
-                                          camera.height);
---    labelBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
---                                          carray.pointer(camera.splittedBallLut),
+--    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+--                                          carray.pointer(camera.lut),
 --                                          camera.width/2,
 --                                          camera.height);
+    labelA.data, labelA.dataBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
+                                          carray.pointer(camera.lut),
+																					carray.pointer(camera.splittedBallLut),
+                                          camera.width/2,
+                                          camera.height);
   end
 
   -- determine total number of pixels of each color/label
@@ -565,12 +566,14 @@ function split_ball_lut(envLut, ballLut)
     for j = 1, 64 do
       for k = 1, 64 do
 				local ind = (i-1)*64*64 + (j-1)*64 + k;
-				ta[ind] = ballLut[ind];
-				if (ta[ind]==1) then
+				--ta[ind] = ballLut[ind];
+				if (ballLut[ind]==1) then
 					if(envLut[ind]==2 or envLut[ind]==16) then
 						ta[ind] = 4
 					elseif(isAlsoBlackColor(i,j,k)) then
 						ta[ind] = 2
+					else
+						ta[ind] = 1
 					end
 				end
       end

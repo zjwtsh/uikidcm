@@ -42,15 +42,35 @@ field_margin = Config.vision.ball.field_margin or 0; -- 2.0
 
 th_headAngle = Config.vision.ball.th_headAngle or 30*math.pi/180; -- 30 degree
 
+function detectArbitraryBall()
+  local ball = {};
+  ball.detect = 0;
+	print("entering arbirary ball detection routine");
+
+  local ballPropsB = ImageProc.connected_ballCandidates(
+																													Vision.labelA.dataBall, 
+																													Vision.labelA.m, 
+																													Vision.labelA.n, 
+																													headAngle[2]
+																												);
+
+	return ball;
+
+end
+
 function detect(color)
 	
 	t001 = unix.time();
   colorCount = Vision.colorCount;
 
   headAngle = {Body.get_sensor_headpos()[2],Body.get_sensor_headpos()[1]};	--b51
+
+	if (color == "arbitrary") then
+		return detectArbitraryBall();
+	end
+
   local ball = {};
   ball.detect = 0;
-
   -- threshold check on the total number of ball pixels in the image
   if (colorCount[color] < th_min_color) then  	
     return ball;  	

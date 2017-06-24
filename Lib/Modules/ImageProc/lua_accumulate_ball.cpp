@@ -39,8 +39,12 @@ int Min(int a, int b) {return a<b?a:b;};
 仔细看了下代码,中间存在很多问题值得修正,请仔细参看语句后方的注释
 */
 
-int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label, int width, int height)
+int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label, int width, int height, AccumulateParaIn & paraIn)
 {
+	double cameraTilt = paraIn.cameraTilt;
+	double focusLength = height/2/tan(paraIn.cameraAngleSpead/2);
+	double horizonLimit = 5*M_PI/180;
+
   std::vector<Array2D> fourConn;	//此处不需要static,也不需要resize, 临时变量直接push_back即可
   Array2D tmpArray;
   for (int i = 0; i < 4; i++)
@@ -64,11 +68,10 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
   Cluster singleCluster, currCluster, tryingCluster;
 
   float lineAngle, maxRadius, maxNoisy, currRadius;
-  int tmp =0;
 
-  for (int i = 0; i < m; i ++)			//此处的关键问题：m和n是否写反了，最外层应该循环height
+  for (int j = 0; j < n; j++)			//此处里层应该循环width	
   {
-    for (int j = 0; j < n; j++)			//此处里层应该循环width	
+		for (int i = 0; i < m; i ++)			//此处的关键问题：m和n是否写反了，最外层应该循环height
     {
       if (label[j*m + i] != 0 && pointProcFlag[j*m + i] == 0)	//如果m和n正确，这里的寻址才正确
       {
@@ -76,9 +79,10 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         int nEnd = 1;
         int tag = label[j*m + i];
         pointProcFlag[j*m + i] = 1;
-        growQueue.push_back({i, j});							//还是需要生成Array2D临时对象的问题
-        corners[0] = {i, j};
-        corners[1] = {i, j};
+        growQueue.push_back(Array2D(i, j));							//还是需要生成Array2D临时对象的问题
+        corners[0] = Array2D(i, j);
+        corners[1] = Array2D(i, j);
+
         while (nStart < nEnd)
         {
           currPt = growQueue[nStart];
@@ -148,8 +152,9 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
           } // for fourConner end
           nStart++;
         } // while end
+
         clusterCenter.y = (corners[0].y + corners[1].y)/2;
-        lineAngle = atan((-clusterCenter.y - n/2)/FOCUS_LENGTH) + CAMERA_TILT; //need fix
+        lineAngle = atan((-clusterCenter.y - n/2)/focusLength) + cameraTilt; //need fix
         if (lineAngle < 5/180*M_PI)
           continue;
         

@@ -231,7 +231,8 @@ static int lua_yuyv_to_label(lua_State *L) {
 
 static int lua_yuyv_to_label_ball(lua_State *L) {
   static std::vector<uint8_t> label;
-  static std::vector<Candidate> ballCandidates;
+	static std::vector<uint8_t> labelBall;
+  //static std::vector<Candidate> ballCandidates;
 
   // 1st Input: Original YUYV-format input image
   uint32_t *yuyv = (uint32_t *) lua_touserdata(L, 1);
@@ -241,18 +242,23 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
 
   // 2nd Input: YUYV->Label Lookup Table
   uint8_t *cdt = (uint8_t *) lua_touserdata(L, 2);
-  if (cdt == NULL) {
+  if (cdt == NULL)
     return luaL_error(L, "Input CDT not light user data");
-  }
 
-  // 3rd Input: Width (in YUYV macropixels) of the original YUYV image
-  int m = luaL_checkint(L, 3);
+	uint8_t *cdt2 = (uint8_t *)lua_touserdata(L, 3);
+	if (cdt2 == NULL)
+		return luaL_error(L, "Input CDT2 not light user data");
 
-  // 4th Input: Height (in YUVY macropixels) of the original YUYV image
-  int n = luaL_checkint(L, 4);
+  // 4rd Input: Width (in YUYV macropixels) of the original YUYV image
+  int m = luaL_checkint(L, 4);
+
+  // 5th Input: Height (in YUVY macropixels) of the original YUYV image
+  int n = luaL_checkint(L, 5);
 
   // Label will be half the height and half the width of the original image
   label.resize(m*n/2);
+	labelBall.resize(m*n/2);
+
   int label_ind = 0;
   int label_size = m*n/2;
 
@@ -266,6 +272,7 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
 
       // Put labeled pixel into label vector
       label[label_size-1-label_ind] = cdt[index];
+			labelBall[label_size-1-label_ind] = cdt2[index];
 
       yuyv++;
       label_ind++;
@@ -274,6 +281,7 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
     yuyv += m;
   }
 
+	/*
   // accumate ball
   int nball = lua_accumulate_ball(ballCandidates ,&label[0], m, n/2);
 
@@ -281,7 +289,6 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
   for (int i = 0; i < nball; i++) {
     lua_createtable(L, 0, 3);
 
-    // area field
     lua_pushstring(L, "blCntr");
     lua_pushnumber(L, ballCandidates[i].blCntr);
     lua_settable(L, -3);
@@ -315,10 +322,12 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
 
     lua_rawseti(L, -2, i+1);
   }
+	*/
 
   // Pushing light data
 	lua_pushlightuserdata(L, &label[0]);
-  return 1;
+	lua_pushlightuserdata(L, &labelBall[0]);
+  return 2;
 }
 
 // Only labels every other pixel for obstacle lut
@@ -624,6 +633,67 @@ static int lua_connected_regions_obs(lua_State *L) {
   return 1;
 }
 
+static int lua_connected_ballCandidates(lua_State *L) {
+  static std::vector<Candidate> ballCandidates;
+
+  uint8_t *x = (uint8_t *) lua_touserdata(L, 1);
+  if ((x == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input image not light user data");
+  }
+  int mx = luaL_checkint(L, 2);
+  int nx = luaL_checkint(L, 3);
+  double headPitch = luaL_checknumber(L, 4);
+
+	AccumulateParaIn paraIn;
+	paraIn.cameraAngleSpead = 60;
+	paraIn.cameraTilt = 80;
+	paraIn.physicalRadiusOfBall = 140;
+	int nball = lua_accumulate_ball(ballCandidates, x, mx, nx, paraIn);
+
+  if (nball <= 0) {
+    return 0;
+  }
+
+  lua_createtable(L, nball, 0);
+  for (int i = 0; i < nball; i++) {
+    lua_createtable(L, 0, 3);
+
+    lua_pushstring(L, "blCntr");
+    lua_pushnumber(L, ballCandidates[i].blCntr);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "wtCntr");
+    lua_pushnumber(L, ballCandidates[i].wtCntr);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "bkCntr");
+    lua_pushnumber(L, ballCandidates[i].bkCntr);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "evaluation");
+    lua_pushnumber(L, ballCandidates[i].evaluation);
+    lua_settable(L, -3);
+
+    // boundingBox field
+    lua_pushstring(L, "boundingBox");
+    lua_createtable(L, 2, 0);
+    lua_pushnumber(L, ballCandidates[i].bBox[0].x);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, ballCandidates[i].bBox[1].x);
+    lua_rawseti(L, -2, 2);
+    lua_pushnumber(L, ballCandidates[i].bBox[0].y);
+    //lua_pushnumber(L, props[i].minJ + rowOffset);
+    lua_rawseti(L, -2, 3);
+    lua_pushnumber(L, ballCandidates[i].bBox[1].y);
+    //lua_pushnumber(L, props[i].maxJ + rowOffset);
+    lua_rawseti(L, -2, 4);
+    lua_settable(L, -3);
+
+    lua_rawseti(L, -2, i+1);
+  }
+  return 1;
+}
+
 
 static int lua_connected_regions(lua_State *L) {
   static std::vector<RegionProps> props;
@@ -816,6 +886,7 @@ static const struct luaL_reg imageProc_lib [] = {
   {"block_bitor_obs", lua_block_bitor_obs},
   {"tilted_block_bitor", lua_tilted_block_bitor},
   {"connected_regions", lua_connected_regions},
+  {"connected_ballCandidates", lua_connected_ballCandidates},
   {"connected_regions_obs", lua_connected_regions_obs},
   {"goal_posts", lua_goal_posts},
   {"goal_posts_white", lua_goal_posts_white},
