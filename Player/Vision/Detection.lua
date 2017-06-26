@@ -157,7 +157,7 @@ function update()
 
   -- spot detection
   if enableSpot == 1 then
---    spot = detectSpot.detect();
+    spot = detectSpot.detect();
   end
 
   -- midfield landmark detection
@@ -260,7 +260,7 @@ function update_shm()
       endpoint22[i]=line.endpoint[i][4];
       if max_length<line.length[i] then
         max_length=line.length[i];
-	max_index=i;
+	      max_index=i;
       end
     end
 
@@ -280,6 +280,7 @@ function update_shm()
     vcm.set_line_angle(line.angle[max_index]);
 
   end
+
   vcm.set_corner_detect(corner.detect);
   if (corner.detect == 1) then
     vcm.set_corner_type(corner.type)
@@ -291,8 +292,11 @@ function update_shm()
     vcm.set_corner_v2(corner.v2)
   end
 
-  --vcm.set_spot_detect(spot.detect);
+  vcm.set_spot_detect(spot.detect);
   if (spot.detect == 1) then
+    vcm.set_spot_v(spot.v);
+    vcm.set_spot_bboxB(spot.bboxB);
+    vcm.set_spot_color(colorWhite)
   end
 
   vcm.set_freespace_detect(freespace.detect);
