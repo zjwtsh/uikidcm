@@ -126,6 +126,7 @@ shared.line.v1x = vector.zeros(max_line_num);
 shared.line.v1y = vector.zeros(max_line_num);
 shared.line.v2x = vector.zeros(max_line_num);
 shared.line.v2y = vector.zeros(max_line_num);
+shared.line.real_length = vector.zeros(max_line_num);
 shared.line.endpoint11 = vector.zeros(max_line_num);
 shared.line.endpoint12 = vector.zeros(max_line_num);
 shared.line.endpoint21 = vector.zeros(max_line_num);
@@ -135,7 +136,7 @@ shared.line.yMean = vector.zeros(max_line_num);
 
 --for best line
 shared.line.v=vector.zeros(4);
-shared.line.angle=vector.zeros(a);
+shared.line.angle=vector.zeros(1);
 shared.line.lengthB=vector.zeros(1);
 
 --Circle detectin

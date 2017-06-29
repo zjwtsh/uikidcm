@@ -236,30 +236,37 @@ function update_shm()
 
   vcm.set_line_detect(line.detect);
   if (line.detect == 1) then
-    vcm.set_line_nLines(line.nLines);
-    local v1x=vector.zeros(6);
-    local v1y=vector.zeros(6);
-    local v2x=vector.zeros(6);
-    local v2y=vector.zeros(6);
-    local endpoint11=vector.zeros(6);
-    local endpoint12=vector.zeros(6);
-    local endpoint21=vector.zeros(6);
-    local endpoint22=vector.zeros(6);
+    local v1x = vector.zeros(12);
+    local v1y = vector.zeros(12);
+    local v2x = vector.zeros(12);
+    local v2y = vector.zeros(12);
+    local real_length = vector.zeros(12);
+    local endpoint11 = vector.zeros(12);
+    local endpoint12 = vector.zeros(12);
+    local endpoint21 = vector.zeros(12);
+    local endpoint22 = vector.zeros(12);
+    local xMean = vector.zeros(12);
+    local yMean = vector.zeros(12);
 
     max_length=0;
+    max_real_length = 0;
     max_index=1;
+
     for i=1,line.nLines do 
       v1x[i]=line.v[i][1][1];
       v1y[i]=line.v[i][1][2];
       v2x[i]=line.v[i][2][1];
       v2y[i]=line.v[i][2][2];
+      real_length[i] = math.sqrt((v2x[i]-v1x[i])^2 + (v2y[i]-v1y[i])^2);
       --x0 x1 y0 y1
       endpoint11[i]=line.endpoint[i][1];
       endpoint12[i]=line.endpoint[i][3];
       endpoint21[i]=line.endpoint[i][2];
       endpoint22[i]=line.endpoint[i][4];
-      if max_length<line.length[i] then
-        max_length=line.length[i];
+      xMean[i]=line.meanpoint[i][1];
+      yMean[i]=line.meanpoint[i][2];
+      if max_length<real_length[i] then
+        max_length=real_length[i];
 	      max_index=i;
       end
     end
@@ -270,15 +277,24 @@ function update_shm()
     vcm.set_line_v1y(v1y);
     vcm.set_line_v2x(v2x);
     vcm.set_line_v2y(v2y);
+    vcm.set_line_real_length(real_length);
     vcm.set_line_endpoint11(endpoint11);
     vcm.set_line_endpoint12(endpoint12);
     vcm.set_line_endpoint21(endpoint21);
     vcm.set_line_endpoint22(endpoint22);
+    vcm.set_line_xMean(xMean);
+    vcm.set_line_yMean(yMean);
 
-    vcm.set_line_v({(v1x[max_index]+v2x[max_index])/2,
-	 	   (v1y[max_index]+v2y[max_index])/2,0,0});
+    local max_lengthB = math.sqrt(
+      (endpoint11[max_index]-endpoint21[max_index])^2+
+      (endpoint12[max_index]-endpoint22[max_index])^2);
+    local mean_v = {(v1x[max_index]+v2x[max_index])/2,(v1y[max_index]+v2y[max_index])/2,0,1};
+
+    vcm.set_line_v(mean_v);
     vcm.set_line_angle(line.angle[max_index]);
-
+    vcm.set_line_nLines(line.nLines);
+    local max_real_length = real_length[max_index];
+    vcm.set_line_lengthB(max_real_length);
   end
 
   vcm.set_corner_detect(corner.detect);
