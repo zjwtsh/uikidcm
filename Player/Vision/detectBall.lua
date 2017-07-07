@@ -21,15 +21,16 @@ colorWhite = Config.color.white;
 diameter = Config.vision.ball.diameter; -- 0.14
 th_min_color=Config.vision.ball.th_min_color; -- 9
 th_min_color2=Config.vision.ball.th_min_color2; -- 9
-th_max_color2=1200;
-th_min_fill_rate=Config.vision.ball.th_min_fill_rate; -- 0.35
+th_max_color2=14000;
+--th_min_fill_rate=Config.vision.ball.th_min_fill_rate; -- 0.35
+th_min_fill_rate= 0.25
 th_max_fill_rate=Config.vision.ball.th_max_fill_rate; -- 0.9
-th_min_black_rate=0.1;
+th_min_black_rate=0.01;
 th_max_black_rate = 0.5;
 th_min_black_area = 3;
 max_distance = 4.5;
 th_height_max=Config.vision.ball.th_height_max;   -- 0.3
-th_height_min = -0.2;
+th_height_min = -0.3;
 th_ground_boundingbox=Config.vision.ball.th_ground_boundingbox; -- {-10,10,-10,15}
 th_min_green1=Config.vision.ball.th_min_green1; -- 0.4
 th_min_green2=Config.vision.ball.th_min_green2; -- 0.0555555
@@ -37,6 +38,7 @@ th_max_aspect_ratio = 1.7;
 th_min_aspect_ratio = 0.5;
 
 ball_check_for_ground = Config.vision.ball.check_for_ground; -- 1
+--ball_check_for_ground = 0;
 check_for_field = Config.vision.ball.check_for_field or 0; -- 1
 field_margin = Config.vision.ball.field_margin or 0; -- 2.0
 
@@ -62,6 +64,7 @@ function detect(color)
   if (not ballPropsB or #ballPropsB == 0) then return ball; end
 
 -- Check max 5 largest blobs 
+  print("ballPropsB num = "..#ballPropsB);
   for i=1, #ballPropsB do
     check_passed = true;
     ball.propsB = ballPropsB[i];
@@ -76,26 +79,37 @@ function detect(color)
 
     local fill_rate = (ball.propsA.area + props_black.area) / Vision.bboxArea(ball.propsA.boundingBox);
 
+    print("i = "..i.." fill_rate = "..fill_rate.." area = "..ball.propsA.area)
+
     if ball.propsA.area > th_max_color2 then  --need check with largest pixel area
+      --print(ball.propsA.area.." > th_max_color2");
       check_passed = false;
     elseif ball.propsA.area < th_min_color2 then
       --Area check
+      --print(ball.propsA.area.." < th_min_color2");
       check_passed = false;
     elseif fill_rate < th_min_fill_rate then  -- need check fill rate
       --Fill rate check
+      print(fill_rate.." < th_min_fill_rate");
       check_passed = false;
     elseif ball.propsA.boundingBox[4] < HeadTransform.get_horizonA() then
+      print(i.."boudnbox 4: "..ball.propsA.boundingBox[4].." < horizonA".." "..HeadTransform.get_horizonA());
       check_passed = false;
     elseif aspect_ratio > th_max_aspect_ratio then
+      --print(i.." > th_max_aspect_ratio");
       check_passed = false;
     elseif aspect_ratio < th_min_aspect_ratio then
+      --print(i.." < th_min_aspect_ratio");
       check_passed = false;
     elseif black_rate < th_min_black_rate then
+      --print(i.." "..black_rate.." < th_min_black_rate");
       check_passed = false;
     elseif props_black.area < th_min_black_area then
-        check_passed = false;
+      --print(i.." < th_min_black_area");
+      check_passed = false;
     else
       -- diameter of the area
+      print(i.." passed up");
       local dArea = math.sqrt((4/math.pi)*ball.propsA.area);
       -- Find the centroid of the ball
       local ballCentroid = ball.propsA.centroid;
@@ -105,7 +119,9 @@ function detect(color)
       v = HeadTransform.coordinatesA(ballCentroid, scale);
       v_inf = HeadTransform.coordinatesA(ballCentroid,0.1);
 
-      if v[3] < th_height_min or v[3] > th_height_max then
+      print(i.." v[3]"..v[3].." ["..th_height_min..", "..th_height_max.."]")
+--      if v[3] < th_height_min or v[3] > th_height_max then
+      if v[3] > th_height_max then
         --Ball height check
         check_passed = false;
       end
@@ -153,7 +169,9 @@ function detect(color)
             local fieldBBoxStats_left = ImageProc.color_stats(Vision.labelA.data,
                                   Vision.labelA.m, Vision.labelA.n, colorField, fieldBBox_left);
              
-            if (fieldBBoxStats_left.area/left_area < th_min_green1) then
+            --if (fieldBBoxStats_left.area/left_area < th_min_green1) then
+            if (fieldBBoxStats_left.area < 8) then
+            print("a: fieldBBoxStats_left.area "..fieldBBoxStats_left.area.." left_area  "..left_area.." "..fieldBBoxStats_left.area/left_area.."< "..th_min_green1)
 				      check_passed = false;
             end
           else
@@ -170,7 +188,9 @@ function detect(color)
             local fieldBBoxStats_right = ImageProc.color_stats(Vision.labelA.data,
                                   Vision.labelA.m, Vision.labelA.n, colorField, fieldBBox_right);
              
-            if (fieldBBoxStats_right.area/right_area < th_min_green1) then
+--            if (fieldBBoxStats_right.area/right_area < th_min_green1) then
+            if (fieldBBoxStats_right.area < 8) then
+            print("a: fieldBBoxStats_right.area "..fieldBBoxStats_right.area.." righ_area  "..right_area.." "..fieldBBoxStats_right.area/right_area.."< "..th_min_green1)
               check_passed = false;
             end
           else
@@ -186,7 +206,9 @@ function detect(color)
             local top_green_area = Vision.bboxArea(fieldBBox_top);
          
             local fieldBBoxStats_top = ImageProc.color_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, colorField, fieldBBox_top);
-            if (fieldBBoxStats_top.area/top_green_area < th_min_green1) then
+--            if (fieldBBoxStats_top.area/top_green_area < th_min_green1) then
+            if (fieldBBoxStats_top.area < 8) then
+            print("a: fieldBBoxStats_top.area "..fieldBBoxStats_top.area.." top_green_area  "..top_green_area.." "..fieldBBoxStats_top.area/top_green_area.."< "..th_min_green1)
 				      check_passed = false;
             end
           else

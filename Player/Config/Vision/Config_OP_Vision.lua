@@ -64,12 +64,12 @@ vision.subsampling2 = 1; --1/4 sized image
 
 vision.ball={};
 vision.ball.diameter = 0.14;  --Diameter of the ball in meters.
-vision.ball.th_min_color = 9;  --Minimum count of colorCount.
-vision.ball.th_min_color2 = 9;  --Minimum area of ball.propsA.area
+vision.ball.th_min_color = 20;  --Minimum count of colorCount.
+vision.ball.th_min_color2 = 20;  --Minimum area of ball.propsA.area
 vision.ball.th_min_fill_rate = 0.35;  --Minimum rate of fill_rate.
 vision.ball.th_max_fill_rate =0.9;
 vision.ball.th_height_max  = 0.30;  --Maximum height we expect to detect the ball, in the robots Head frame.
-vision.ball.th_ground_boundingbox = {-10,10,-10,15};
+vision.ball.th_ground_boundingbox = {-40, 40, -40, 60};
 vision.ball.th_min_green1 = 0.4;  --Minimum area of fieldBBoxStats.area
 vision.ball.th_min_green2 = 0.055555;  --Minimum area of whiteBBoxStats.area
 

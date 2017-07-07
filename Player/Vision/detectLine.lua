@@ -201,8 +201,8 @@ function detect()
       line.meanpoint[rootind][2] = (ymin + ymax) / 2
 
       local vendpoint = {};
-		  vendpoint[1] = HeadTransform.coordinatesB(vector.new({self.endpoint[rootind][1], line.endpoint[rootind][3]}), 1);
-		  vendpoint[2] = HeadTransform.coordinatesB(vector.new({self.endpoint[rootind][2], line.propsB[i].endpoint[4]}), 1);
+		  vendpoint[1] = HeadTransform.coordinatesB(vector.new({line.endpoint[rootind][1], line.endpoint[rootind][3]}), 1);
+		  vendpoint[2] = HeadTransform.coordinatesB(vector.new({line.endpoint[rootind][2], line.propsB[i].endpoint[4]}), 1);
 
       vendpoint[1] = HeadTransform.projectGround(vendpoint[1], 0);
       vendpoint[2] = HeadTransform.projectGround(vendpoint[2], 0);

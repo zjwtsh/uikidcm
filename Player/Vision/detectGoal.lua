@@ -19,6 +19,7 @@ colorWhite = Config.color.white;
 width_min_in_pixel = 2;
 width_max_in_pixel = 35;
 connect_th = 0.5;
+check_for_ground_whole = 0;
 
 goalSizeThresh = 50;
 

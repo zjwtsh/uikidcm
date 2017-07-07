@@ -76,26 +76,32 @@ function update()
       pitch=pitch0-pitchMag*pitchDir;
     else --phase 0.75 to 1
       yaw=yawMag*(-1+(ph-0.75)*4)* direction;
-      pitch=pitch0+pitchMag*pitchDir;
+--      pitch=pitch0+pitchMag*pitchDir;
+--      pitch=pitch0*pitchDir;
+      pitch=pitch0;
     end
 
   else --Rotating scan
     timeout = 20.0 * Config.speedFactor; --Longer timeout
-    local ph = (t-t0)/tScan * 2;
+    local ph = (t-t0)/tScan * 1.5;
     ph = ph - math.floor(ph);
     --Look up and down in constant speed
     if ph<0.25 then
       pitch=pitchTurn0+pitchTurnMag*(ph*4);
+      yaw=yawMag*(ph*4)* direction;
     elseif ph<0.75 then
-      pitch=pitchTurn0+pitchTurnMag*(1-(ph-0.25)*4);
+--      pitch=pitchTurn0+pitchTurnMag*(1-(ph-0.25)*4);
+      pitch=pitchTurn0-pitchTurnMag*(1-(ph-0.25)*4);
+      yaw=yawMag*(1-(ph-0.25)*4)* direction;
     else
       pitch=pitchTurn0+pitchTurnMag*(-1+(ph-0.75)*4);
+      yaw=yawMag*(-1+(ph-0.75)*4)* direction;
     end
-    yaw = yawMagTurn * isSearching;
+    --yaw = yawMagTurn * isSearching;
   end
   Body.set_head_command({yaw, pitch-pitchBias});
-  Body.set_para_headpos(vector.new({yaw, pitch-pitchBias}));--123456î^²¿
-  Body.set_state_headValid(1);--123456î^²¿
+  Body.set_para_headpos(vector.new({yaw, pitch-pitchBias}));--123456
+  Body.set_state_headValid(1);--123456
   
   local ball = wcm.get_ball();
   if (t - ball.t < 0.1) then
