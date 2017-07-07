@@ -647,7 +647,7 @@ static int lua_connected_ballCandidates(lua_State *L) {
 	AccumulateParaIn paraIn;
 	paraIn.cameraAngleSpead = 60*M_PI/180;
 	paraIn.cameraTilt = 40*M_PI/180;
-	paraIn.physicalRadiusOfBall = 140;
+	paraIn.physicalRadiusOfBall = 70;
 	int nball = lua_accumulate_ball(ballCandidates, x, mx, nx, paraIn);
 
   if (nball <= 0) {

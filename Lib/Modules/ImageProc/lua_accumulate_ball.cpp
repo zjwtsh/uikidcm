@@ -19,7 +19,7 @@ extern "C" {
 #include "lua_accumulate_ball.h"
 #include "RadonTransform.h"
 
-#define POW(x)  x*x
+#define POW(x)  (x)*(x)
 #define VISION_ANGLE_WIDTH 60/180*M_PI
 #define FOCUS_LENGTH 480/2/tan(VISION_ANGLE_WIDTH/2)
 #define CAMERA_TILT 80/180*M_PI
@@ -43,7 +43,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 	double focusLength = height/2/tan(paraIn.cameraAngleSpead/2);
 	double ballRadius = paraIn.physicalRadiusOfBall;
 	double horizonLimit = 5*M_PI/180;
-	double noiseRate = 0.15;
+	double noiseRate = 0.25;
 	double radiusRate = 1.2;
 
   std::vector<Array2D> fourConn;	//此处不需要static,也不需要resize, 临时变量直接push_back即可
@@ -224,7 +224,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 		return 0;
 
   for (int i = 0; i < clusterNum; i++)
-    std::cout << "infoOfCluster [" << i << "]: colorTag " << infoOfCluster[i].colorTag
+    std::cout << "infoOfCluster [" << i << "]: colorTag " << int(infoOfCluster[i].colorTag)
       << " colorCount " << infoOfCluster[i].colorCount << " upleft.x,y " <<  infoOfCluster[i].bBox[0].x
       << " " << infoOfCluster[i].bBox[0].y << "downright.x,y " << infoOfCluster[i].bBox[1].x << " " 
       << infoOfCluster[i].bBox[1].y << std::endl;
@@ -271,7 +271,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 			maxRadius = ballRadius * sin(lineAngle);  // need fix
       currRadius = Max(abs(enlargedBBox[0].x - enlargedBBox[1].x), abs(enlargedBBox[0].y - enlargedBBox[1].y));
 
-      if (currRadius > 1.2*maxRadius)
+      if (currRadius > radiusRate*maxRadius)
       {
         relationMap[i][j] = 2;
         relationMap[j][i] = 2;
@@ -306,7 +306,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 
   for (int i = 0; i < clusterNum; i++)
   {
-    if (candidateRegionCenter[i] = 3)
+    if (candidateRegionCenter[i] == 3)
       continue;
 
     bool isRunning = true;
@@ -347,10 +347,24 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
           nextConnectRegion[j] = 3;
         }
       }
+
+			std::cout << "connectRegion: " ;
+			for(int i = 0; i<clusterNum; i++)
+					std::cout << int(connectRegion[i]) << ",";
+			std::cout << std::endl;
+
+			std::cout << "nextConnectRegion: " ;
+			for(int i = 0; i<clusterNum; i++)
+					std::cout << int(nextConnectRegion[i]) << ",";
+			std::cout << std::endl;
+
       connectRegion = nextConnectRegion;
+			
     }// while end
     
     std::vector<Cluster>  connectResult;
+    Array2D ballBBox[2];
+
     for (int j = 0; j < clusterNum; j++)
     {
       if (connectRegion[j] != 0)
@@ -358,6 +372,8 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         if (connectRegion[j] == 3)
         {
           connectResult.push_back(infoOfCluster[j]);
+					ballBBox[0] = infoOfCluster[j].bBox[0];
+					ballBBox[1] = infoOfCluster[j].bBox[1];
           candidateRegionCenter[j] = connectRegion[j];
         }
         else if (candidateRegionCenter[j] != 3)
@@ -366,20 +382,22 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         }
       }
     }
-   
-		return 0;
+  
+		std::cout << "candidateRegionCenter: " ;
+		for(int i = 0; i<clusterNum; i++)
+				std::cout << int(candidateRegionCenter[i]) << ",";
+		std::cout << std::endl;
 
     int bkCntr = 0;
     int wtCntr = 0;
     int blCntr = 0;
-    Array2D ballBBox[2];
     
     for (int i = 0; i < connectResult.size(); i++)
     {
       ballBBox[0].x = Min(connectResult[i].bBox[0].x, ballBBox[0].x);
       ballBBox[0].y = Min(connectResult[i].bBox[0].y, ballBBox[0].y);
-      ballBBox[1].x = Min(connectResult[i].bBox[1].x, ballBBox[1].x);
-      ballBBox[1].x = Min(connectResult[i].bBox[1].y, ballBBox[1].y);
+      ballBBox[1].x = Max(connectResult[i].bBox[1].x, ballBBox[1].x);
+      ballBBox[1].y = Max(connectResult[i].bBox[1].y, ballBBox[1].y);
       switch (connectResult[i].colorTag)
       {
         case 1:
@@ -393,24 +411,28 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
       	  break;
       }
     }
+		std::cout << "(" << ballBBox[0].x << "," << ballBBox[0].y << "), (" <<
+			ballBBox[1].x << "," << ballBBox[1].y << ")" << ":(" << blCntr <<
+			"," << bkCntr << "," << wtCntr << ")"<<std::endl;
+
     int totalCntr = bkCntr + wtCntr + blCntr;
-    float rate = blCntr/totalCntr;
+    float rate = (float)blCntr/totalCntr;
     if (rate < 0.9 && rate > 0.1)
     {
-      rate = wtCntr / totalCntr;
-      if (rate < 0.9 || rate > 0.1)
+      rate = (float)wtCntr / totalCntr;
+      if (rate > 0.9 || rate < 0.1)
      	  continue;
     }
     else
       continue;
 
     clusterCenter.y = (ballBBox[0].y + ballBBox[1].y)/2;
-    lineAngle = atan(-clusterCenter.y - n/2)/FOCUS_LENGTH + CAMERA_TILT; //need fix
-    maxRadius = ORIGINAL_BALL_RADIUS * sin(lineAngle);  // need fix
-    maxNoisy = 0.3 * maxRadius; 
+		lineAngle = atan((clusterCenter.y - n/2)/focusLength) + cameraTilt; //need fix
+		maxRadius = ballRadius * sin(lineAngle);  // need fix
     currRadius = Max(abs(ballBBox[0].x - ballBBox[1].x), abs(ballBBox[0].y - ballBBox[1].y));
-    
-    if (currRadius < 0.3 * maxRadius)
+
+		std::cout << "currRadius = " << currRadius << ", maxRadius = " << maxRadius << std::endl;
+    if (currRadius < noiseRate * maxRadius)
       continue;
 
     float Kcolor = 0.33;
@@ -418,6 +440,10 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     float Kradius = 0.33;
 
     float evaluation = Kcolor * (POW(float(blCntr)/totalCntr - 0.4) + POW(float(wtCntr)/totalCntr - 0.4) + POW(float(bkCntr)/totalCntr - 0.2)) + Kradius * POW(float(currRadius)/maxRadius - 1);  //  need fix
+
+		std::cout << "currRadius = " << currRadius << ", maxRadius = " << maxRadius << ", eval = " << evaluation << std::endl;
+
+		continue;
 
     Candidate candidate_;
     for (int ii = 0; ii < 2; ii++)
