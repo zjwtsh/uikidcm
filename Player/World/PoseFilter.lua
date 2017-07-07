@@ -242,7 +242,7 @@ function initializeBimodal(p1,dp1,p2,dp2,frac,dir)
 	end
 	wp = vector.zeros(n);
 	
-	log.info("Bi-Modal initialization")
+	-- log.info("Bi-Modal initialization")
 	
 end
 
@@ -865,7 +865,8 @@ end
 
 
 function goal_observation(pos, v)
-  --Get estimate using triangulation
+
+	--Get estimate using triangulation
   if use_new_goalposts==1 then
     pose,dGoal,aGoal=triangulate2(pos,v);
   else
@@ -883,10 +884,9 @@ function goal_observation(pos, v)
   local aFilter = aKnownGoalFilter;
 
 --SJ: testing
-triangulation_threshold=4.0;
+	triangulation_threshold=4.0;
 
   if dGoal<triangulation_threshold then 
-
 
     for ip = 1,n do
       local xErr = x - xp[ip];
@@ -894,26 +894,27 @@ triangulation_threshold=4.0;
       local rErr = math.sqrt(xErr^2 + yErr^2);
       local aErr = mod_angle(a - ap[ip]);
       local err = (rErr/rSigma)^2 + (aErr/aSigma)^2;
-      wp[ip] = wp[ip] - err;
-
-      --Filter towards goal:
+      
+			wp[ip] = wp[ip] - err;
       xp[ip] = xp[ip] + rFilter*xErr;
       yp[ip] = yp[ip] + rFilter*yErr;
-      ap[ip] = ap[ip] + aFilter*aErr;
+			yawErr[ip] = yawErr[ip] + aFilter*aErr;
+
     end
-  else
-  --Don't use triangulation for far goals
+  elseif dGoal<position_update_threshold then
     goalpos={{(pos[1][1]+pos[2][1])/2, (pos[1][2]+pos[2][2])/2}}
     goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
-    landmark_observation(goalpos, goalv , rKnownGoalFilter, aKnownGoalFilter);
+    landmark_observation(goalpos, goalv , rKnownGoalFilter, aKnownGoalFilter, 
+				goal_angle_update_threshold);
+	else
+	  goalpos={{(pos[1][1]+pos[2][1])/2, (pos[1][2]+pos[2][2])/2}}
+    goalv={(v[1][1]+v[2][1])/2, (v[1][2]+v[2][2])/2}
+    landmark_observation(goalpos, goalv , rKnownGoalFilter, aKnownGoalFilter, 
+      goal_angle_update_threshold,1);
   end
-
+  ap = update_angles();
 
 end
-
-
-
-
 
 
 function goal_observation_unified(pos1,pos2,v)
@@ -1133,7 +1134,7 @@ end
 --Adjust particles based on observation of a L corner
 function cornerL(v,a)
   if (rLCornerFilter>0 and aLCornerFilter>0) then
-      log.info('L Corner Update')
+    -- log.info('L Corner Update')
 	  if(Config.game.playerID == 1) then
 	    oriented_object_observation(Lgoalie_corner,v,a,rLCornerFilter,aLCornerFilter);
 	  else
@@ -1325,11 +1326,12 @@ function imuYaw_update(a)
     local da = mod_angle(a - ap[ip]);
     local err = (da/aSigma)^2;
     wp[ip] = wp[ip] - err;
-
-  --Filter toward best matching landmark position:
---print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
-    ap[ip] = ap[ip] + aFilter * da;
+		-- print(string.format("%d %.1f %.1f %.1f",ip,xp[ip],yp[ip],ap[ip]));
+    -- ap[ip] = ap[ip] + aFilter * da;
+    yawErr[ip] = yawErr[ip] + aFilter * da;
   end
+
+	ap= update_angles();
 end
 
 function odometry(dx, dy, da)

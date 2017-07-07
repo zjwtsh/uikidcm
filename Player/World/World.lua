@@ -492,7 +492,7 @@ imuangle = Body.get_sensor_imuAngle();
     v[2]=y;
     --print('Circle Update');
     --print("x:" .. x, "y:" .. y);
-    PoseFilter.circle(v,a);
+    -- PoseFilter.circle(v,a);
   end
 
   --corner detection
@@ -501,12 +501,12 @@ imuangle = Body.get_sensor_imuAngle();
     if vcm.get_corner_type() == 1 then
         local v=vcm.get_corner_v();
         local a=vcm.get_corner_angle();
-        PoseFilter.cornerL(v,a);
+        -- PoseFilter.cornerL(v,a);
     --T corner
     elseif vcm.get_corner_type() == 2 then
         local v=vcm.get_corner_v();
         local a=vcm.get_corner_angle();
-        PoseFilter.cornerT(v,a);
+        -- PoseFilter.cornerT(v,a);
     end
   end
 
@@ -515,9 +515,10 @@ imuangle = Body.get_sensor_imuAngle();
     local color = vcm.get_spot_color();
     local v = vcm.get_spot_v();
     if color == Config.color.white then
-      PoseFilter.spot(v);
+      -- PoseFilter.spot(v);
     end
   end
+
   -- imuYaw update
   if imuYaw_update == 1 then
     imuYaw_count = imuYaw_count +1;
