@@ -416,7 +416,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 			"," << bkCntr << "," << wtCntr << ")"<<std::endl;
 
     int totalCntr = bkCntr + wtCntr + blCntr;
-    float rate = (float)blCntr/totalCntr;
+    float rate = (float)(blCntr+bkCntr)/totalCntr;
     if (rate < 0.9 && rate > 0.1)
     {
       rate = (float)wtCntr / totalCntr;
@@ -426,6 +426,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     else
       continue;
 
+		/*
     clusterCenter.y = (ballBBox[0].y + ballBBox[1].y)/2;
 		lineAngle = atan((clusterCenter.y - n/2)/focusLength) + cameraTilt; //need fix
 		maxRadius = ballRadius * sin(lineAngle);  // need fix
@@ -444,20 +445,21 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 		std::cout << "currRadius = " << currRadius << ", maxRadius = " << maxRadius << ", eval = " << evaluation << std::endl;
 
 		continue;
+		*/
 
     Candidate candidate_;
     for (int ii = 0; ii < 2; ii++)
     {
       candidate_.bBox[ii].x = ballBBox[ii].x;
-      candidate_.bBox[ii].x = ballBBox[ii].x;
+      candidate_.bBox[ii].y = ballBBox[ii].y;
     }
     candidate_.blCntr     = blCntr;
     candidate_.wtCntr     = wtCntr;
     candidate_.bkCntr     = bkCntr;
-    candidate_.evaluation = evaluation;
+    //candidate_.evaluation = evaluation;
     ballCandidates.push_back(candidate_);
   }
-  //printf("ballCandidates size = %d\n", ballCandidates.size());
+	std::cout << "ballCandidates size = " << ballCandidates.size() << std::endl;
   return ballCandidates.size();
 
 }

@@ -656,7 +656,7 @@ static int lua_connected_ballCandidates(lua_State *L) {
 
   lua_createtable(L, nball, 0);
   for (int i = 0; i < nball; i++) {
-    lua_createtable(L, 0, 3);
+    lua_createtable(L, 0, 4);
 
     lua_pushstring(L, "blCntr");
     lua_pushnumber(L, ballCandidates[i].blCntr);
@@ -670,13 +670,15 @@ static int lua_connected_ballCandidates(lua_State *L) {
     lua_pushnumber(L, ballCandidates[i].bkCntr);
     lua_settable(L, -3);
 
+		/*
     lua_pushstring(L, "evaluation");
     lua_pushnumber(L, ballCandidates[i].evaluation);
     lua_settable(L, -3);
+		*/
 
     // boundingBox field
     lua_pushstring(L, "boundingBox");
-    lua_createtable(L, 2, 0);
+    lua_createtable(L, 4, 0);
     lua_pushnumber(L, ballCandidates[i].bBox[0].x);
     lua_rawseti(L, -2, 1);
     lua_pushnumber(L, ballCandidates[i].bBox[1].x);
@@ -693,7 +695,6 @@ static int lua_connected_ballCandidates(lua_State *L) {
   }
   return 1;
 }
-
 
 static int lua_connected_regions(lua_State *L) {
   static std::vector<RegionProps> props;

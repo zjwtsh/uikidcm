@@ -54,6 +54,15 @@ function detectArbitraryBall()
 																													headAngle[2]
 																												);
 
+	for i = 1, #ballPropsB do
+		
+		print("cntr", ballPropsB[i].blCntr, ballPropsB[i].bkCntr, ballPropsB[i].wtCntr)
+		print("bbox", ballPropsB[i].boundingBox[1], ballPropsB[i].boundingBox[2], ballPropsB[i].boundingBox[3], ballPropsB[i].boundingBox[4])
+		
+		-- calculate the probability from those returned value 
+	
+	end
+
 	print('exiting the test routine')
 	os.exit()
 
