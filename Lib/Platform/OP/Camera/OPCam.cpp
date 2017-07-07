@@ -226,7 +226,6 @@ int luaopen_OPCam (lua_State *L) {
   //char *fileName = "/home/nvidia/yuyvImg.jpg";
   //image= (uint32 *)malloc(614400);
   //int fd = open(fileName, O_RDONLY);
-  //std::cout << "fd = ((((((((((((((((: " << fd << std::endl;
   //read(fd, image, 614400);
   //close(fd);
   
