@@ -246,6 +246,9 @@ function update()
                                           camera.height);
   end
 
+	--print('exiting the test routine')
+	--os.exit()
+
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
 

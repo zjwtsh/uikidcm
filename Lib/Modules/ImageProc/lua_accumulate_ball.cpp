@@ -26,8 +26,6 @@ extern "C" {
 
 #define ORIGINAL_BALL_RADIUS 140
 
-std::vector<Cluster>  infoOfCluster;
-std::vector<std::vector<uint8_t> > relationMap;
 
 int x[4] = {-1, 0, 1, 0};
 int y[4] = {0, 1, 0, -1};
@@ -43,31 +41,50 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 {
 	double cameraTilt = paraIn.cameraTilt;
 	double focusLength = height/2/tan(paraIn.cameraAngleSpead/2);
+	double ballRadius = paraIn.physicalRadiusOfBall;
 	double horizonLimit = 5*M_PI/180;
+	double noiseRate = 0.15;
+	double radiusRate = 1.2;
 
   std::vector<Array2D> fourConn;	//此处不需要static,也不需要resize, 临时变量直接push_back即可
   Array2D tmpArray;
-  for (int i = 0; i < 4; i++)
+  
+	for (int i = 0; i < 4; i++)
   {
     tmpArray.x = x[i];
     tmpArray.y = y[i];
     fourConn.push_back(tmpArray);
-    //std::cout << "foucor " << i << " .x: "  << fourConn[i].x << " .y: " << fourConn[i].y << std::endl;
+    std::cout << "foucor " << i << " .x: "  << fourConn[i].x << " .y: " << fourConn[i].y << std::endl;
   }
   ballCandidates.clear();				//参见C++标准库，这里应该使用类似clear的函数，具体的查询一下书
 
   int m = width;
   int n = height;
-  //std::cout << "width = " << width << " height = " << height << std::endl;
+  std::cout << "width = " << width << " height = " << height << std::endl;
 
-  std::vector<uint8_t> pointProcFlag(m*n, 0);
+	uint8_t zero = 0;
+  std::vector<uint8_t> pointProcFlag(m*n,zero);
   std::vector<Array2D> growQueue;
   std::vector<Array2D> corners(2);
 
   Array2D currPt, newPt, clusterCenter;
-  Cluster singleCluster, currCluster, tryingCluster;
+	std::vector<Cluster>  infoOfCluster;
+	std::vector<std::vector<uint8_t> > relationMap;
+	int clusterNum = 0;
 
   float lineAngle, maxRadius, maxNoisy, currRadius;
+
+	//std::cout << pointProcFlag.size();
+  for (int j = 0; j < n; j++)			//此处里层应该循环width	
+	{
+		//std::cout << j ;
+		for (int i = 0; i < m; i ++)			//此处的关键问题：m和n是否写反了，最外层应该循环height
+		{
+			std::cout << int(label[j*m +i]) << ",";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
 
   for (int j = 0; j < n; j++)			//此处里层应该循环width	
   {
@@ -79,20 +96,30 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         int nEnd = 1;
         int tag = label[j*m + i];
         pointProcFlag[j*m + i] = 1;
+				growQueue.clear();
         growQueue.push_back(Array2D(i, j));							//还是需要生成Array2D临时对象的问题
         corners[0] = Array2D(i, j);
         corners[1] = Array2D(i, j);
+
+				//std::cout << "(" << i << "," << j << ")," << tag << ","<< std::endl;
 
         while (nStart < nEnd)
         {
           currPt = growQueue[nStart];
           for (int k = 0; k < 4; k++)
           {
-            newPt.x = currPt.x + fourConn[i].x;
-            newPt.y = currPt.y + fourConn[i].y;
+            newPt.x = currPt.x + fourConn[k].x;
+            newPt.y = currPt.y + fourConn[k].y;
+							
             if (newPt.x < m && newPt.x >= 0 					//这里的newPt.x < m newPt.x>=0
                 && newPt.y < n && newPt.y >=0)					//这里的newPt.y < n newPt.x>=0
             {
+							/*
+							std::cout << "(" << newPt.y << "," << newPt.x << ")," << 
+								int(pointProcFlag[newPt.y*m + newPt.x]) << ", " <<
+								int(label[newPt.y*m+newPt.x]) << std::endl;
+							*/
+
               if (pointProcFlag[newPt.y*m + newPt.x] == 0		//应该是newPt.y*m+newPt.x,后续类似
                   && label[newPt.y*m + newPt.x] == tag)
               {
@@ -153,52 +180,76 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
           nStart++;
         } // while end
 
+        std::cout << "(" << nEnd << ", " << tag << "),"; 
+
         clusterCenter.y = (corners[0].y + corners[1].y)/2;
-        lineAngle = atan((-clusterCenter.y - n/2)/focusLength) + cameraTilt; //need fix
-        if (lineAngle < 5/180*M_PI)
+        lineAngle = atan((clusterCenter.y - n/2)/focusLength) + cameraTilt; //need fix
+        if (lineAngle < horizonLimit)
           continue;
         
-        maxRadius = ORIGINAL_BALL_RADIUS * sin(lineAngle);  // need fix
-        maxNoisy = 0.3 * maxRadius; 
-        currRadius = Max(abs(corners[0].x - corners[1].x), abs(corners[0].y - corners[1].y));
-        //std::cout << "currRadius = " <<  currRadius << std::endl;
+        std::cout << "lineAngle = " <<  lineAngle << "; hozizonLimit = " << horizonLimit << std::endl;
 
-        if (nEnd > maxNoisy && currRadius < 1.2 * maxRadius)
+        maxRadius = ballRadius * sin(lineAngle);  // need fix
+        maxNoisy = noiseRate * maxRadius; 
+        currRadius = Max(abs(corners[0].x - corners[1].x), abs(corners[0].y - corners[1].y));
+
+        std::cout << "nEnd = " << nEnd <<
+					" currRadius = " <<  currRadius <<
+					" maxRadius = " << maxRadius <<
+					" maxNoisy = " << maxNoisy <<std::endl;
+
+        if (nEnd > maxNoisy && currRadius < radiusRate * maxRadius)
         {
+					Cluster singleCluster;
           singleCluster.colorTag = tag;
           singleCluster.colorCount = nEnd;
           for(int ii = 0; ii < 2; ii++)
             singleCluster.bBox[ii] = corners[ii];								//这里直接声明一个数组即可，不需要vector
           infoOfCluster.push_back(singleCluster);
-          std::cout << "singleCluster.tag: " << singleCluster.colorTag 
+          std::cout << "singleCluster.tag: " << int(singleCluster.colorTag)
             << " singleCluster.colorCount: " << singleCluster.colorCount
             << " corner[1].x: " << corners[0].x << " corners[1].y: " << corners[0].y
             << " corners[2].x: " << corners[1].x << " corners[2].y: " << corners[1].y << std::endl;
         }
+
       } // if label != 0 end
     } // for j = height end
   } // for i = width end
 	/*
 		上面这部分单独调试，通过以后再调下面的部分，不要一起运行
 	*/
-  for (int i = 0; i < infoOfCluster.size(); i++)
+
+	clusterNum = infoOfCluster.size();
+	if(clusterNum == 0)
+		return 0;
+
+  for (int i = 0; i < clusterNum; i++)
     std::cout << "infoOfCluster [" << i << "]: colorTag " << infoOfCluster[i].colorTag
       << " colorCount " << infoOfCluster[i].colorCount << " upleft.x,y " <<  infoOfCluster[i].bBox[0].x
       << " " << infoOfCluster[i].bBox[0].y << "downright.x,y " << infoOfCluster[i].bBox[1].x << " " 
       << infoOfCluster[i].bBox[1].y << std::endl;
-  relationMap.resize(infoOfCluster.size());
+
+  relationMap.resize(clusterNum);
+	for(int i = 0 ;i < clusterNum; i++)
+    relationMap[i].resize(clusterNum);
   std::vector<Array2D> enlargedBBox(2);
 
-  for (int i = 0; i < infoOfCluster.size(); i++)
+  for (int i = 0; i < clusterNum; i++)
   {
-    relationMap[i].resize(infoOfCluster.size());
-    currCluster = infoOfCluster[i];
-    for (int j = i+1; j < infoOfCluster.size(); j++)
+    Cluster &currCluster = infoOfCluster[i];
+		
+		relationMap[i][i] = 1;
+
+		//std::cout << "starting to calculate the relationship: " << i <<std::endl;
+
+    for (int j = i+1; j < clusterNum; j++)
     {
+      Cluster &tryingCluster = infoOfCluster[j];
+
       relationMap[i][j] = 0;
       relationMap[j][i] = 0;
 
-      tryingCluster = infoOfCluster[j];
+			//std::cout << "1st step " << std::endl;
 
       enlargedBBox[0].x = Min(currCluster.bBox[0].x, tryingCluster.bBox[0].x);
       enlargedBBox[0].y = Min(currCluster.bBox[0].y, tryingCluster.bBox[0].y);
@@ -206,16 +257,18 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
       enlargedBBox[1].y = Max(currCluster.bBox[1].y, tryingCluster.bBox[1].y);
 
       clusterCenter.y = (enlargedBBox[0].y + enlargedBBox[1].y)/2;
-      lineAngle = atan(clusterCenter.y - n/2)/FOCUS_LENGTH + CAMERA_TILT;    // need fix
+			lineAngle = atan((clusterCenter.y - n/2)/focusLength) + cameraTilt; //need fix
 
-      if (lineAngle < 5/180*M_PI)
+			//std::cout << "2nd step " << std::endl;
+
+			if (lineAngle < horizonLimit)
       {
         relationMap[i][j] = 2;
         relationMap[j][i] = 2;
         continue;
       }
 
-      maxRadius = ORIGINAL_BALL_RADIUS * sin(lineAngle);  // need fix
+			maxRadius = ballRadius * sin(lineAngle);  // need fix
       currRadius = Max(abs(enlargedBBox[0].x - enlargedBBox[1].x), abs(enlargedBBox[0].y - enlargedBBox[1].y));
 
       if (currRadius > 1.2*maxRadius)
@@ -224,6 +277,8 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         relationMap[j][i] = 2;
         continue;
       }
+
+			//std::cout << "3rd step " << std::endl;
 
       int totalLengthX = currCluster.bBox[1].x - currCluster.bBox[0].x + tryingCluster.bBox[1].x - tryingCluster.bBox[0].x;
       int totalLengthY = currCluster.bBox[1].y - currCluster.bBox[0].y + tryingCluster.bBox[1].y - tryingCluster.bBox[0].y;
@@ -236,30 +291,43 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     }
   }
 
-  std::vector<uint8_t> candidateRegionCenter(infoOfCluster.size(), 0);
+	for(int i = 0; i<clusterNum; i++)
+	{
+		std::cout << i << ",";
+		for(int j = 0; j<clusterNum; j++)
+		{
+			std::cout << int(relationMap[i][j]) << ",";
+		}
+		std::cout << std::endl;
+	}
+
+  std::vector<uint8_t> candidateRegionCenter(clusterNum, 0);
   std::vector<uint8_t> connectRegion, nextConnectRegion, targetRegion;
 
-  for (int i = 0; i < infoOfCluster.size(); i++)
+  for (int i = 0; i < clusterNum; i++)
   {
     if (candidateRegionCenter[i] = 3)
       continue;
 
     bool isRunning = true;
 
-    connectRegion.assign(relationMap[i].begin(), relationMap[i].end());
+    //connectRegion.assign(relationMap[i].begin(), relationMap[i].end());
+    connectRegion = relationMap[i];
     connectRegion[i] = 3;
     
-    nextConnectRegion.assign(connectRegion.begin(), connectRegion.end());
+    //nextConnectRegion.assign(connectRegion.begin(), connectRegion.end());
+    nextConnectRegion = connectRegion;
     
     while (isRunning)
     {
       isRunning = false;
-      for (int j = 0; j < infoOfCluster.size(); j++)
+      for (int j = 0; j < clusterNum; j++)
       {
         if (connectRegion[j] == 1)
         {
-          targetRegion.assign(relationMap[j].begin(), relationMap[j].end());
-          for (int k = 0; k < infoOfCluster.size(); k++)
+          targetRegion = relationMap[j];
+
+          for (int k = 0; k < clusterNum; k++)
           {
             if (targetRegion[k] != 0)
             {
@@ -279,11 +347,11 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
           nextConnectRegion[j] = 3;
         }
       }
-      connectRegion.assign(nextConnectRegion.begin(), nextConnectRegion.end());
+      connectRegion = nextConnectRegion;
     }// while end
     
     std::vector<Cluster>  connectResult;
-    for (int j = 0; j < infoOfCluster.size(); j++)
+    for (int j = 0; j < clusterNum; j++)
     {
       if (connectRegion[j] != 0)
       {
@@ -298,7 +366,9 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         }
       }
     }
-    
+   
+		return 0;
+
     int bkCntr = 0;
     int wtCntr = 0;
     int blCntr = 0;

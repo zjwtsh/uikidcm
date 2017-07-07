@@ -54,6 +54,9 @@ function detectArbitraryBall()
 																													headAngle[2]
 																												);
 
+	print('exiting the test routine')
+	os.exit()
+
 	return ball;
 
 end
@@ -65,7 +68,8 @@ function detect(color)
 
   headAngle = {Body.get_sensor_headpos()[2],Body.get_sensor_headpos()[1]};	--b51
 
-	if (color == "arbitrary") then
+	--if (color == "arbitrary") then
+	if (true) then
 		return detectArbitraryBall();
 	end
 

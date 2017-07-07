@@ -3,11 +3,21 @@
 
 #include <stdint.h>
 
+/*
 typedef struct
 {
   int x;
   int y;
 }Array2D;
+*/
+
+class Array2D
+{
+public:
+	int x, y;
+	Array2D(int &xx, int &yy){x = xx; y = yy;}
+	Array2D(){x = 0; y = 0;}
+};
 
 typedef struct
 {

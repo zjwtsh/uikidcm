@@ -7,13 +7,13 @@ require('vector')
 camera = {};
 camera.ncamera = 1;
 camera.switchFreq = 0; --unused for OP
-camera.width = 1280;
-camera.height = 720;
-camera.x_center = 656;
-camera.y_center = 372;
+camera.width = 640;
+camera.height = 480;
+camera.x_center = 328;
+camera.y_center = 248;
 
-camera.focal_length = 1066; -- in pixels
-camera.focal_base = 1280; -- image width used in focal length calculation
+camera.focal_length = 533; -- in pixels
+camera.focal_base = 640; -- image width used in focal length calculation
 
 --[[
 queryctrl: "White Balance Temperature" 0x98091a
@@ -64,5 +64,7 @@ camera.param[5] = {key='white balance temperature', val={800}};
 camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={250}};
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
-camera.lut_file = 'new_darwin.raw';
-camera.lut_ball_file = 'lut_0328qiu.raw';
+camera.lut_file = 'gateline0318.raw';
+camera.lut_ball_file = 'FieldandBall0318.raw';
+
+

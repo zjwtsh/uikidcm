@@ -248,8 +248,8 @@ int v4l2_uninit_mmap() {
 int v4l2_init(int resolution) {
 
   if( resolution == 1 ){
-    width = 1280;
-    height = 720;
+    width = 640;
+    height = 480;
   } else {
     width = 320;
     height = 240;
