@@ -40,6 +40,9 @@ typedef struct
 	double cameraTilt;
 	double cameraAngleSpead;
 	double physicalRadiusOfBall;
+	double horizonLimit;
+	double noiseRate;
+	double radiusRate;
 }AccumulateParaIn;
 
 int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label, int width, int height, AccumulateParaIn &paraIn);

@@ -42,9 +42,9 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 	double cameraTilt = paraIn.cameraTilt;
 	double focusLength = height/2/tan(paraIn.cameraAngleSpead/2);
 	double ballRadius = paraIn.physicalRadiusOfBall;
-	double horizonLimit = 5*M_PI/180;
-	double noiseRate = 0.25;
-	double radiusRate = 1.2;
+	double horizonLimit = paraIn.horizonLimit;
+	double noiseRate = paraIn.noiseRate;
+	double radiusRate = paraIn.radiusRate;
 
   std::vector<Array2D> fourConn;	//此处不需要static,也不需要resize, 临时变量直接push_back即可
   Array2D tmpArray;
@@ -78,7 +78,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
   for (int j = 0; j < n; j++)			//此处里层应该循环width	
 	{
 		//std::cout << j ;
-		for (int i = 0; i < m; i ++)			//此处的关键问题：m和n是否写反了，最外层应该循环height
+		for (int i = 0; i < m; i++)			//此处的关键问题：m和n是否写反了，最外层应该循环height
 		{
 			std::cout << int(label[j*m +i]) << ",";
 		}
@@ -180,23 +180,25 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
           nStart++;
         } // while end
 
-        std::cout << "(" << nEnd << ", " << tag << "),"; 
+        //std::cout << "(" << nEnd << ", " << tag << "),"; 
 
         clusterCenter.y = (corners[0].y + corners[1].y)/2;
         lineAngle = atan((clusterCenter.y - n/2)/focusLength) + cameraTilt; //need fix
         if (lineAngle < horizonLimit)
           continue;
         
-        std::cout << "lineAngle = " <<  lineAngle << "; hozizonLimit = " << horizonLimit << std::endl;
+        //std::cout << "lineAngle = " <<  lineAngle << "; hozizonLimit = " << horizonLimit << std::endl;
 
         maxRadius = ballRadius * sin(lineAngle);  // need fix
         maxNoisy = noiseRate * maxRadius; 
         currRadius = Max(abs(corners[0].x - corners[1].x), abs(corners[0].y - corners[1].y));
 
+				/*
         std::cout << "nEnd = " << nEnd <<
 					" currRadius = " <<  currRadius <<
 					" maxRadius = " << maxRadius <<
 					" maxNoisy = " << maxNoisy <<std::endl;
+				*/
 
         if (nEnd > maxNoisy && currRadius < radiusRate * maxRadius)
         {
@@ -206,10 +208,12 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
           for(int ii = 0; ii < 2; ii++)
             singleCluster.bBox[ii] = corners[ii];								//这里直接声明一个数组即可，不需要vector
           infoOfCluster.push_back(singleCluster);
+					/*
           std::cout << "singleCluster.tag: " << int(singleCluster.colorTag)
             << " singleCluster.colorCount: " << singleCluster.colorCount
             << " corner[1].x: " << corners[0].x << " corners[1].y: " << corners[0].y
             << " corners[2].x: " << corners[1].x << " corners[2].y: " << corners[1].y << std::endl;
+					*/
         }
 
       } // if label != 0 end
@@ -426,13 +430,14 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     else
       continue;
 
-		/*
     clusterCenter.y = (ballBBox[0].y + ballBBox[1].y)/2;
 		lineAngle = atan((clusterCenter.y - n/2)/focusLength) + cameraTilt; //need fix
 		maxRadius = ballRadius * sin(lineAngle);  // need fix
     currRadius = Max(abs(ballBBox[0].x - ballBBox[1].x), abs(ballBBox[0].y - ballBBox[1].y));
 
 		std::cout << "currRadius = " << currRadius << ", maxRadius = " << maxRadius << std::endl;
+
+		/*
     if (currRadius < noiseRate * maxRadius)
       continue;
 
@@ -456,7 +461,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     candidate_.blCntr     = blCntr;
     candidate_.wtCntr     = wtCntr;
     candidate_.bkCntr     = bkCntr;
-    //candidate_.evaluation = evaluation;
+    candidate_.evaluation = (float)currRadius/maxRadius;
     ballCandidates.push_back(candidate_);
   }
 	std::cout << "ballCandidates size = " << ballCandidates.size() << std::endl;

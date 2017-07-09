@@ -18,7 +18,7 @@ require('Body');
 
 obs_challenge_enable = Config.obs_challenge or 0;
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
-black_depth = Config.vision.black_depth or 10
+black_depth = Config.vision.black_depth or 8
 black_width = Config.vision.black_width or 8
 lut_stage = Config.vision.lut_stage or 64
 
@@ -120,6 +120,12 @@ function entry()
   print('creating splitted ball lut');
   camera.splittedBallLut = split_ball_lut(camera.lut,camera.lut_ball);
 	--writeSplittedBallLut('splittedLut.txt', camera.splittedBallLut)
+	--print('exiting the test routine')
+	--os.exit()
+
+  print('temp test for transfering of field color from ball lut to env lut');
+  camera.lut = add_ballfield_lut(camera.lut,camera.lut_ball);
+	--writeSplittedBallLut('envLut.txt', camera.lut)
 	--print('exiting the test routine')
 	--os.exit()
 
@@ -552,14 +558,37 @@ function save_rgb(rgb)
   f:close();
 end
 
-function isAlsoBlackColor(u,v,y)
+function isAlsoBlackColor(y,u,v)
 	uvRange = {(lut_stage-black_width)/2,(lut_stage+black_width)/2}
-	if((u-uvRange[1])*(u+uvRange[1])<0 and
-			(v-uvRange[1])*(v+uvRange[1])<0 and
+
+	if((u-uvRange[1])*(u-uvRange[2])<0 and
+			(v-uvRange[1])*(v-uvRange[2])<0 and
 			y<black_depth) then
+		--print("black color found in ball", y, u, v)
 		return true;
 	end
 	return false;
+end
+
+function add_ballfield_lut(envLut, ballLut)
+  local ta = carray.new('c', 262144);
+
+	for i = 1, 64 do
+    for j = 1, 64 do
+      for k = 1, 64 do
+
+				local ind = (i-1)*64*64 + (j-1)*64 + k;
+				ta[ind] = envLut[ind];
+
+				if (ballLut[ind] == 8 and ta[ind] == 0) then
+					ta[ind] = ballLut[ind];
+				end
+
+      end
+    end
+  end
+
+  return ta;
 end
 
 function split_ball_lut(envLut, ballLut)

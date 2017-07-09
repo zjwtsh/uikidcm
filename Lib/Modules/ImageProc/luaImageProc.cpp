@@ -635,6 +635,7 @@ static int lua_connected_regions_obs(lua_State *L) {
 
 static int lua_connected_ballCandidates(lua_State *L) {
   static std::vector<Candidate> ballCandidates;
+	AccumulateParaIn paraIn;
 
   uint8_t *x = (uint8_t *) lua_touserdata(L, 1);
   if ((x == NULL) || !lua_islightuserdata(L, 1)) {
@@ -644,10 +645,12 @@ static int lua_connected_ballCandidates(lua_State *L) {
   int nx = luaL_checkint(L, 3);
   double headPitch = luaL_checknumber(L, 4);
 
-	AccumulateParaIn paraIn;
+	paraIn.cameraTilt = headPitch;
 	paraIn.cameraAngleSpead = 60*M_PI/180;
-	paraIn.cameraTilt = 40*M_PI/180;
-	paraIn.physicalRadiusOfBall = 70;
+	paraIn.physicalRadiusOfBall = 90;
+	paraIn.horizonLimit = 5*M_PI/180;
+	paraIn.noiseRate = 0.3;
+	paraIn.radiusRate = 1.2;
 	int nball = lua_accumulate_ball(ballCandidates, x, mx, nx, paraIn);
 
   if (nball <= 0) {
@@ -656,7 +659,7 @@ static int lua_connected_ballCandidates(lua_State *L) {
 
   lua_createtable(L, nball, 0);
   for (int i = 0; i < nball; i++) {
-    lua_createtable(L, 0, 4);
+    lua_createtable(L, 0, 5);
 
     lua_pushstring(L, "blCntr");
     lua_pushnumber(L, ballCandidates[i].blCntr);
@@ -670,11 +673,9 @@ static int lua_connected_ballCandidates(lua_State *L) {
     lua_pushnumber(L, ballCandidates[i].bkCntr);
     lua_settable(L, -3);
 
-		/*
-    lua_pushstring(L, "evaluation");
+    lua_pushstring(L, "radiusRate");
     lua_pushnumber(L, ballCandidates[i].evaluation);
     lua_settable(L, -3);
-		*/
 
     // boundingBox field
     lua_pushstring(L, "boundingBox");
@@ -881,8 +882,8 @@ static const struct luaL_reg imageProc_lib [] = {
   {"color_count", lua_color_count},
   {"color_count_obs", lua_color_count_obs},
   {"color_stats", lua_color_stats},
-  {"ball_color_stats", lua_ball_color_stats},
   {"tilted_color_stats", lua_tilted_color_stats},
+  {"bounding_field_stats", lua_bounding_field_stats},
   {"block_bitor", lua_block_bitor},
   {"block_bitor_obs", lua_block_bitor_obs},
   {"tilted_block_bitor", lua_tilted_block_bitor},
