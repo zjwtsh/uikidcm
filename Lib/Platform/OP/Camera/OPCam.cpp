@@ -234,7 +234,6 @@ int luaopen_OPCam (lua_State *L) {
 			read(fd, image, 614400);
 			close(fd);
 			/*******************************************/
-
       /// TODO: free this
     }
   }
