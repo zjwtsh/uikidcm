@@ -35,7 +35,6 @@ int lua_bounding_field_stats(lua_State *L) {
 	float rate = 0.0;
 	int cntr = 0;
 
-	/*
   for (int j = 0; j < height; j++)	
 	{
 		//std::cout << j ;
@@ -46,7 +45,6 @@ int lua_bounding_field_stats(lua_State *L) {
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
-	*/
 
   if (lua_gettop(L) >= 5) {
     if (!lua_istable(L, 5)) {

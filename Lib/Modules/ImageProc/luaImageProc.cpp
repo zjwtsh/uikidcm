@@ -22,6 +22,7 @@ extern "C" {
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <iostream>
 
 #include "color_count.h"
 #include "block_bitor.h"
@@ -280,6 +281,30 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
     // Skip every other line (to maintain image ratio)
     yuyv += m;
   }
+
+	/*
+  for (int j = 0; j < n; j++)			//此处里层应该循环width	
+	{
+		//std::cout << j ;
+		for (int i = 0; i < m; i++)			//此处的关键问题：m和n是否写反了，最外层应该循环height
+		{
+			std::cout << int(label[j*m +i]) << ",";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+
+  for (int j = 0; j < n; j++)			//此处里层应该循环width	
+	{
+		//std::cout << j ;
+		for (int i = 0; i < m; i++)			//此处的关键问题：m和n是否写反了，最外层应该循环height
+		{
+			std::cout << int(labelBall[j*m +i]) << ",";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+	*/
 
 	/*
   // accumate ball

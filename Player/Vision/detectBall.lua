@@ -56,7 +56,7 @@ end
 function detectArbitraryBall()
   local ball = {};
   ball.detect = 0;
-	print("entering arbirary ball detection routine");
+	--print("entering arbirary ball detection routine");
 
   local ballPropsB = ImageProc.connected_ballCandidates(
 																													Vision.labelA.dataBall, 
@@ -72,8 +72,8 @@ function detectArbitraryBall()
 
 	for i = 1, #ballPropsB do
 		
-		print("cntr", ballPropsB[i].blCntr, ballPropsB[i].bkCntr, ballPropsB[i].wtCntr, ballPropsB[i].radiusRate)
-		print("bbox", ballPropsB[i].boundingBox[1], ballPropsB[i].boundingBox[2], ballPropsB[i].boundingBox[3], ballPropsB[i].boundingBox[4])
+		--print("cntr", ballPropsB[i].blCntr, ballPropsB[i].bkCntr, ballPropsB[i].wtCntr, ballPropsB[i].radiusRate)
+		--print("bbox", ballPropsB[i].boundingBox[1], ballPropsB[i].boundingBox[2], ballPropsB[i].boundingBox[3], ballPropsB[i].boundingBox[4])
 
 		local check_passed = true; 
 		-- calculate the probability from those returned value
@@ -85,10 +85,10 @@ function detectArbitraryBall()
 			background_check_offset = 2;
 			local checkBox = ballPropsB[i].boundingBox;
 			checkBox = getCheckBoxWithOffset (checkBox, background_check_offset);
-			print(unpack(checkBox));
+			--print(unpack(checkBox));
 			
 			local statsResult = ImageProc.bounding_field_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, colorField, checkBox);
-			print("backgroundRatio", statsResult.backgroundRatio)
+			--print("backgroundRatio", statsResult.backgroundRatio)
 
 			local totalCntr = ballPropsB[i].blCntr + ballPropsB[i].bkCntr + ballPropsB[i].wtCntr;
 
@@ -104,7 +104,7 @@ function detectArbitraryBall()
 					Kradius * (ballPropsB[i].radiusRate - 1)^2 +
 					Kground * (statsResult.backgroundRatio -1)^2;
 
-			print("evaluation value", evaluation);
+			--print("evaluation value", evaluation);
 			if(evaluation<minEval) then
 				minEval = evaluation;
 				minId = i;
@@ -112,7 +112,7 @@ function detectArbitraryBall()
 		end
 	end
 
-	print("best ball fitted is", minEval, minId)
+	--print("best ball fitted is", minEval, minId)
 
 	ball.propsA = {};
 	ball.propsA.centroid = {(ballPropsB[minId].boundingBox[1]+ballPropsB[minId].boundingBox[2])/2, (ballPropsB[minId].boundingBox[3]+ballPropsB[minId].boundingBox[4])/2};

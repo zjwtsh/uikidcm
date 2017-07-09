@@ -54,13 +54,13 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     tmpArray.x = x[i];
     tmpArray.y = y[i];
     fourConn.push_back(tmpArray);
-    std::cout << "foucor " << i << " .x: "  << fourConn[i].x << " .y: " << fourConn[i].y << std::endl;
+    //std::cout << "foucor " << i << " .x: "  << fourConn[i].x << " .y: " << fourConn[i].y << std::endl;
   }
   ballCandidates.clear();				//参见C++标准库，这里应该使用类似clear的函数，具体的查询一下书
 
   int m = width;
   int n = height;
-  std::cout << "width = " << width << " height = " << height << std::endl;
+  //std::cout << "width = " << width << " height = " << height << std::endl;
 
 	uint8_t zero = 0;
   std::vector<uint8_t> pointProcFlag(m*n,zero);
@@ -227,11 +227,13 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 	if(clusterNum == 0)
 		return 0;
 
+	/*
   for (int i = 0; i < clusterNum; i++)
     std::cout << "infoOfCluster [" << i << "]: colorTag " << int(infoOfCluster[i].colorTag)
       << " colorCount " << infoOfCluster[i].colorCount << " upleft.x,y " <<  infoOfCluster[i].bBox[0].x
       << " " << infoOfCluster[i].bBox[0].y << "downright.x,y " << infoOfCluster[i].bBox[1].x << " " 
       << infoOfCluster[i].bBox[1].y << std::endl;
+	*/
 
   relationMap.resize(clusterNum);
 	for(int i = 0 ;i < clusterNum; i++)
@@ -295,6 +297,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     }
   }
 
+	/*
 	for(int i = 0; i<clusterNum; i++)
 	{
 		std::cout << i << ",";
@@ -304,6 +307,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 		}
 		std::cout << std::endl;
 	}
+	*/
 
   std::vector<uint8_t> candidateRegionCenter(clusterNum, 0);
   std::vector<uint8_t> connectRegion, nextConnectRegion, targetRegion;
@@ -352,6 +356,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         }
       }
 
+			/*
 			std::cout << "connectRegion: " ;
 			for(int i = 0; i<clusterNum; i++)
 					std::cout << int(connectRegion[i]) << ",";
@@ -361,6 +366,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 			for(int i = 0; i<clusterNum; i++)
 					std::cout << int(nextConnectRegion[i]) << ",";
 			std::cout << std::endl;
+			*/
 
       connectRegion = nextConnectRegion;
 			
@@ -386,11 +392,13 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         }
       }
     }
-  
+ 
+		/*
 		std::cout << "candidateRegionCenter: " ;
 		for(int i = 0; i<clusterNum; i++)
 				std::cout << int(candidateRegionCenter[i]) << ",";
 		std::cout << std::endl;
+		*/
 
     int bkCntr = 0;
     int wtCntr = 0;
@@ -415,9 +423,11 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
       	  break;
       }
     }
+		/*
 		std::cout << "(" << ballBBox[0].x << "," << ballBBox[0].y << "), (" <<
 			ballBBox[1].x << "," << ballBBox[1].y << ")" << ":(" << blCntr <<
 			"," << bkCntr << "," << wtCntr << ")"<<std::endl;
+		*/
 
     int totalCntr = bkCntr + wtCntr + blCntr;
     float rate = (float)(blCntr+bkCntr)/totalCntr;
@@ -435,9 +445,9 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 		maxRadius = ballRadius * sin(lineAngle);  // need fix
     currRadius = Max(abs(ballBBox[0].x - ballBBox[1].x), abs(ballBBox[0].y - ballBBox[1].y));
 
+		/*
 		std::cout << "currRadius = " << currRadius << ", maxRadius = " << maxRadius << std::endl;
 
-		/*
     if (currRadius < noiseRate * maxRadius)
       continue;
 
@@ -464,7 +474,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     candidate_.evaluation = (float)currRadius/maxRadius;
     ballCandidates.push_back(candidate_);
   }
-	std::cout << "ballCandidates size = " << ballCandidates.size() << std::endl;
+	//std::cout << "ballCandidates size = " << ballCandidates.size() << std::endl;
   return ballCandidates.size();
 
 }
