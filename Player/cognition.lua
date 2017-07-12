@@ -61,7 +61,7 @@ function broadcast()
     end
     --Reset this flag at every broadcast
     --To prevent monitor running during actual game
-    vcm.set_camera_broadcast(0);
+    --vcm.set_camera_broadcast(0);
   end
 end
 

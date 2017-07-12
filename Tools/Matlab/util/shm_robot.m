@@ -324,7 +324,8 @@ global MONITOR %for sending the webots check information
 
     %yuyv type info
       r.yuyv_type = h.vcmCamera.get_yuyvType();
- 
+      %r.yuyv_type = 1;
+
     %Image FOV boundary
           
       fovC=h.vcmImage.get_fovC();

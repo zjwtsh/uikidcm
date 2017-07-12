@@ -9,7 +9,8 @@ ifndef OSTYPE
 endif
 
 ifeq ($(OSTYPE),linux)
-  MEXSUFFIX = mexglx
+  #MEXSUFFIX = mexglx
+  MEXSUFFIX = mexa64
 endif
 ifeq ($(OSTYPE),darwin)
   MEXSUFFIX = mexmaci64
