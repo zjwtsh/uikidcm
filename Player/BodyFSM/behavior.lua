@@ -11,7 +11,7 @@ require('position')
 function cycle_behavior()
   demo_behavior = demo_behavior%4 + 1;
 
-  if demo_behavior == 1 then 
+  if demo_behavior == 1 then
     Speak.talk("Front kick test");
     kickDir=1;
     kickType=1;
@@ -30,8 +30,8 @@ function cycle_behavior()
   end
 end
 
---Initial kick for demo 
-if Config.fsm.playMode==1 then 
+--Initial kick for demo
+if Config.fsm.playMode==1 then
   demo_behavior = 0;
   cycle_behavior();
 end
@@ -51,7 +51,7 @@ function update()
   kick_off=wcm.get_kick_kickOff();
   tKickOff=wcm.get_kick_tKickOff();
   --If too long time has passed since game starts
-  --Don't care about kickoff kick 
+  --Don't care about kickoff kick
   if (t-tKickOff)>tKickOffWear and kick_off==1 then
     print("kickoff weared off")
     wcm.set_kick_kickOff(0);
@@ -59,7 +59,7 @@ function update()
   end
 
   if Config.fsm.playMode>1 then --skip kick selection in demo mode
-    if kick_off>0 then 
+    if kick_off>0 then
 --      print("Behavior updated, kickoff kick")
       kickAngle = math.pi/6; --30 degree off angle
       kickDir=1;
@@ -80,17 +80,17 @@ function update()
     --Check if front walkkick is available now
     kickType=2;
 
-    --Check kick direction 
-    thSideKick1 = Config.fsm.thSideKick1 or 45*math.pi/180;  
-    thSideKick2 = Config.fsm.thSideKick2 or 135*math.pi/180;  
+    --Check kick direction
+    thSideKick1 = Config.fsm.thSideKick1 or 45*math.pi/180;
+    thSideKick2 = Config.fsm.thSideKick2 or 135*math.pi/180;
     thDistSideKick = Config.fsm.thDistSideKick or 3.0;
 
     ball = wcm.get_ball();
     rBall = math.sqrt(ball.x^2+ball.y^2);
 
     if rBall > thDistSideKick or
-       math.abs(angleRot)<thSideKick1 or 
-       math.abs(angleRot)>thSideKick2 	then
+       math.abs(angleRot)<thSideKick1 or
+       math.abs(angleRot)>thSideKick2	then
 --print("STRAIGHT",angleRot*180/math.pi)
       kickDir=1;
       kickAngle = 0;
@@ -104,7 +104,7 @@ function update()
       kickAngle = -70*math.pi/180;
     end
   else --Demo mode
-    if kickDir>1 then 
+    if kickDir>1 then
       kickDir=5-kickDir; --Switch sidekick direction for demo mode
     end
     kickAngle = 0;
@@ -145,7 +145,7 @@ function get_attack_bearing_pose(pose0)
     -- blue attack yellow goal
     postAttack = postYellow;
   end
-  
+
   -- make sure not to shoot back towards defensive goal:
   local xPose = math.min(math.max(pose0.x, -0.99*PoseFilter.xLineBoundary),
                           0.99*PoseFilter.xLineBoundary);

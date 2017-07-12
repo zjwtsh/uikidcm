@@ -48,12 +48,9 @@ static int lua_get_image(lua_State *L) {
   int buf_num = v4l2_read_frame();
   if( buf_num < 0 ){
     lua_pushnumber(L,buf_num);
-//	printf("buf_num < 0 \n");
     return 1;
   }
-//	printf("before get image\n");
   uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
-//	printf("after get image\n");
   // Increment the count
   count++;
 
@@ -216,6 +213,15 @@ int luaopen_OPCam (lua_State *L) {
       v4l2_init( res );
       v4l2_stream_on();
       cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));// Allocate our camera statu
+  /************* Read Image From File******************/
+  //char *fileName = "/home/nvidia/yuyvImg.jpg";
+  //image= (uint32 *)malloc(614400);
+  //int fd = open(fileName, O_RDONLY);
+  //read(fd, image, 614400);
+  //close(fd);
+  
+  /*******************************************/
+
       /// TODO: free this
     }
   }

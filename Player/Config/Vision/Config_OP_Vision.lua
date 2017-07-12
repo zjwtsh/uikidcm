@@ -19,11 +19,11 @@ vision.scaleB = 4;
 -- use this to enable yellow goal in vision
 vision.enable_2_yellow_goals =0;
 -- use this to enable line detection
-vision.enable_line_detection = 0;
+vision.enable_line_detection = 1;
 -- enable corner detection
 vision.enable_corner_detection = 0;
 -- use this to enable spot detection
-vision.enable_spot_detection = 0;
+vision.enable_spot_detection = 1;
 -- use this to enable midfield landmark detection
 vision.enable_midfield_landmark_detection = 0;
 -- use this to enable copying images to shm (for colortables, testing)
@@ -64,12 +64,12 @@ vision.subsampling2 = 1; --1/4 sized image
 
 vision.ball={};
 vision.ball.diameter = 0.14;  --Diameter of the ball in meters.
-vision.ball.th_min_color = 9;  --Minimum count of colorCount.
-vision.ball.th_min_color2 = 9;  --Minimum area of ball.propsA.area
+vision.ball.th_min_color = 20;  --Minimum count of colorCount.
+vision.ball.th_min_color2 = 20;  --Minimum area of ball.propsA.area
 vision.ball.th_min_fill_rate = 0.35;  --Minimum rate of fill_rate.
 vision.ball.th_max_fill_rate =0.9;
 vision.ball.th_height_max  = 0.30;  --Maximum height we expect to detect the ball, in the robots Head frame.
-vision.ball.th_ground_boundingbox = {-10,10,-10,15};
+vision.ball.th_ground_boundingbox = {-40, 40, -40, 60};
 vision.ball.th_min_green1 = 0.4;  --Minimum area of fieldBBoxStats.area
 vision.ball.th_min_green2 = 0.055555;  --Minimum area of whiteBBoxStats.area
 
@@ -121,8 +121,20 @@ vision.landmark.th_angle = 45*math.pi/180;
 vision.line={};
 vision.line.max_width = 10;
 vision.line.connect_th = 1.4;
+vision.line.lwratio = 1.5;
 vision.line.max_gap=0;
 vision.line.min_length=10;
+vision.line.min_angle_diff = 3;
+vision.line.max_angle_diff = 90;
+
+vision.spot={}
+vision.spot.min_area = 10;
+vision.spot.max_area = 150;
+vision.spot.aspect_ratio = 0.40;
+vision.spot.ground_boundingbox = {-15,15,-15,15};
+vision.spot.ground_th = 0.7;
+vision.spot.max_black_rate_B = 0.02;
+vision.spot.max_black_rate_A = 0.05; -- should be lowered, needs testing
 
 vision.corner={};
 vision.corner.dist_threshold = 100; --10 pixel

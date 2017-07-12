@@ -250,16 +250,16 @@ fsm.headReadyLookGoal.timeout = 2.5 * speedFactor;
 fsm.headScan={};
 --fsm.headScan.pitch0 = 25*math.pi/180;
 --fsm.headScan.pitchMag = 25*math.pi/180;
-fsm.headScan.pitch0 = 72.5*math.pi/180;	--b51
-fsm.headScan.pitchMag = 22.5*math.pi/180;		--tse
+fsm.headScan.pitch0 = 52.5*math.pi/180;
+fsm.headScan.pitchMag = 27.5*math.pi/180;
 fsm.headScan.yawMag = 60*math.pi/180;
 fsm.headScan.yawMagGoalie = 90*math.pi/180;
 
 --fsm.headScan.pitchTurn0 = 20*math.pi/180;
-fsm.headScan.pitchTurn0 = 42.5*math.pi/180;	  --tse
-fsm.headScan.pitchTurnMag = 22.5*math.pi/180;
+fsm.headScan.pitchTurn0 = 42.5*math.pi/180;
+fsm.headScan.pitchTurnMag = 32.5*math.pi/180;
 fsm.headScan.yawMagTurn = 45*math.pi/180;
-fsm.headScan.tScan = 3.0*speedFactor;
+fsm.headScan.tScan = 4.5*speedFactor;
 fsm.headScan.timeout = 10.0*speedFactor; --to headLookGoal
 
 --------------------------------------------------
