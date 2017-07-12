@@ -55,7 +55,7 @@ function check_approach_type()
       if obstacle_dist[i]<0.60 then
         obsAngle = math.atan2(obstacle_y[i],obstacle_x[i]);
         if math.abs(obsAngle) < 40*math.pi/180 then
-  	  do_evade_kick = true;
+          do_evade_kick = true;
         end
       end
     end
@@ -88,10 +88,10 @@ function check_approach_type()
     position.posCalc();
     pose=wcm.get_pose();
     aGoal = wcm.get_goal_attack_angle2(); --Global angle to goal
-    aRot = util.mod_angle(aGoal - pose.a);    
+    aRot = util.mod_angle(aGoal - pose.a);
     th_sidekick = math.pi*60/180;
 
-    if aRot > th_sidekick then 
+    if aRot > th_sidekick then
       --stationary kick to the right
       kick_type = 1;
       kick_dir = 2;
@@ -124,7 +124,7 @@ function check_approach_type()
 --  print("Approach: kick dir /type /angle",kick_dir,kick_type,kick_angle*180/math.pi)
 
   y_inv=0;
-  if kick_type==1 then --Stationary 
+  if kick_type==1 then --Stationary
     if kick_dir==1 then --Front kick
       xTarget = Config.fsm.bodyApproach.xTarget11;
       yTarget0 = Config.fsm.bodyApproach.yTarget11;
@@ -189,7 +189,7 @@ end
 
 function update()
   local t = Body.get_time();
-  -- get ball position 
+  -- get ball position
   ball = wcm.get_ball();
   ballR = math.sqrt(ball.x^2 + ball.y^2);
 
@@ -204,15 +204,15 @@ function update()
   if fast_approach == 1 then
     uLeft = walk.uLeft;
     uRight = walk.uRight;
-    uFoot = util.se2_interpolate(0.5,uLeft,uRight); --Current origin 
-    if walk.supportLeg ==0 then --left support 
+    uFoot = util.se2_interpolate(0.5,uLeft,uRight); --Current origin
+    if walk.supportLeg ==0 then --left support
       uRight2 = walk.uRight2;
       uLeft2 = util.pose_global({0,2*walk.footY,0},uRight2);
     else --Right support
       uLeft2 = walk.uLeft2;
       uRight2 = util.pose_global({0,-2*walk.footY,0},uLeft2);
     end
-    uFoot2 = util.se2_interpolate(0.5,uLeft2,uRight2); --Projected origin 
+    uFoot2 = util.se2_interpolate(0.5,uLeft2,uRight2); --Projected origin
     uMovement = util.pose_relative(uFoot2,uFoot);
     uBall2 = util.pose_relative({ball.x,ball.y,0},uMovement);
     ball.x=uBall2[1];
@@ -222,15 +222,15 @@ function update()
     factor_x = 0.6;
   end
 
-  
+
   -- calculate walk velocity based on ball position
   vStep = vector.new({0,0,0});
   vStep[1] = factor_x*(ball.x - xTarget[2]);
   vStep[2] = .75*(ball.y - yTarget[2]);
   scale = math.min(maxStep/math.sqrt(vStep[1]^2+vStep[2]^2), 1);
   vStep = scale*vStep;
-  
-  if Config.fsm.playMode==1 then 
+
+  if Config.fsm.playMode==1 then
     --Demo FSM, just turn towards the ball
     ballA = math.atan2(ball.y - math.max(math.min(ball.y, 0.05), -0.05),
             ball.x+0.10);
@@ -254,7 +254,7 @@ function update()
     end
 
     --Wider margin for sidekicks and goalies
-    if kick_dir~=1 or role==0 then 
+    if kick_dir~=1 or role==0 then
       daPost1 = math.max(25*math.pi/180,daPost1);
     end
 
@@ -275,7 +275,7 @@ function update()
     elseif angleErrR < angleTurnMargin and ballA < 0 then
       vStep[3] = 0.5*ballA;
       --print("ball is far, turn RIGHT")
-    end    
+    end
 
     if check_angle>0 then
 
@@ -301,7 +301,7 @@ function update()
   if math.abs(wAngle) > 45*math.pi/180 then
     vStep[1]=vStep[1] - 0.03;
     vStep[1] = math.min(vStep[1], -0.03);
-    
+
     if ball.y<ballYMin and ball.y>0 then
      vStep[2] = 0.03;
      --print("ball is too close left, back and move LEFT");
@@ -310,7 +310,7 @@ function update()
       --print("ball is too close right, back and move RIGHT");
     else
       vStep[2] = 0;
-    end    
+    end
 
   else
     --Otherwise, don't make robot backstep
@@ -321,15 +321,15 @@ function update()
 --	local ph = walk.ph or 0;
 
   vStep[1] = math.min(0.03, math.max(vStep[1],-0.03));
---    if ph>0.95 then 
+--    if ph>0.95 then
 --    print(string.format("Ball position: %.2f %.2f %.2f",ball.x,ball.y,ballA));
 --    print(string.format("Approach velocity:%.2f %.2f %.2f",vStep[1],vStep[2],vStep[3]));
 --    end
 
   if kick_type == 1 and math.abs(vStep[1]) <= 0.01 then
-  	vStep[1] = 0;
+    vStep[1] = 0;
   end
-   
+
   walk.set_velocity(vStep[1],vStep[2],vStep[3]);
 
   if (t - ball.t > tLost) and role>0 then
@@ -355,7 +355,7 @@ function update()
     angle_check_done=false;
   else
   end
-  
+
 --for walkkick
 --[[
   ball=wcm.get_ball();
@@ -367,7 +367,7 @@ function update()
   if ballGlobal[1] > 0 and util.sign(goal_defend[1]) > 0 then
 	kick_type = 2;
   elseif ballGlobal[1] < 0 and util.sign(goal_defend[1]) < 0 then
-  	kick_type = 2;
+    kick_type = 2;
   else
 	kick_type = 1;
   end

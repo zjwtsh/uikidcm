@@ -83,7 +83,7 @@ end
 
 
 function push_yuyv(obj)
---print('receive yuyv parts');
+--  print('receive yuyv parts');
   yuyv = cutil.test_array();
   name = parse_name(obj.name);
   if (FIRST_YUYV == true) then
@@ -105,7 +105,7 @@ function push_yuyv(obj)
     end
     yuyv_t_full = unix.time();
     local yuyv_str = "";
-      for i = 1 , name.parts do --fixed
+    for i = 1 , name.parts do --fixed
       yuyv_str = yuyv_str .. yuyv_all[i];
     end
 

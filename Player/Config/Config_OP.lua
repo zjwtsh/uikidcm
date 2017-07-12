@@ -62,9 +62,9 @@ game.nPlayers = 5;
 fsm = {};
 --SJ: loading FSM config  kills the variable fsm, so should be called first
 loadconfig('FSM/Config_OP_FSM')
-fsm.game = 'RoboCup';
-fsm.head = {'GeneralPlayer'};
-fsm.body = {'GeneralPlayer'};
+fsm.game = '';
+fsm.head = {''};
+fsm.body = {''};
 
 --Behavior flags, should be defined in FSM Configs but can be overrided here
 fsm.kickoff_wait_enable = 0;

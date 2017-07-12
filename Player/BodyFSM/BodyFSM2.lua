@@ -147,7 +147,7 @@ sm:set_transition( bodyAnticipate,'dive',bodyDive );
 --sm:set_transition(bodyChase, 'ballLost', bodyPositionGoalie);    --tse
 --sm:set_transition(bodyChase, 'ballFar', bodyPositionGoalie);     --tse
 sm:set_transition(bodyChase, 'ballClose', bodyApproach);
-sm:set_transition(bodyChase, 'ballLost', bodySearch);      --tse   
+sm:set_transition(bodyChase, 'ballLost', bodySearch);      --tse
 sm:set_transition(bodyChase, 'ballFar', bodySearch);       --tse
 
 -- Chase after the ball if you make a save
