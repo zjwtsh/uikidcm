@@ -176,9 +176,9 @@ function detect(color)
   headAngle = {Body.get_sensor_headpos()[2],Body.get_sensor_headpos()[1]};	--b51
 
 	--if (color == "arbitrary") then
-	if (true) then
-		return detectArbitraryBall();
-	end
+--if (true) then
+--	return detectArbitraryBall();
+--end
 
   local ball = {};
   ball.detect = 0;

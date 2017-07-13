@@ -124,7 +124,7 @@ function entry()
 	--os.exit()
 
   print('temp test for transfering of field color from ball lut to env lut');
-  camera.lut = add_ballfield_lut(camera.lut,camera.lut_ball);
+--  camera.lut = add_ballfield_lut(camera.lut,camera.lut_ball);
 	--writeSplittedBallLut('envLut.txt', camera.lut)
 	--print('exiting the test routine')
 	--os.exit()
@@ -241,15 +241,15 @@ function update()
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
   else
 
---    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
---                                          carray.pointer(camera.lut),
---                                          camera.width/2,
---                                          camera.height);
-    labelA.data, labelA.dataBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
+    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
                                           carray.pointer(camera.lut),
-																					carray.pointer(camera.splittedBallLut),
                                           camera.width/2,
                                           camera.height);
+--    labelA.data, labelA.dataBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
+--                                          carray.pointer(camera.lut),
+--																					carray.pointer(camera.splittedBallLut),
+--                                          camera.width/2,
+--                                          camera.height);
   end
 
 	--print('exiting the test routine')
