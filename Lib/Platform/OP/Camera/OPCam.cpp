@@ -23,6 +23,11 @@ typedef struct {
 typedef unsigned char uint8;
 typedef unsigned int uint32;
 
+/* for testing with a single image only */
+//uint32 fileBuf[320*480*2];
+//uint32* image = NULL;
+/* end of testing */
+
 CAMERA_STATUS *cameraStatus = NULL;
 int init = 0;
 
@@ -213,15 +218,15 @@ int luaopen_OPCam (lua_State *L) {
       v4l2_init( res );
       v4l2_stream_on();
       cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));// Allocate our camera statu
-  /************* Read Image From File******************/
-  //char *fileName = "/home/nvidia/yuyvImg.jpg";
-  //image= (uint32 *)malloc(614400);
-  //int fd = open(fileName, O_RDONLY);
-  //read(fd, image, 614400);
-  //close(fd);
-  
-  /*******************************************/
-
+//			
+//			/************* Read Image From File******************/
+//			char *fileName = "./sample.yuyv";
+//			image= fileBuf;
+//			int fd = open(fileName, O_RDONLY);
+//			std::cout << "fd = ((((((((((((((((: " << fd << std::endl;
+//			read(fd, image, 614400);
+//			close(fd);
+//			/*******************************************/
       /// TODO: free this
     }
   }
