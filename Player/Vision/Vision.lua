@@ -21,6 +21,7 @@ enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
 black_depth = Config.vision.black_depth or 8
 black_width = Config.vision.black_width or 8
 lut_stage = Config.vision.lut_stage or 64
+use_arbitrary_ball = Config.vision.use_arbitrary_ball or false;
 
 currVel = vector.zeros(3);
 
@@ -107,27 +108,31 @@ function entry()
 
   -- Initiate Detection
   Detection.entry();
-  
+
   --set to switch cameras. 
   -- Load the lookup table
-  print('loading environment lut: '..Config.camera.lut_file);
-  camera.lut = load_general_lut(Config.camera.lut_file);
+	if(use_arbitrary_ball) then
+		print('loading environment lut: '..Config.camera.lut_file);
+		camera.lut = load_general_lut(Config.camera.lut_file);
 
-  print('loading ball lut: '..Config.camera.lut_ball_file);
-  camera.lut_ball = load_general_lut(Config.camera.lut_ball_file);
-	--writeSplittedBallLut('ballLut.txt', camera.lut_ball)
+		print('loading ball lut: '..Config.camera.lut_ball_file);
+		camera.lut_ball = load_general_lut(Config.camera.lut_ball_file);
+		--writeSplittedBallLut('ballLut.txt', camera.lut_ball)
 
-  print('creating splitted ball lut');
-  camera.splittedBallLut = split_ball_lut(camera.lut,camera.lut_ball);
-	--writeSplittedBallLut('splittedLut.txt', camera.splittedBallLut)
-	--print('exiting the test routine')
-	--os.exit()
+		print('creating splitted ball lut');
+		camera.splittedBallLut = split_ball_lut(camera.lut,camera.lut_ball);
+		--writeSplittedBallLut('splittedLut.txt', camera.splittedBallLut)
+		--print('exiting the test routine')
+		--os.exit()
 
-  print('temp test for transfering of field color from ball lut to env lut');
-  camera.lut = add_ballfield_lut(camera.lut,camera.lut_ball);
-	--writeSplittedBallLut('envLut.txt', camera.lut)
-	--print('exiting the test routine')
-	--os.exit()
+		print('temp test for transfering of field color from ball lut to env lut');
+		camera.lut = add_ballfield_lut(camera.lut,camera.lut_ball);
+		--writeSplittedBallLut('envLut.txt', camera.lut)
+		--print('exiting the test routine')
+		--os.exit()
+	else
+		camera.lut = load_general_lut(Config.camera.lut_file);
+	end
 
   --ADDED to prevent crashing with old camera config
   if Config.camera.lut_file_obs == null then
@@ -240,16 +245,18 @@ function update()
   if webots == 1 then
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
   else
-
---    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
---                                          carray.pointer(camera.lut),
---                                          camera.width/2,
---                                          camera.height);
-    labelA.data, labelA.dataBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
-                                          carray.pointer(camera.lut),
-																					carray.pointer(camera.splittedBallLut),
-                                          camera.width/2,
-                                          camera.height);
+		if(use_arbitrary_ball) then
+			labelA.data, labelA.dataBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
+																						carray.pointer(camera.lut),
+																						carray.pointer(camera.splittedBallLut),
+																						camera.width/2,
+																						camera.height);
+		else
+			labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+																						carray.pointer(camera.lut),
+																						camera.width/2,
+																						camera.height);
+		end
   end
 
 	--print('exiting the test routine')

@@ -53,6 +53,8 @@ yellowGoals = Config.world.use_same_colored_goal or 0; --Config.vision.enable_2_
 
 enable_timeprinting = Config.vision.print_time;
 
+use_arbitrary_ball = Config.vision.use_arbitrary_ball or false;
+
 tstart = unix.time();
 Tball = 0;
 TgoalYellow = 0;
@@ -120,12 +122,14 @@ function update()
 
   -- ball detector
   tstart = unix.time();
-  ball = detectBall.detect(colorOrange);
+	if(use_arbitrary_ball) then
+		ball = detectBall.detect("arbitrary");
+	else
+		ball = detectBall.detect(colorOrange);
+	end
   Tball = unix.time() - tstart;
-  
 
   -- goal detector
-  
   if use_point_goal == 1 then
     ballYellow = detectBall.detect(colorYellow);
     ballCyan = detectBall.detect(colorCyan);
@@ -144,7 +148,6 @@ function update()
   end
 
   -- line detection
-  
   if enableLine == 1 then
     tstart = unix.time();
     line = detectLine.detect();

@@ -62,49 +62,82 @@ function detectArbitraryBall()
 																													Vision.labelA.dataBall, 
 																													Vision.labelA.m, 
 																													Vision.labelA.n, 
-																													3*math.pi/180 --headAngle[2]
-																												);
+																													27*math.pi/180
+																													);
 
   if (not ballPropsB or #ballPropsB == 0) then return ball; end
 
 	local minEval = math.huge;
-	local minId;
+	local minId = 0;
 
 	for i = 1, #ballPropsB do
 		
-		--print("cntr", ballPropsB[i].blCntr, ballPropsB[i].bkCntr, ballPropsB[i].wtCntr, ballPropsB[i].radiusRate)
-		--print("bbox", ballPropsB[i].boundingBox[1], ballPropsB[i].boundingBox[2], ballPropsB[i].boundingBox[3], ballPropsB[i].boundingBox[4])
+		print("cntr", ballPropsB[i].blCntr, ballPropsB[i].bkCntr, ballPropsB[i].wtCntr, ballPropsB[i].radiusRate)
+		print("bbox", ballPropsB[i].boundingBox[1], ballPropsB[i].boundingBox[2], ballPropsB[i].boundingBox[3], ballPropsB[i].boundingBox[4])
 
 		local check_passed = true; 
+		local totalCntr = ballPropsB[i].blCntr + ballPropsB[i].bkCntr + ballPropsB[i].wtCntr;
+
 		-- calculate the probability from those returned value
 		if(ballPropsB[i].radiusRate < 0.3) then
 			check_passed = false;
 		end
 	
 		if(check_passed) then
+			fillRate = totalCntr/((ballPropsB[i].boundingBox[2]-ballPropsB[i].boundingBox[1]+1)*(ballPropsB[i].boundingBox[4]-ballPropsB[i].boundingBox[3]+1));
+			if(fillRate < 0.2) then
+				check_passed = false;
+			end
+		end
+
+		if(check_passed) then
+			squareRate = (ballPropsB[i].boundingBox[2]-ballPropsB[i].boundingBox[1]+1)/(ballPropsB[i].boundingBox[4]-ballPropsB[i].boundingBox[3]+1);
+			if(squareRate > 1) then
+				squareRate = 1/squareRate;
+			end
+			if(squareRate <0.4) then
+				check_passed = false;
+			end
+		end 
+
+		if(check_passed) then
 			background_check_offset = 2;
 			local checkBox = ballPropsB[i].boundingBox;
 			checkBox = getCheckBoxWithOffset (checkBox, background_check_offset);
 			--print(unpack(checkBox));
 			
-			local statsResult = ImageProc.bounding_field_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, colorField, checkBox);
+			statsResult = ImageProc.bounding_field_stats(Vision.labelA.data, Vision.labelA.m, Vision.labelA.n, colorField, checkBox);
 			--print("backgroundRatio", statsResult.backgroundRatio)
+			if(statsResult.backgroundRatio < 0.3) then
+				check_passed = false;
+			end
+		end
 
-			local totalCntr = ballPropsB[i].blCntr + ballPropsB[i].bkCntr + ballPropsB[i].wtCntr;
+		if(check_passed) then
 
-			Kcolor = 0.33;
-			Kradius = 0.33;
-			Kground = 2.0;
+			Kcolor = 0.2;
+			Kradius = 0.2;
+			Kground = 0.2;
+			Ksquare = 0.2;
+			Kfill = 0.2;
 			
-			Kcolor =1.5 * math.sqrt((4/math.pi)*totalCntr) / 90;
+			--Kcolor =1.5 * math.sqrt((4/math.pi)*totalCntr) / 90;
 
 			local evaluation = Kcolor * ((ballPropsB[i].blCntr/totalCntr - 0.4)^2 + 
 					(ballPropsB[i].wtCntr/totalCntr - 0.4)^2 + 
 					(ballPropsB[i].bkCntr/totalCntr - 0.2)^2) + 
 					Kradius * (ballPropsB[i].radiusRate - 1)^2 +
-					Kground * (statsResult.backgroundRatio -1)^2;
+					Kground * (statsResult.backgroundRatio -1)^2 +
+					Kfill*(fillRate -0.75)^2 +
+					Ksquare*(squareRate - 1)^2;
 
-			--print("evaluation value", evaluation);
+			print("rad,fill,square,bkg,EV:", ballPropsB[i].radiusRate, 
+					fillRate, 
+					squareRate, 
+					statsResult.backgroundRatio, 
+					evaluation
+					);
+
 			if(evaluation<minEval) then
 				minEval = evaluation;
 				minId = i;
@@ -112,6 +145,11 @@ function detectArbitraryBall()
 		end
 	end
 
+	if(minId == 0) then
+		--print('exiting the test routine')
+	  --os.exit()
+		return ball;
+	end
 	--print("best ball fitted is", minEval, minId)
 
 	ball.propsA = {};
@@ -131,7 +169,7 @@ function detectArbitraryBall()
 	-- Coordinates of ball
 	local scale = math.max(dArea/diameter, ball.propsA.axisMajor/diameter);
 
-	print("interface to previous:",dArea, ballCentroid, scale)
+	--print("interface to previous:",dArea, ballCentroid, scale)
 
 	v = HeadTransform.coordinatesA(ballCentroid, scale);
 	v_inf = HeadTransform.coordinatesA(ballCentroid,0.1);
@@ -161,8 +199,8 @@ function detectArbitraryBall()
 
 	t003 = unix.time();
 
-	print('exiting the test routine')
-	os.exit()
+	--print('exiting the test routine')
+	--os.exit()
 
 	return ball;
 
@@ -175,8 +213,8 @@ function detect(color)
 
   headAngle = {Body.get_sensor_headpos()[2],Body.get_sensor_headpos()[1]};	--b51
 
-	--if (color == "arbitrary") then
-	if (true) then
+	if (color == "arbitrary") then
+	--if (true) then
 		return detectArbitraryBall();
 	end
 

@@ -60,7 +60,7 @@ static int lua_get_image(lua_State *L) {
     return 1;
   }
 
-  //uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
+  uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
   
   // Increment the count
   count++;
