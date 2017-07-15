@@ -58,7 +58,7 @@ function update()
     return "player";
   end
 
-  if goalie_type>1 then 
+  if goalie_type>1 then
     walk.stop();
   else
     return 'position';
@@ -66,7 +66,7 @@ function update()
 
   local t = Body.get_time();
   ball = wcm.get_ball();
- 
+
   ball_v_inf = wcm.get_ball_v_inf();
   ball.x=ball_v_inf[1];
   ball.y=ball_v_inf[2];
@@ -78,7 +78,7 @@ function update()
 
   -- See where our home position is...
 
-  if goalie_type<3 then 
+  if goalie_type<3 then
     --moving goalie
     homePose=position.getGoalieHomePose();
   else
@@ -100,7 +100,7 @@ function update()
 	(ballGlobal[2]-goal_defend[2])^2);
   ballX_defend = math.abs(ballGlobal[1]-goal_defend[1]);
 
-  --TODO: Diving handling 
+  --TODO: Diving handling
 
   ball_v = math.sqrt(ball.vx^2+ball.vy^2);
 
@@ -108,17 +108,17 @@ function update()
     if t-t0>tStartDelay and t-ball.t<0.1 then
 
       ballR=math.sqrt(ball.x^2+ball.y^2);
-      --print(string.format("ballR: %.1f",ballR));                     
+      --print(string.format("ballR: %.1f",ballR));
 
       if ball_v>ball_velocity_th and
-	ball.vx<ball_velocity_thx then
-        print(string.format("Ball: %.1f %.1f Velocity: %.2f %.2f aBall: %.1f", 
-	ball.x,ball.y,ball.vx,ball.vy,aBall));
+        ball.vx<ball_velocity_thx then
+        print(string.format("Ball: %.1f %.1f Velocity: %.2f %.2f aBall: %.1f",
+        ball.x,ball.y,ball.vx,ball.vy,aBall));
       end
 
-      if ball.vx<ball_velocity_thx and 
-	ballR<rCloseDive and
-	ballR>rMinDive and
+      if ball.vx<ball_velocity_thx and
+        ballR<rCloseDive and
+        ballR>rMinDive and
         ball_v>ball_velocity_th then
 
         t0=t;
@@ -126,14 +126,14 @@ function update()
         print("Ball velocity:",ball.vx,ball.vy);
         print("Projected y pos:",py);
         if math.abs(py)<dive_threshold_y then
-          if py>center_dive_threshold_y then 
-  	    Speak.talk('Left');
+          if py>center_dive_threshold_y then
+            Speak.talk('Left');
             dive.set_dive("diveLeft");
           elseif py<-center_dive_threshold_y then
-  	    Speak.talk('Right');
+            Speak.talk('Right');
             dive.set_dive("diveRight");
-          else 
-	    Speak.talk('Center');
+          else
+            Speak.talk('Center');
             dive.set_dive("diveCenter");
           end
           Motion.event("dive");
@@ -153,10 +153,10 @@ function update()
 
   kick_away = false;
 
---  if goalie_dive~=1 or goalie_type<3 then 
+--  if goalie_dive~=1 or goalie_type<3 then
   if true then --Always reposition
     if t-ball.t<0.1 and ball_v < ball_velocity_th2 then
-      --ball is not moving, check whether we go out for kicking      
+      --ball is not moving, check whether we go out for kicking
       if ballX_defend<rCloseX2 or
 --       ((ballX_defend<rCloseX or ballR_defend<rClose)
        (ballR_defend<rClose
@@ -168,17 +168,17 @@ function update()
 
     attackBearing = wcm.get_attack_bearing();
     if Config.fsm.goalie_reposition==1 then --check yaw error only
-      if (t - t0 > timeout) and 
-  	math.abs(aBall) > thFar[3] then
+      if (t - t0 > timeout) and
+        math.abs(aBall) > thFar[3] then
 
         Motion.event("walk");
         return 'position';
       end
     --check yaw and position error
-    elseif Config.fsm.goalie_reposition==2 then 
-      if (t - t0 > timeout) and 
-	( rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or
-  	math.abs(aBall) > thFar[3]) then
+    elseif Config.fsm.goalie_reposition==2 then
+      if (t - t0 > timeout) and
+	      (rHomeRelative>math.sqrt(thFar[1]^2+thFar[2]^2) or
+        math.abs(aBall) > thFar[3]) then
 
         Motion.event("walk");
         return 'position';

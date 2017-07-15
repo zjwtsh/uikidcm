@@ -62,14 +62,14 @@ function update()
       print("Broadcast:", broadcast_enable);
     end
   end
-  vcm.set_camera_broadcast(broadcast_enable); 
+  vcm.set_camera_broadcast(broadcast_enable);
   if vcm.get_image_count()>imagecount then
     imagecount=vcm.get_image_count();
     -- Always send non-image data
     Broadcast.update(broadcast_enable);
     -- Send image data every so often
     if( imagecount % imgRate == 0 ) then
-      Broadcast.update_img(broadcast_enable);    
+      Broadcast.update_img(broadcast_enable);
     end
     return true;
   end
