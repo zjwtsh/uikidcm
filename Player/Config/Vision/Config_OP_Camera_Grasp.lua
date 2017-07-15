@@ -64,7 +64,8 @@ camera.param[5] = {key='white balance temperature', val={500}};
 camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={250}};
 --camera.lut_file = 'lut_low_contrast_pink_n_green.raw';
-camera.lut_file = 'new_darwin.raw';
-camera.lut_ball_file = 'FieldandBall0318.raw';
+camera.lut_file = 'lut_170712xianmen.raw';
+camera.lut_ball_file = 'lut_170712qiudi.raw';
+
 
 
