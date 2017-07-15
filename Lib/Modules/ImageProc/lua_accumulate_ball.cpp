@@ -74,7 +74,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 
   float lineAngle, maxRadius, maxNoisy, currRadius;
 
-	//std::cout << pointProcFlag.size();
+	/*std::cout << pointProcFlag.size();
   for (int j = 0; j < n; j++)			//此处里层应该循环width	
 	{
 		//std::cout << j ;
@@ -85,6 +85,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
+	*/
 
   for (int j = 0; j < n; j++)			//此处里层应该循环width	
   {
