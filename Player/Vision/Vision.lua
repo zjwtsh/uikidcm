@@ -25,46 +25,43 @@ use_arbitrary_ball = Config.vision.use_arbitrary_ball or false;
 
 currVel = vector.zeros(3);
 
-if use_gps_only==0 then
-  require('Camera');
-  require('Detection');
+require('Camera');
+require('Detection');
 
-  if (Config.camera.width ~= Camera.get_width()
-      or Config.camera.height ~= Camera.get_height()) then
-    print('Camera width/height mismatch');
-    print('Config width/height = ('..Config.camera.width..', '..Config.camera.height..')');
-    print('Camera width/height = ('..Camera.get_width()..', '..Camera.get_height()..')');
-    error('Config file is not set correctly for this camera. Ensure the camera width and height are correct.');
-  end
-  vcm.set_image_width(Config.camera.width);
-  vcm.set_image_height(Config.camera.height);
-
-  camera = {};
-
-  camera.width = Camera.get_width();
-  camera.height = Camera.get_height();
-  camera.npixel = camera.width*camera.height;
-  camera.image = Camera.get_image();
-  camera.status = Camera.get_camera_status();
-  camera.switchFreq = Config.camera.switchFreq;
-  camera.ncamera = Config.camera.ncamera;
-  -- Initialize the Labeling
-  labelA = {};
-  -- labeled image is 1/4 the size of the original
-  labelA.m = camera.width/2;
-  labelA.n = camera.height/2;
-  labelA.npixel = labelA.m*labelA.n;
-
-  scaleB = Config.vision.scaleB;
-  labelB = {};
-  labelB.m = labelA.m/scaleB;
-  labelB.n = labelA.n/scaleB;
-  labelB.npixel = labelB.m*labelB.n;
-	vcm.set_image_scaleB(Config.vision.scaleB);
-  print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
-  print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
-
+if (Config.camera.width ~= Camera.get_width()
+    or Config.camera.height ~= Camera.get_height()) then
+  print('Camera width/height mismatch');
+  print('Config width/height = ('..Config.camera.width..', '..Config.camera.height..')');
+  print('Camera width/height = ('..Camera.get_width()..', '..Camera.get_height()..')');
+  error('Config file is not set correctly for this camera. Ensure the camera width and height are correct.');
 end
+vcm.set_image_width(Config.camera.width);
+vcm.set_image_height(Config.camera.height);
+
+camera = {};
+
+camera.width = Camera.get_width();
+camera.height = Camera.get_height();
+camera.npixel = camera.width*camera.height;
+camera.image = Camera.get_image();
+camera.status = Camera.get_camera_status();
+camera.switchFreq = Config.camera.switchFreq;
+camera.ncamera = Config.camera.ncamera;
+-- Initialize the Labeling
+labelA = {};
+-- labeled image is 1/4 the size of the original
+labelA.m = camera.width/2;
+labelA.n = camera.height/2;
+labelA.npixel = labelA.m*labelA.n;
+
+scaleB = Config.vision.scaleB;
+labelB = {};
+labelB.m = labelA.m/scaleB;
+labelB.n = labelA.n/scaleB;
+labelB.npixel = labelB.m*labelB.n;
+vcm.set_image_scaleB(Config.vision.scaleB);
+print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
+print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
 
 colorOrange = Config.color.orange;
 colorYellow = Config.color.yellow;
@@ -100,11 +97,6 @@ function entry()
 
   -- Start the HeadTransform machine
   HeadTransform.entry();
-
-  --If we are only using gps info, skip camera init 	
-  if use_gps_only>0 then
-    return;
-  end
 
   -- Initiate Detection
   Detection.entry();
@@ -147,11 +139,7 @@ function entry()
     load_lut_obs(Config.camera.lut_file_obs);
   end
 
-  if Config.platform.name=="NaoV4" then
-    camera_init_naov4();
-  else
-    camera_init();
-  end 
+  camera_init();
 
   -- in default, use prelearned colortable
   vcm.set_image_learn_lut(0);

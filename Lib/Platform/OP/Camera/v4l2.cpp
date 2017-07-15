@@ -38,13 +38,9 @@
 
 int video_fd = -1;
 int nbuffer = 2;
-int width = 320;
-int height = 240;
 char invert = 0;
-//int width = 640;
-//int height = 480;
-
-
+int width = 640;
+int height = 480;
 
 uint8_t* yuyv_rotate(uint8_t* frame, int width, int height);
 
@@ -248,11 +244,11 @@ int v4l2_uninit_mmap() {
 int v4l2_init(int resolution) {
 
   if( resolution == 1 ){
+    width = 640;
+    height = 480;
+  } else {
     width = 1280;
     height = 720;
-  } else {
-    width = 320;
-    height = 240;
   }
 
   struct v4l2_capability video_cap;
