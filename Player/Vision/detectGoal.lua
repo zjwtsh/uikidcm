@@ -24,7 +24,7 @@ check_for_ground_whole = 0;
 goalSizeThresh = 50;
 
 --this threshold makes sure that the posts don't have more than a certain ratio of their length under the horizon
-goalHorizonCheck = 0.8;
+goalHorizonCheck = 1.0;
 
 --Use tilted boundingbox? (robots with nonzero bodytilt)
 use_tilted_bbox = Config.vision.use_tilted_bbox or 0; --0
@@ -92,7 +92,7 @@ function detect(color)
   local npost = 0;
   local ivalidB = {};
   local postA = {};
---  vcm.add_debug_message(string.format("Checking %d posts\n",#postB));
+  vcm.add_debug_message(string.format("Checking %d posts\n",#postB));
 
   lower_factor = 0.3;
 
@@ -110,19 +110,19 @@ function detect(color)
       boundingBoxLower[3] = lower_factor * boundingBoxLower[3] + (1 - lower_factor) * boundingBoxLower[4];
 
     -- size and orientation check
---    vcm.add_debug_message(string.format("Area check: %d\n", 
---      postStats.area));
+    vcm.add_debug_message(string.format("Area check: %d\n", 
+      postStats.area));
     if (postStats.area < th_min_area) then
---      vcm.add_debug_message("Area check fail\n");
+      vcm.add_debug_message(string.format("Area check fail\n"));
       valid = false;
     end
 
     if valid then
       local orientation= postStats.orientation - tiltAngle;
---      vcm.add_debug_message(string.format("Orientation check: %f\n", 
---        180*orientation/math.pi));
+        vcm.add_debug_message(string.format("Orientation check: %f\n", 
+          180*orientation/math.pi));
       if (math.abs(orientation) < th_min_orientation) then
---        vcm.add_debug_message("orientation check fail\n");
+        vcm.add_debug_message("orientation check fail\n");
         valid = false;
       end
     end
@@ -138,7 +138,7 @@ function detect(color)
         min_extent = th_min_fill_extent[2]
       end
       if (extent < min_extent) then 
---        vcm.add_debug_message("Fill extent check fail\n");
+        vcm.add_debug_message(string.format("Fill extent check fail\n"));
         valid = false; 
       end
     end
@@ -146,10 +146,9 @@ function detect(color)
     --aspect ratio check
     if valid then
       local aspect = postStats.axisMajor/postStats.axisMinor;
---      vcm.add_debug_message(string.format("Aspect check: %d\n",aspect));
-      if (aspect < th_aspect_ratio[1]) or 
-	(aspect > th_aspect_ratio[2]) then 
---        vcm.add_debug_message("Aspect check fail\n");
+      vcm.add_debug_message(string.format("Aspect check: %d\n",aspect));
+      if (aspect < th_aspect_ratio[1]) or (aspect > th_aspect_ratio[2]) then 
+        vcm.add_debug_message("Aspect check fail\n");
         valid = false; 
       end
     end
@@ -158,19 +157,19 @@ function detect(color)
     if valid then
 
       local leftPoint= postStats.centroid[1] - 
-	postStats.axisMinor/2 * math.abs(math.cos(tiltAngle));
+        postStats.axisMinor/2 * math.abs(math.cos(tiltAngle));
       local rightPoint= postStats.centroid[1] + 
-	postStats.axisMinor/2 * math.abs(math.cos(tiltAngle));
+        postStats.axisMinor/2 * math.abs(math.cos(tiltAngle));
 
---      vcm.add_debug_message(string.format(
---  "Left and right point: %d / %d\n", leftPoint, rightPoint));
+      vcm.add_debug_message(string.format(
+        "Left and right point: %d / %d\n", leftPoint, rightPoint));
 
       local margin = math.min(leftPoint,Vision.labelA.m-rightPoint);
 
---      vcm.add_debug_message(string.format("Edge margin check: %d\n",margin));
+      vcm.add_debug_message(string.format("Edge margin check: %d\n",margin));
 
       if margin<=th_edge_margin then
---        vcm.add_debug_message("Edge margin check fail\n");
+        vcm.add_debug_message("Edge margin check fail\n");
         valid = false;
       end
 
@@ -184,21 +183,21 @@ function detect(color)
       local checkpoint_top = postStats.boundingBox[4];
       --gets the length of the post
       local checkpoint_dif = checkpoint_top - checkpoint;
-      -- Vision:add_debug_message(string.format("Length: %f \n", checkpoint_dif));
+      vcm.add_debug_message(string.format("checkpoint: %d, checkpoint_top: %d, Length: %f \n",checkpoint, checkpoint_top, checkpoint_dif));
 
       --post can't be too short
       if (checkpoint_dif < goalSizeThresh) then
-        -- Vision:add_debug_message(string.format("Too short: %f < %f \n", checkpoint_dif, goalSizeThresh));
+        vcm.add_debug_message(string.format("Too short: %f < %f \n", checkpoint_dif, goalSizeThresh));
         valid = false;
       end
 
       --check if the post is appropriately around the horizon
       if checkpoint > horizonA then
-        -- Vision:add_debug_message(string.format("Horizon check failed: %d > %d\n",checkpoint,horizonA));
+        vcm.add_debug_message(string.format("Horizon check failed: %d > %d\n",checkpoint,horizonA));
         valid = false;
       end
       if checkpoint_top < horizonA then
-        -- Vision:add_debug_message(string.format("Horizon top check failed: %d < %d\n",checkpoint_top, horizonA));
+        vcm.add_debug_message(string.format("Horizon top check failed: %d < %d\n",checkpoint_top, horizonA));
         valid = false;
       end
       -- Vision:add_debug_message(string.format("GoalBottom: %f, GoalTop: %f, Horizon: %f \n", checkpoint_top, checkpoint, horizonA));
@@ -206,12 +205,13 @@ function detect(color)
 
       --proportion of the post underneath the Horizon
       local ratio = (checkpoint_top - horizonA)/checkpoint_dif;
-      -- Vision:add_debug_message(string.format("ratio: %f \n", ratio));
+        vcm.add_debug_message(string.format("checkpoint_top: %f, horizonA: %d, checkpoint_dif: %f, ratio: %f\n", 
+          checkpoint_top, horizonA, checkpoint_dif, ratio));
       --if too much of the post is under the horizon, then it can't be a post
-      if (ratio > goalHorizonCheck) then
---        Vision:add_debug_message(string.format("Too much under horizon"));
-        valid = false;
-      end
+      --if (ratio > goalHorizonCheck) then
+      --  vcm.add_debug_message(string.format("Too much under horizon\n"));
+      --  valid = false;
+      --end
     end
 
     -- ground check at whole post to kill lines
@@ -242,11 +242,11 @@ function detect(color)
       
       -- is there to much green near the post?
       if (green_ratio_wholeL>th_max_green_ratio_whole) then
-        --Vision:add_debug_message(string.format("Left whole check fail: %.2f > %.2f\n",green_ratio_wholeL,th_max_green_ratio_whole));
-          valid = false;
+        vcm.add_debug_message(string.format("Left whole check fail: %.2f > %.2f\n",green_ratio_wholeL,th_max_green_ratio_whole));
+        valid = false;
       end
       if (green_ratio_wholeR>th_max_green_ratio_whole) then
-        --Vision:add_debug_message(string.format("Right whole check fail: %.2f > %.2f\n",green_ratio_wholeR,th_max_green_ratio_whole));
+          vcm.add_debug_message(string.format("Right whole check fail: %.2f > %.2f\n",green_ratio_wholeR,th_max_green_ratio_whole));
           valid = false;
       end
     end
@@ -269,12 +269,11 @@ function detect(color)
         local fieldBBoxArea = Vision.bboxArea(fieldBBox);
 
 	      green_ratio=fieldBBoxStats.area/fieldBBoxArea;
---        vcm.add_debug_message(string.format(
---		      "Green ratio check: %.2f\n",green_ratio));
+        vcm.add_debug_message(string.format("Green ratio check: %.2f\n",green_ratio));
 
         -- is there green under the ball?
         if (green_ratio<th_min_green_ratio) then
---          vcm.add_debug_message("Green check fail");
+          vcm.add_debug_message("Green check fail\n");
           valid = false;
         end
       end
