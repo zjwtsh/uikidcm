@@ -128,6 +128,11 @@ world.aCornerFilter = 0.03;
 
 world.aLineFilter = 0.04;
 
+world.rLineFilterTop = 0.0001;
+world.aLineFilterTop = 0.03;
+world.rLineFilterBtm = 0.0001;
+world.aLineFilterBtm = 0.02;
+
 --New two-goalpost localization
 world.use_new_goalposts=1;
 --For NAO

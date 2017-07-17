@@ -12,7 +12,7 @@ require ('ImageProc');
 require ('io');
 
 
-function Entry() 
+function Entry()
   vcm.set_image_width(Config.camera.width);
   vcm.set_image_height(Config.camera.height);
   camera = {};
@@ -38,23 +38,23 @@ function Entry()
   camera.lut = carray.new('c', 262144);
   load_lut(Config.camera.lut_file);
 	print(Config.camera.lut_file);
-	
+
   imcount = 0;
-  
+
   Cam_init();
-  
+
 end
 
 function Cam_init()
   for c=1,Config.camera.ncamera do
-    Camera.select_camera(c-1);   
+    Camera.select_camera(c-1);
     for i,auto_param in ipairs(Config.camera.auto_param) do
-    	Camera.set_param(auto_param.key, auto_param.val[c]);
-    	unix.usleep(10000)
+      Camera.set_param(auto_param.key, auto_param.val[c]);
+      unix.usleep(10000)
     end
 --    print(Config.camera.brightness)
---    Camera.set_param('Brightness', Config.camera.brightness);     
---    Camera.set_param('White Balance, Automatic', 1); 
+--    Camera.set_param('Brightness', Config.camera.brightness);
+--    Camera.set_param('White Balance, Automatic', 1);
     --Camera.set_param('Auto Exposure', 1);
 --    Camera.set_param('Auto Exposure',0);
     for i,param in ipairs(Config.camera.param) do
@@ -64,12 +64,12 @@ function Cam_init()
 --    Camera.set_param('White Balance, Automatic', 0);
 --    local expo = Camera.get_param('Exposure');
 --    local gain = Camera.get_param('Gain');
---    Camera.set_param('Auto Exposure',1);   
+--    Camera.set_param('Auto Exposure',1);
 --    Camera.set_param('Auto Exposure',0);
 --    Camera.set_param ('Exposure', expo);
 --    Camera.set_param ('Gain', gain);
     print('Camera #'..c..' set');
-  end 
+  end
 end
 
 
@@ -78,15 +78,15 @@ function Read_Num()
   while (str == nil) do
     unix.usleep (10000);
     str = io.read();
-  end 
+  end
   num = {};
   for i = 1, #str do
     num[i] = tonumber (string.byte(str, i));
     if (num[i] < 48 or num [i] > 57) then
       print ('not an integer!');
       return -1;
-    end 
-  end 
+    end
+  end
   local result = 0;
   for i = 1, #num do
     result = result + (num [i]- 48)*(10 ^ (#num - i));
@@ -112,7 +112,7 @@ function Set_Brightness()
   local gain = Camera.get_param('gain');
   while (param == -1 or param > 255 or (param % 4) ~= 0) do
     unix.usleep (10000);
-    param = Read_Num(); 
+    param = Read_Num();
   end
   Camera.set_param ('exposure, auto', 1);
   Camera.set_param ('white balance temperature, auto', 0);
@@ -130,7 +130,7 @@ function Set_Contrast()
   while (param < 16 or param > 64) do
     unix.usleep (10000);
     print ('Type in a integer between 16 and 64');
-    param = Read_Num(); 
+    param = Read_Num();
   end
   Camera.set_param ('contrast', param);
   print('Contrast: ', Camera.get_param('contrast'))
@@ -142,8 +142,8 @@ function Set_Saturation()
   while (param < 0 or param > 255) do
     unix.usleep (10000);
     print ('Type in a integer between 0 and 255');
-    param = Read_Num(); 
-  end 
+    param = Read_Num();
+  end
   Camera.set_param ('saturation', param);
   print('Saturation: ', Camera.get_param('saturation'))
 end
@@ -154,8 +154,8 @@ function Set_Exposure()
   while (param < 0 or param > 1800) do
     unix.usleep (10000);
     print ('Type in a integer between 0 and 1800');
-    param = Read_Num(); 
-  end    
+    param = Read_Num();
+  end
   --local backup = Camera.get_param ('Gain');
   --Camera.set_param ('White Balance, Automatic', 0);
   --Camera.set_param ('Auto Exposure', 1)
@@ -172,7 +172,7 @@ function Set_Gain()
   while (param < 0 or param > 255) do
     unix.usleep (10000);
     print ('Type in a integer between 0 and 255');
-    param = Read_Num(); 
+    param = Read_Num();
   end
   --local backup = Camera.get_param ('Exposure');
   --Camera.set_param ('White Balance, Automatic', 1);
@@ -190,8 +190,8 @@ function Set_Sharpness()
   while (param < 0 or param > 5) do
     unix.usleep (10000);
     print ('Type in a integer between 0 and 5');
-    param = Read_Num(); 
-  end 
+    param = Read_Num();
+  end
   Camera.set_param ('sharpness', param);
   print('Sharpness: ' , Camera.get_param('sharpness'))
 end
@@ -201,7 +201,7 @@ function Print_All()
   for c=1,Config.camera.ncamera do
     Camera.select_camera (c-1);
     print ('Camera No. '..c-1)
-    print ('Brightness: '..Camera.get_param('brightness') ) 
+    print ('Brightness: '..Camera.get_param('brightness'))
     for i,param in ipairs(Config.camera.param) do
       print (param.key..': '..Camera.get_param(param.key))
     end
@@ -210,7 +210,7 @@ function Print_All()
     print ('');
   end
   Camera.select_camera (index);
-end  
+end
 
 function Help()
   print ('This is a tool to set camera parameters for NaoV4')
@@ -225,7 +225,7 @@ function Help()
   print ('press "i" to go back to initial parameters from the Config file;')
   print ('Press "p" to see all the current parameters;')
   print ('Press "h" to see the instruction.')
-end  
+end
 
 
 
@@ -237,8 +237,8 @@ utilFunctions = {Cam_init,
                  Set_Saturation,
                  Set_Exposure,
                  Set_Gain,
-                 Set_Sharpness,            
-		 Print_All,
+                 Set_Sharpness,
+                 Print_All,
                  Help
                 }
 
@@ -246,7 +246,7 @@ utilCommands =  {'i',
                  '+',
                  '-',
                  'b',
-		 'c',
+                 'c',
                  's',
                  'e',
                  'g',
@@ -275,7 +275,7 @@ function broadcast()
   vcm.set_camera_broadcast(2);
   imcount = imcount + 1;
   Broadcast.update(2);
-  Broadcast.update_img(2, imcount);    
+  Broadcast.update_img(2, imcount);
 end
 
 
@@ -290,7 +290,7 @@ function update()
         print ('')
         utilFunctions[i]();
       end
-    end   
+    end
   end
   camera.image = Camera.get_image();
   vcm.set_image_yuyv(camera.image);
@@ -302,7 +302,7 @@ function update()
                                           camera.width/2,
                                           camera.height);
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
- 
+
   vcm.set_image_labelA(labelA.data);
   vcm.set_image_labelB(labelB.data);
 end
