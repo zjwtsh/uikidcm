@@ -128,6 +128,10 @@ function detect(color)
     end
       
     --fill extent check
+    if postStats.boundingBox[3] == 0 then
+      vcm.add_debug_message(string.format("bbox.x0: %d, bbox.x1: %d, bbox.y0: %d, bbox.y1: %d\n",
+      postStats.boundingBox[1], postStats.boundingBox[2], postStats.boundingBox[3], postStats.boundingBox[4]));
+    end
     if valid then
 	--print(unpack(postStats.boundingBox));
       extent = postStats.area / (postStats.axisMajor * postStats.axisMinor);
@@ -192,10 +196,10 @@ function detect(color)
       end
 
       --check if the post is appropriately around the horizon
-      if checkpoint > horizonA then
-        vcm.add_debug_message(string.format("Horizon check failed: %d > %d\n",checkpoint,horizonA));
-        valid = false;
-      end
+      --if checkpoint > horizonA then
+      --  vcm.add_debug_message(string.format("Horizon check failed: %d > %d\n",checkpoint,horizonA));
+      --  valid = false;
+      --end
       if checkpoint_top < horizonA then
         vcm.add_debug_message(string.format("Horizon top check failed: %d < %d\n",checkpoint_top, horizonA));
         valid = false;
