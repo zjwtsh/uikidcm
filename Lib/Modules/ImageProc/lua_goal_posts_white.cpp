@@ -20,6 +20,9 @@ static uint8_t colorField = 0x08;
 static int widthMin = 2;
 static int widthMax = 20;
 
+
+void addVerticalPixelGeneral(int ileft, int iright, int j, double connect_th, int max_gap);
+void addVerticalPixelBase(int ileft, int iright, int j, double connect_th, int max_gap, double startRadius);
 /*
   Simple state machine for field line detection:
   ==colorField -> &colorGoal -> ==colorField
@@ -263,9 +266,9 @@ void updateStatUpward(struct SegmentStats *statPtr, int ileft, int iright, int j
 }
 
 //We always add pixel from top to bottom
-void addVerticalPixelBase(int ileft, int iright, int j, double connect_th, int max_gap){
+void addVerticalPixelBase(int ileft, int iright, int j, double connect_th, int max_gap, double startRadius){
   //Find best matching active segment
-  printf("base segment found: %d, %d, %d\n",ileft,iright,j+1);
+  printf("base segment found: %f, %d, %d, %d\n",startRadius, ileft,iright,j+1);
   int seg_updated=0;
   int width=iright-ileft+1;
   double middle=(double(iright+ileft))/2;
@@ -293,9 +296,15 @@ void addVerticalPixelBase(int ileft, int iright, int j, double connect_th, int m
   }
 
   if ((seg_updated==0)&&(num_segments<MAX_SEGMENTS)){
-    printf("====== New segment %d start:%d,%d,%d ======\n",num_segments,ileft,iright,j);
-    initStat(&segments[num_segments],ileft,iright,j);
-    num_segments++;
+		if(width < startRadius)
+		{
+			printf("====== New segment %d start:%d,%d,%d ======\n",num_segments,ileft,iright,j);
+			initStat(&segments[num_segments],ileft,iright,j);
+			num_segments++;
+		}else
+		{
+			addVerticalPixelGeneral(ileft,iright,j,connect_th,max_gap);
+		}
   }
 }
 
@@ -396,7 +405,7 @@ int lua_goal_posts_white2(lua_State *L) {
   widthMin = luaL_optinteger(L, 5, 4);
   widthMax = luaL_optinteger(L, 6, 70);
   double connect_th = luaL_optnumber(L, 7, 0.3);
-  int max_gap = luaL_optinteger(L, 8, 2);
+  int max_gap = luaL_optinteger(L, 8, 0);
   int min_height = luaL_optinteger(L, 9, 20);
 
 	std::cout << "image(x,y) = ("<< ni << "," <<nj << ")" <<std::endl;
@@ -411,6 +420,8 @@ int lua_goal_posts_white2(lua_State *L) {
   }
 
 	int horizonPixel = 0;
+	double lineAngle,maxRadius;
+
 	if(horizonLimit-cameraTilt>cameraAngleSpead/2)
 		horizonPixel = nj;
 	else if(horizonLimit-cameraTilt<-cameraAngleSpead/2)
@@ -418,34 +429,73 @@ int lua_goal_posts_white2(lua_State *L) {
 	else
 		horizonPixel = (int)(tan(horizonLimit-cameraTilt)*focusLength+nj/2+0.5);
 
-  maxRadius = ballRadius * sin(lineAngle);
+	std::cout << "the horizon line is :" << horizonPixel << std::endl;
 
   goal_segment_init();
   // Scan for vertical line pixels:
   for (int j = nj-1; j >= 0; j--) {
     uint8_t *im_col = im_ptr + ni*j;
-    for (int i = 0; i < ni; i++) {
-      uint8_t label = *im_col++;
-      int width = goalState(label,i);
-			//goal state is gwg mode
-      if ((width >= widthMin) && (width <= widthMax)) 
-			{
-          int ileft=i-width;
-	        addVerticalPixelBase(ileft,i-1,j,connect_th,max_gap);
-      }else if((width <= -widthMin)) //&& (width>= -widthMax*3))
-			{
-				width = -width;
-        if (i>0){
-          int ileft=i-width;
-	        addVerticalPixelGeneral(ileft,i-1,j,connect_th,max_gap);
-        }else{ //i=0 means this is from last line
-          int iright=ni-1;
-          int ileft = iright-width;
-          addVerticalPixelGeneral(ileft,iright,j+1,connect_th,max_gap);
-        }
-			}else if(width !=0 )
-				std::cout << "abnormal width:" << width << std::endl;
-    }
+
+		if(j>=horizonPixel)
+		{
+			lineAngle = atan((j - nj/2)/focusLength) + cameraTilt; //need fix
+			maxRadius = ballRadius * sin(lineAngle);
+			
+			for (int i = 0; i < ni; i++) {
+				uint8_t label = *im_col++;
+				int width = goalState(label,i);
+				//goal state is gwg mode
+				if (width> widthMax)
+				{
+						int ileft=i-width;
+						addVerticalPixelGeneral(ileft,i-1,j,connect_th,max_gap);
+				}else if ((width >= widthMin)) 
+				{
+						int ileft=i-width;
+						addVerticalPixelBase(ileft,i-1,j,connect_th,max_gap,maxRadius*1.5);
+				}else if((width >= -widthMin)) //&& (width>= -widthMax*3))
+				{
+					;//std::cout << "abnormal width:" << width << std::endl;
+				}else
+				{
+					width = -width;
+					if (i>0){
+						int ileft=i-width;
+						addVerticalPixelGeneral(ileft,i-1,j,connect_th,max_gap);
+					}else{ //i=0 means this is from last line
+						int iright=ni-1;
+						int ileft = iright-width;
+						addVerticalPixelGeneral(ileft,iright,j+1,connect_th,max_gap);
+					}
+				}
+			}
+		}else
+		{
+			for (int i = 0; i < ni; i++) {
+				uint8_t label = *im_col++;
+				int width = goalState(label,i);
+				//goal state is gwg mode
+				if (width> widthMin)
+				{
+						int ileft=i-width;
+						addVerticalPixelGeneral(ileft,i-1,j,connect_th,max_gap);
+				}else if((width >= -widthMin)) //&& (width>= -widthMax*3))
+				{
+					;//std::cout << "abnormal width:" << width << std::endl;
+				}else
+				{
+					width = -width;
+					if (i>0){
+						int ileft=i-width;
+						addVerticalPixelGeneral(ileft,i-1,j,connect_th,max_gap);
+					}else{ //i=0 means this is from last line
+						int iright=ni-1;
+						int ileft = iright-width;
+						addVerticalPixelGeneral(ileft,iright,j+1,connect_th,max_gap);
+					}
+				}
+			}
+		}
     goal_segment_refresh();
   }
   goal_segment_terminate();
@@ -456,8 +506,16 @@ int lua_goal_posts_white2(lua_State *L) {
   int valid_segments=0;
   for (int i=0;i<num_segments;i++){
 		if(segments[i].height>min_height)
-		std::cout <<segments[i].y0+1 <<","<< segments[i].x0+1 <<
-			"," << segments[i].y1+1 << "," << segments[i].x1+1 << std::endl;
+		{
+			/*
+			std::cout <<segments[i].y0+1 <<","<< segments[i].x0+1 <<
+				"," << segments[i].y1+1 << "," << segments[i].x1+1 << std::endl;
+			*/
+			std::cout <<segments[i].y0+1 <<","<< 
+				(int)(segments[i].xMean - segments[i].mean_width/2+0.5) <<
+				"," << segments[i].y1+1 << "," << 
+				(int)(segments[i].xMean + segments[i].mean_width/2+0.5) << std::endl;
+		}
 
     if (segments[i].height>min_height){
       valid_segments++;
