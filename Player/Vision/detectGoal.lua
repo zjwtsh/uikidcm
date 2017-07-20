@@ -16,9 +16,9 @@ colorCyan = Config.color.cyan;
 colorField = Config.color.field;
 colorWhite = Config.color.white;
 
-width_min_in_pixel = 2;
-width_max_in_pixel = 35;
-connect_th = 0.5;
+width_min_in_pixel = 4;
+width_max_in_pixel = 70;
+connect_th = 0.3;
 check_for_ground_whole = 0;
 
 goalSizeThresh = 50;
@@ -75,8 +75,11 @@ function detect(color)
   vcm.set_camera_rollAngle(tiltAngle);
   --params: label data; w; h; 
   --optinal params: min_width_in_pixel; max_width_in_pixel; connect_th; max_gap_in_pixel; min_height_in_pixel 
-  postB = ImageProc.goal_posts_white(Vision.labelB.data,
-	Vision.labelB.m, Vision.labelB.n, width_min_in_pixel, width_max_in_pixel, connect_th);
+  postB = ImageProc.goal_posts_white(Vision.labelA.data,
+	Vision.labelA.m, Vision.labelA.n, width_min_in_pixel, width_max_in_pixel, connect_th);
+
+	print("exiting the detectGoal test routine");
+	os.exit();
 
   local function compare_post_area(post1, post2)
     return post1.area > post2.area
