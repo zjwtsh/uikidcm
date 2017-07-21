@@ -50,7 +50,7 @@ function update()
 			Body.set_state_gaitReset(1);
 			fState = 'gaitReset'
 		end
-	elseif(fState = 'gaitReset') then
+	elseif(fState == 'gaitReset') then
 		local gaitReset = Body.get_state_gaitReset();
 		local isComplete = Body.get_state_gaitResetPending();
 		if(gaitReset[1] == 0 and isComplete[1] == 0) then
