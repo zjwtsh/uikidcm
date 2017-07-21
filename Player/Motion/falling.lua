@@ -50,7 +50,7 @@ function update()
 			Body.set_state_gaitReset(1);
 			fState = 'gaitReset'
 		end
-	elseif(fState = 'gaitReset') then
+	elseif(fState == 'gaitReset') then
 		if(t-t0 > 4*reset_timeout + falling_timeout) then
 			local gaitReset = Body.get_state_gaitReset();
 			local isComplete = Body.get_state_gaitResetPending();
