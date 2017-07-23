@@ -95,8 +95,8 @@ function detect(color)
 		print(unpack(postB[i].boundingBox))
 	end
 
-	print("exiting the detectGoal test routine");
-	os.exit();
+	--print("exiting the detectGoal test routine");
+	--os.exit();
 
   local function compare_post_area(post1, post2)
     return post1.area > post2.area

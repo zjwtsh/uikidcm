@@ -268,7 +268,7 @@ void updateStatUpward(struct SegmentStats *statPtr, int ileft, int iright, int j
 //We always add pixel from top to bottom
 void addVerticalPixelBase(int ileft, int iright, int j, double connect_th, int max_gap, double startRadius){
   //Find best matching active segment
-  printf("base segment found: %f, %d, %d, %d\n",startRadius, ileft,iright,j+1);
+  //printf("base segment found: %f, %d, %d, %d\n",startRadius, ileft,iright,j+1);
   int seg_updated=0;
   int width=iright-ileft+1;
   double middle=(double(iright+ileft))/2;
@@ -287,7 +287,7 @@ void addVerticalPixelBase(int ileft, int iright, int j, double connect_th, int m
 
 			boundary = sqrt(segments[k].mean_width*100)*connect_th;
       if (lErr<=boundary && rErr<=boundary ){
-        printf("updated with number: %d, %f, %f\n",k,segments[k].xMean,segments[k].mean_width);
+        //printf("updated with number: %d, %f, %f\n",k,segments[k].xMean,segments[k].mean_width);
         updateStatUpward(&segments[k],ileft,iright,j,max_gap);
         seg_updated=1;
 				break;
@@ -298,7 +298,7 @@ void addVerticalPixelBase(int ileft, int iright, int j, double connect_th, int m
   if ((seg_updated==0)&&(num_segments<MAX_SEGMENTS)){
 		if(width < startRadius)
 		{
-			printf("====== New segment %d start:%d,%d,%d ======\n",num_segments,ileft,iright,j);
+			//printf("====== New segment %d start:%d,%d,%d ======\n",num_segments,ileft,iright,j);
 			initStat(&segments[num_segments],ileft,iright,j);
 			num_segments++;
 		}else
@@ -311,7 +311,7 @@ void addVerticalPixelBase(int ileft, int iright, int j, double connect_th, int m
 //We always add pixel from top to bottom
 void addVerticalPixelGeneral(int ileft, int iright, int j, double connect_th, int max_gap){
   //Find best matching active segment
-  printf("general segment found: %d, %d, %d\n",ileft,iright,j+1);
+  //printf("general segment found: %d, %d, %d\n",ileft,iright,j+1);
   int seg_updated=0;
   int width=iright-ileft+1;
   double middle=(double(iright+ileft))/2;
@@ -349,7 +349,7 @@ void addVerticalPixelGeneral(int ileft, int iright, int j, double connect_th, in
 
       if (isStatUpdating)
 			{
-        printf("updated with number: %d, %f, %f, %f, %f\n",k,segments[k].xMean,segments[k].mean_width, tLeft, tRight);
+        //printf("updated with number: %d, %f, %f, %f, %f\n",k,segments[k].xMean,segments[k].mean_width, tLeft, tRight);
         updateStatUpward(&segments[k],tLeft,tRight,j,max_gap);
         seg_updated=1;
 				if(isLeftTracked && isRightTracked)
@@ -408,8 +408,9 @@ int lua_goal_posts_white2(lua_State *L) {
   int max_gap = luaL_optinteger(L, 8, 0);
   int min_height = luaL_optinteger(L, 9, 20);
 
-	std::cout << "image(x,y) = ("<< ni << "," <<nj << ")" <<std::endl;
+	//std::cout << "image(x,y) = ("<< ni << "," <<nj << ")" <<std::endl;
 
+	/*
   for (int j = 0; j < nj; j++) {
     uint8_t *im_col = im_ptr + ni*j;
     for (int i = 0; i < ni; i++) {
@@ -418,6 +419,7 @@ int lua_goal_posts_white2(lua_State *L) {
     }
 		std::cout << std::endl;
   }
+	*/
 
 	int horizonPixel = 0;
 	double lineAngle,maxRadius;
@@ -511,9 +513,9 @@ int lua_goal_posts_white2(lua_State *L) {
 			std::cout <<segments[i].y0+1 <<","<< segments[i].x0+1 <<
 				"," << segments[i].y1+1 << "," << segments[i].x1+1 << std::endl;
 			*/
-			std::cout <<segments[i].y0+1 <<","<<
+			std::cout <<i <<", "<<segments[i].y0+1 <<", "<<
 				(int)(segments[i].xMean - segments[i].mean_width/2+0.5) <<
-				"," << segments[i].y1+1 << "," <<
+				"," << segments[i].y1+1 << ", " <<
 				(int)(segments[i].xMean + segments[i].mean_width/2+0.5) << std::endl;
 		}
 
