@@ -76,8 +76,8 @@ camera.param[5] = {key='white balance temperature', val={200}};
 camera.param[6] = {key='sharpness',     val={0}};
 camera.param[7] = {key='exposure (absolute)',      val={200}};
 if use_arbitrary_ball then
-  camera.lut_file = 'lut_170712xianmen.raw';
-  camera.lut_ball_file = 'lut_170712qiudi.raw';
+  camera.lut_file = 'gateline0318.raw';
+  camera.lut_ball_file = 'FieldandBall0318.raw';
 else
   camera.lut_file = 'new_darwin.raw';
 end
