@@ -73,10 +73,14 @@ function detect(color)
 
   tiltAngle=0;
   vcm.set_camera_rollAngle(tiltAngle);
+
+  headPitch = Body.get_sensor_headpos()[1];
+
   --params: label data; w; h; 
   --optinal params: min_width_in_pixel; max_width_in_pixel; connect_th; max_gap_in_pixel; min_height_in_pixel 
   postB = ImageProc.goal_posts_white(Vision.labelA.data,
-	Vision.labelA.m, Vision.labelA.n, 25*math.pi/180, width_min_in_pixel, width_max_in_pixel, connect_th);
+	Vision.labelA.m, Vision.labelA.n, headPitch, width_min_in_pixel, width_max_in_pixel, connect_th);
+--	Vision.labelA.m, Vision.labelA.n, 25*math.pi/180, width_min_in_pixel, width_max_in_pixel, connect_th);
 
 	--convert to expression in labelB, the scale is supposed to be the same for height and width
 	for i = 1, #postB do
