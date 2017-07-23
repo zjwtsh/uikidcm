@@ -396,7 +396,7 @@ int lua_goal_posts_white2(lua_State *L) {
   int ni = luaL_checkint(L, 2);
   int nj = luaL_checkint(L, 3);
   double cameraTilt = luaL_checknumber(L, 4);
-	
+
 	double cameraAngleSpead = 50*M_PI/180;
 	double ballRadius = 90;
 	double horizonLimit = 5*M_PI/180;
@@ -440,7 +440,7 @@ int lua_goal_posts_white2(lua_State *L) {
 		{
 			lineAngle = atan((j - nj/2)/focusLength) + cameraTilt; //need fix
 			maxRadius = ballRadius * sin(lineAngle);
-			
+
 			for (int i = 0; i < ni; i++) {
 				uint8_t label = *im_col++;
 				int width = goalState(label,i);
@@ -449,7 +449,7 @@ int lua_goal_posts_white2(lua_State *L) {
 				{
 						int ileft=i-width;
 						addVerticalPixelGeneral(ileft,i-1,j,connect_th,max_gap);
-				}else if ((width >= widthMin)) 
+				}else if ((width >= widthMin))
 				{
 						int ileft=i-width;
 						addVerticalPixelBase(ileft,i-1,j,connect_th,max_gap,maxRadius*1.5);
@@ -499,7 +499,7 @@ int lua_goal_posts_white2(lua_State *L) {
     goal_segment_refresh();
   }
   goal_segment_terminate();
-	
+
 	//terminate the scan process and reset the state machine
 	goalState(0,0);
 
@@ -511,9 +511,9 @@ int lua_goal_posts_white2(lua_State *L) {
 			std::cout <<segments[i].y0+1 <<","<< segments[i].x0+1 <<
 				"," << segments[i].y1+1 << "," << segments[i].x1+1 << std::endl;
 			*/
-			std::cout <<segments[i].y0+1 <<","<< 
+			std::cout <<segments[i].y0+1 <<","<<
 				(int)(segments[i].xMean - segments[i].mean_width/2+0.5) <<
-				"," << segments[i].y1+1 << "," << 
+				"," << segments[i].y1+1 << "," <<
 				(int)(segments[i].xMean + segments[i].mean_width/2+0.5) << std::endl;
 		}
 
@@ -525,7 +525,7 @@ int lua_goal_posts_white2(lua_State *L) {
   if (valid_segments<1) return 0;
   lua_createtable(L, valid_segments, 0);
   int seg_count=0;
- 
+
   for (int i = 0; i < num_segments; i++) {
     if (segments[i].height>min_height){
       lua_createtable(L, 0, 3);
