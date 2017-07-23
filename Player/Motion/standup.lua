@@ -33,8 +33,8 @@ function entry()
     print("standupFromFront");
     keyframe.do_motion("standupFromFront");
     mcm.set_motion_fall_check(0);         ---------------tse
-	Body.set_para_gaitID(vector.new({3,1}));------------123456起立 开始
-	Body.set_state_specialValid(1);------------123456起立 开始
+		Body.set_para_gaitID(vector.new({3,1}));------------123456起立 开始
+		Body.set_state_specialValid(1);------------123456起立 开始
   else
     pose = wcm.get_pose();
     batt_level=Body.get_battery_level();
@@ -50,10 +50,10 @@ function entry()
       keyframe.do_motion("standupFromBack");
     end
     mcm.set_motion_fall_check(0);                ----------------tse
-	Body.set_para_gaitID(vector.new({4,1}));------------123456起立 开始
-	Body.set_state_specialValid(1);------------123456起立 开始
+		Body.set_para_gaitID(vector.new({4,1}));------------123456起立 开始
+		Body.set_state_specialValid(1);------------123456起立 开始
   end
-  unix.sleep(3.0);
+  unix.sleep(0.5);
 end
 
 function update()
@@ -66,9 +66,8 @@ function update()
                         math.abs(imuAngle[2]));
     
     fall = mcm.get_motion_fall_check();  --tse
-    if (maxImuAngle > 30*math.pi/180 and fall==1) then    --tse
-    --if (maxImuAngle > 30*math.pi/180) then    -------------tse
-      return "fail";
+    if (maxImuAngle > 30*math.pi/180 and fall==1) then 
+      do return "fail"; end
     else
     	--Set velocity to 0 to prevent falling--
     	walk.still=true;
@@ -80,5 +79,5 @@ end
 
 function exit()
   keyframe.exit();
-  mcm.set_motion_fall_check(1);               --------------tse
+	mcm.set_motion_fall_check(1);               --------------tse
 end
