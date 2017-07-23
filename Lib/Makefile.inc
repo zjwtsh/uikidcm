@@ -29,12 +29,12 @@ NAODEPLUA51DIR= $(NAODEPDIR)/usr/local/lib/lua/5.1
 
 ## Compiler Definition
 MODE=$(shell getconf LONG_BIT)
-CXX=arm-linux-g++
-CC=arm-linux-gcc
+CXX=g++
+CC=gcc
 #LD=ld
-LD=arm-linux-g++
+LD=g++
 LDFLAGS=
-STRIP=arm-linux-strip
+STRIP=strip
 CXXFLAGS= -O2 -fpic
 
 MEXEXT=mexglx

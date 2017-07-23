@@ -7,6 +7,10 @@
 
 #include "timeScalar.h"
 #include <string.h>
+#include <iostream>
+#include <fcntl.h>
+#include <unistd.h>
+#include <memory.h>
 #include "v4l2.h"
 #include "OPCam.h"
 
@@ -17,7 +21,7 @@ typedef struct {
   double joint[20];
 } CAMERA_STATUS;
 
-#define VIDEO_DEVICE "/dev/video3"
+#define VIDEO_DEVICE "/dev/video0"
 
 /* Exposed C functions to Lua */
 typedef unsigned char uint8;
@@ -25,7 +29,7 @@ typedef unsigned int uint32;
 
 /* for testing with a single image only */
 //uint32 fileBuf[320*480*2];
-//uint32* image = NULL;
+uint32* image = NULL;
 /* end of testing */
 
 CAMERA_STATUS *cameraStatus = NULL;
@@ -55,7 +59,9 @@ static int lua_get_image(lua_State *L) {
     lua_pushnumber(L,buf_num);
     return 1;
   }
+
   uint32* image = (uint32*)v4l2_get_buffer(buf_num, NULL);
+  
   // Increment the count
   count++;
 
@@ -77,7 +83,7 @@ static int lua_get_image(lua_State *L) {
   for (int ji = 0; ji < 20; ji++) {
     cameraStatus->joint[ji] = 0;
   }
-//	printf("push image userdata\n");
+
   lua_pushlightuserdata(L, image);
   return 1;
 }
@@ -109,6 +115,7 @@ static int lua_camera_status(lua_State *L) {
 
 static int lua_init(lua_State *L){
   int res = luaL_checknumber(L, 1);
+//  int res = 1;
   if (!init) {
     if ( v4l2_open(VIDEO_DEVICE) == 0){
       init = 1;
@@ -116,8 +123,9 @@ static int lua_init(lua_State *L){
       v4l2_stream_on();
       cameraStatus = (CAMERA_STATUS *)malloc(sizeof(CAMERA_STATUS));// Allocate our camera statu
     }
-  }
+
   return 1;
+  }
 }
 
 static int lua_stop(lua_State *L){
