@@ -44,7 +44,7 @@ speak.enable = false;
 
 -- Game Parameters
 game = {};
-game.teamNumber = 22;   
+game.teamNumber = 22;
 
 --Default role: 0 for goalie, 1 for attacker, 2 for defender
 game.role = 1;
@@ -139,6 +139,8 @@ fsm.bodyAnticipate.rCloseDive = 2.0; --ball distance threshold for diving
 
 --Speak enable
 speakenable = false;
+
+listen_monitor = 1;
 
 --Fall check
 fallAngle = 50*math.pi/180;
