@@ -2,9 +2,6 @@ module(... or '', package.seeall)
 
 -- Get Platform for package path
 cwd = '.';
-local platform = os.getenv('PLATFORM') or '';
-if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
-end
 
 -- Get Computer for Lib suffix
 local computer = os.getenv('COMPUTER') or '';
@@ -43,12 +40,8 @@ gcm.say_id();
 
 Motion.entry();
 
-darwin = false;
-webots = false;
-
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
-  darwin = true;
   --SJ: OP specific initialization posing (to prevent twisting)
   Body.set_body_hardness(0.3);
   Body.set_actuator_command(Config.stance.initangle)
@@ -94,11 +87,18 @@ end
 
 function update()
   count = count + 1;
-  t = Body.get_time();
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
   vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
 
+<<<<<<< HEAD
+  gcm.set_game_paused(0);
+  GameFSM.update();
+  BodyFSM.update();
+  HeadFSM.update();
+  Motion.update();
+  Body.update();
+=======
   if waiting>0 then --Waiting mode, check role change
     gcm.set_game_paused(1);
     if cur_role==0 then
@@ -133,6 +133,7 @@ function update()
     Motion.update();
     Body.update();
   end
+>>>>>>> 1d7b20e6f44cfcaf9bc4f046fc54c8478a070271
 
   local dcount = 50;
   if (count % 50 == 0) then
@@ -143,10 +144,17 @@ function update()
   
 end
 
+<<<<<<< HEAD
+local tDelay = 0.005 * 1E6; -- Loop every 5ms
+while 1 do
+  update();
+  unix.usleep(tDelay);
+=======
 if( darwin ) then
   local tDelay = 0.005 * 1E6; -- Loop every 5ms
   while 1 do
     update();
     unix.usleep(tDelay);
   end
+>>>>>>> 1d7b20e6f44cfcaf9bc4f046fc54c8478a070271
 end
