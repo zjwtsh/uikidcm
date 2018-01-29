@@ -126,14 +126,27 @@ shared.line.v1x = vector.zeros(max_line_num);
 shared.line.v1y = vector.zeros(max_line_num);
 shared.line.v2x = vector.zeros(max_line_num);
 shared.line.v2y = vector.zeros(max_line_num);
+shared.line.real_length = vector.zeros(max_line_num);
 shared.line.endpoint11 = vector.zeros(max_line_num);
 shared.line.endpoint12 = vector.zeros(max_line_num);
 shared.line.endpoint21 = vector.zeros(max_line_num);
 shared.line.endpoint22 = vector.zeros(max_line_num);
+shared.line.xMean = vector.zeros(max_line_num);
+shared.line.yMean = vector.zeros(max_line_num);
 
 --for best line
 shared.line.v=vector.zeros(4);
-shared.line.angle=vector.zeros(a);
+shared.line.angle=vector.zeros(1);
+shared.line.lengthB=vector.zeros(1);
+
+--Circle detectin
+shared.circle = {};
+shared.circle.detect = vector.zeros(1);
+shared.circle.x = vector.zeros(1);
+shared.circle.y = vector.zeros(1);
+shared.circle.var = vector.zeros(1);
+shared.circle.angle = vector.zeros(1);
+
 
 --Corner detection
 shared.corner = {};
@@ -146,10 +159,14 @@ shared.corner.v = vector.zeros(4);
 shared.corner.v1 = vector.zeros(4);
 shared.corner.v2 = vector.zeros(4);
 
-  --[[
-  shared.spot = {};
-  shared.spot.detect = vector.zeros(1);
-  --]]
+shared.spot = {};
+shared.spot.detect = vector.zeros(1);
+shared.spot.color = vector.zeros(1);
+shared.spot.v = vector.zeros(4);
+shared.spot.bboxB = vector.zeros(4);
+shared.spot.centroid1 = vector.zeros(2);
+shared.spot.centroid2 = vector.zeros(2);
+shared.spot.centroid3 = vector.zeros(2);
 
 
 enable_robot_detection = Config.vision.enable_robot_detection or 0;

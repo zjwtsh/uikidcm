@@ -9,8 +9,8 @@ world.xLineBoundary = 4.5;
 world.yLineBoundary = 3.0;
 world.xMax = 4.5;
 world.yMax = 3.0;
-world.goalWidth = 1.80;
-world.goalHeight= 1.10;
+world.goalWidth = 2.60;
+world.goalHeight= 1.80;
 world.ballYellow= {{5,0.0}};
 world.ballCyan= {{-5,0.0}};
 world.postYellow = {};
@@ -50,14 +50,13 @@ world.Lcorner[14]={-4.5,-1.725};
 --Center circle junction
 world.Lcorner[15]={0,0.75};
 world.Lcorner[16]={0,-0.75};
-
+world.Lcorner[17]={2.4,2};
 
 
 --[[
 --SJ: NSL penalty box is very wide 
 --And sometimes they can be falsely detected as T edges
 --Penalty box T edge #2 
-world.Lcorner[17]={2.4,2};
 world.Lcorner[18]={2.4,-2};
 world.Lcorner[19]={-2.4,2};
 world.Lcorner[20]={-2.4,-2};
@@ -128,6 +127,11 @@ world.rCornerFilter = 0.03;
 world.aCornerFilter = 0.03;
 
 world.aLineFilter = 0.04;
+
+world.rLineFilterTop = 0.0001;
+world.aLineFilterTop = 0.03;
+world.rLineFilterBtm = 0.0001;
+world.aLineFilterBtm = 0.02;
 
 --New two-goalpost localization
 world.use_new_goalposts=1;

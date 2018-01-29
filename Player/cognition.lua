@@ -57,7 +57,7 @@ function broadcast()
     end
     --Reset this flag at every broadcast
     --To prevent monitor running during actual game
-    vcm.set_camera_broadcast(0);
+    --vcm.set_camera_broadcast(0);
   end
 end
 
@@ -68,7 +68,7 @@ end
 
 function update()
   count = count + 1;
-  print("imuangle :",Body.get_sensor_imuAngle()[3]*180/math.pi);
+--  print("imuangle :",Body.get_sensor_imuAngle()[3]*180/math.pi);
   tstart = unix.time();
 
   -- update vision 

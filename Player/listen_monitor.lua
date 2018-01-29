@@ -15,14 +15,14 @@ package.path = cwd.."/Lib/?.lua;"..package.path;
 package.path = cwd.."/Dev/?.lua;"..package.path;
 package.path = cwd.."/World/?.lua;"..package.path;
 package.path = cwd.."/Vision/?.lua;"..package.path;
-package.path = cwd.."/Motion/?.lua;"..package.path; 
+package.path = cwd.."/Motion/?.lua;"..package.path;
 
 
 
 require ('Config')
---We always store data from robot to shm (1,1) 
-Config.game.teamNumber = 11; 
-Config.game.playerID = 1; 
+--We always store data from robot to shm (1,1)
+Config.game.teamNumber = 11;
+Config.game.playerID = 1;
 
 require ('cutil')
 require ('vector')
@@ -83,7 +83,7 @@ end
 
 
 function push_yuyv(obj)
---print('receive yuyv parts');
+--  print('receive yuyv parts');
   yuyv = cutil.test_array();
   name = parse_name(obj.name);
   if (FIRST_YUYV == true) then
@@ -105,7 +105,7 @@ function push_yuyv(obj)
     end
     yuyv_t_full = unix.time();
     local yuyv_str = "";
-      for i = 1 , name.parts do --fixed
+    for i = 1 , name.parts do --fixed
       yuyv_str = yuyv_str .. yuyv_all[i];
     end
 
@@ -162,7 +162,7 @@ function push_yuyv2(obj)
 end
 
 function push_yuyv3(obj)
--- 1/4 size, we don't need to divide it 
+-- 1/4 size, we don't need to divide it
 
   fps_count=fps_count+1;
   if fps_count%fps_interval ==0 then
@@ -210,18 +210,18 @@ end
 function push_labelA(obj)
   local name = parse_name(obj.name);
   local labelA = cutil.test_array();
---  cutil.string2label_double(labelA,obj.data);	
-  cutil.string2label_rle(labelA,obj.data);	
+--  cutil.string2label_double(labelA,obj.data);
+  cutil.string2label_rle(labelA,obj.data);
   vcm.set_image_labelA(labelA);
 end
 
 function push_labelB(obj)
   local name = parse_name(obj.name);
   local labelB = cutil.test_array();
---cutil.string2userdata(labelB,obj.data);	
---cutil.string2label(labelB,obj.data);	
---  cutil.string2label_double(labelB,obj.data);	
-  cutil.string2label_rle(labelB,obj.data);	
+--cutil.string2userdata(labelB,obj.data);
+--cutil.string2label(labelB,obj.data);
+--  cutil.string2label_double(labelB,obj.data);
+  cutil.string2label_rle(labelB,obj.data);
   vcm.set_image_labelB(labelB);
 end
 
@@ -255,26 +255,26 @@ while( true ) do
   if( msg ) then
     local obj = serialization.deserialize(msg);
     if( obj.arr ) then
-    	if ( string.find(obj.arr.name,'yuyv') ) then 
-     	  push_yuyv(obj.arr);
-    	--print("yuyv_type00000000")
-    	  yuyv_type=1;
-    
-    	elseif ( string.find(obj.arr.name,'ysub2') ) then 
-     	  push_yuyv2(obj.arr);
-    	  yuyv_type=2;
-    
-    	elseif ( string.find(obj.arr.name,'ysub4') ) then 
-     	  push_yuyv3(obj.arr);
-    	  yuyv_type=3;
-    
-    	elseif ( string.find(obj.arr.name,'labelA') ) then 
-    	  push_labelA(obj.arr);
-    	elseif ( string.find(obj.arr.name,'labelB') ) then 
-    	  push_labelB(obj.arr);
+      if ( string.find(obj.arr.name,'yuyv') ) then
+        push_yuyv(obj.arr);
+      --print("yuyv_type00000000")
+        yuyv_type=1;
+
+      elseif ( string.find(obj.arr.name,'ysub2') ) then
+        push_yuyv2(obj.arr);
+        yuyv_type=2;
+
+      elseif ( string.find(obj.arr.name,'ysub4') ) then
+        push_yuyv3(obj.arr);
+        yuyv_type=3;
+
+      elseif ( string.find(obj.arr.name,'labelA') ) then
+        push_labelA(obj.arr);
+      elseif ( string.find(obj.arr.name,'labelB') ) then
+        push_labelB(obj.arr);
       elseif ( string.find(obj.arr.name,'occmap') ) then
         push_occmap(obj.arr);
-    	end
+      end
 
     else
 	push_data(obj);

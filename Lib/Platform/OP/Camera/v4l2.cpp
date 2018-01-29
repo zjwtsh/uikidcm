@@ -16,8 +16,6 @@
 #include <map>
 #include <string.h>
 #include <stdint.h>
-#include <pthread.h>
-#include "JPGApi.h"
 
 // Logitech UVC controls
 #ifndef V4L2_CID_FOCUS
@@ -35,25 +33,16 @@
 #ifndef V4L2_CID_RAW_BITS_PER_PIXEL
 #define V4L2_CID_RAW_BITS_PER_PIXEL 0x0A046D72
 #endif
-#define DHT_SIZE 432
-#define	MAX_YUYV_SIZE	2457600
 
 //added
 
 int video_fd = -1;
 int nbuffer = 2;
-int width = 1280;
-int height = 960;
 char invert = 0;
-int handle;
-//int width = 640;
-//int height = 480;
-
-
-pthread_mutex_t camera_mutex = PTHREAD_MUTEX_INITIALIZER;
+int width = 640;
+int height = 480;
 
 uint8_t* yuyv_rotate(uint8_t* frame, int width, int height);
-int SaveJpgBuf(unsigned char *buf,int size);
 
 struct buffer {
   void * start;
@@ -64,140 +53,6 @@ std::map<std::string, struct v4l2_queryctrl> ctrlMap;
 std::map<std::string, struct v4l2_querymenu> menuMap;
 
 std::vector<struct buffer> buffers;
-
-struct JpgBuffer {
-  char buf[1280*960*2];
-  int size;
-};
-
-struct JpgBuffer jpgBuffer;
-struct v4l2_buffer *buf0;
-
-unsigned char dht_data[DHT_SIZE] = {
-    0xff, 0xc4, 0x00, 0x1f, 0x00, 0x00, 0x01, 0x05, 0x01, 0x01, 0x01, 0x01,
-    0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a,
-    0x0b, 0xff, 0xc4, 0x00, 0xb5, 0x10, 0x00, 0x02,
-    0x01, 0x03, 0x03, 0x02, 0x04, 0x03, 0x05, 0x05, 0x04, 0x04, 0x00, 0x00,
-    0x01, 0x7d, 0x01, 0x02, 0x03, 0x00, 0x04, 0x11,
-    0x05, 0x12, 0x21, 0x31, 0x41, 0x06, 0x13, 0x51, 0x61, 0x07, 0x22, 0x71,
-    0x14, 0x32, 0x81, 0x91, 0xa1, 0x08, 0x23, 0x42,
-    0xb1, 0xc1, 0x15, 0x52, 0xd1, 0xf0, 0x24, 0x33, 0x62, 0x72, 0x82, 0x09,
-    0x0a, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x25, 0x26,
-    0x27, 0x28, 0x29, 0x2a, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x43,
-    0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x53,
-    0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x63, 0x64, 0x65, 0x66, 0x67,
-    0x68, 0x69, 0x6a, 0x73, 0x74, 0x75, 0x76, 0x77,
-    0x78, 0x79, 0x7a, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x92,
-    0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a,
-    0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4,
-    0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xc2, 0xc3,
-    0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
-    0xd7, 0xd8, 0xd9, 0xda, 0xe1, 0xe2, 0xe3, 0xe4,
-    0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6,
-    0xf7, 0xf8, 0xf9, 0xfa, 0xff, 0xc4, 0x00, 0x1f,
-    0x01, 0x00, 0x03, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02,
-    0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0xff, 0xc4, 0x00,
-    0xb5, 0x11, 0x00, 0x02, 0x01, 0x02, 0x04, 0x04,
-    0x03, 0x04, 0x07, 0x05, 0x04, 0x04, 0x00, 0x01, 0x02, 0x77, 0x00, 0x01,
-    0x02, 0x03, 0x11, 0x04, 0x05, 0x21, 0x31, 0x06,
-    0x12, 0x41, 0x51, 0x07, 0x61, 0x71, 0x13, 0x22, 0x32, 0x81, 0x08, 0x14,
-    0x42, 0x91, 0xa1, 0xb1, 0xc1, 0x09, 0x23, 0x33,
-    0x52, 0xf0, 0x15, 0x62, 0x72, 0xd1, 0x0a, 0x16, 0x24, 0x34, 0xe1, 0x25,
-    0xf1, 0x17, 0x18, 0x19, 0x1a, 0x26, 0x27, 0x28,
-    0x29, 0x2a, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x43, 0x44, 0x45, 0x46,
-    0x47, 0x48, 0x49, 0x4a, 0x53, 0x54, 0x55, 0x56,
-    0x57, 0x58, 0x59, 0x5a, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a,
-    0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a,
-    0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x92, 0x93, 0x94,
-    0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0xa2, 0xa3,
-    0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6,
-    0xb7, 0xb8, 0xb9, 0xba, 0xc2, 0xc3, 0xc4, 0xc5,
-    0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
-    0xd9, 0xda, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7,
-    0xe8, 0xe9, 0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa
-};
-
-char *Decompress(char *jpgImg,unsigned int fileSize)
-{
-	char 	*InBuf = NULL;
-	char 	*OutBuf = NULL;
-	FILE 	*fp;
-	FILE 	*CTRfp;
-	long 	streamSize;
-	int 	width, height, samplemode;
-	JPEG_ERRORTYPE ret;
-	char 	outFilename[128];
-	char 	inFilename[128];
-	//BOOL	result = TRUE;
-	//struct timeval start;
-	//struct timeval stop;
-	//unsigned int	time = 0;
-
-		//printD("filesize : %d\n", fileSize);
-
-		InBuf = (char *)SsbSipJPEGGetDecodeInBuf(handle, fileSize);
-		if(InBuf == NULL){
-			printf("Input buffer is NULL\n");
-		//	result = FALSE;
-		//	return;
-		}
-//		printf("inBuf : 0x%x\n", InBuf);
-
-		//////////////////////////////////////////////////////////////
-		// 4. put JPEG frame to Input buffer                        //
-		//////////////////////////////////////////////////////////////
-		memcpy(InBuf,jpgImg,fileSize);
-
-		//////////////////////////////////////////////////////////////
-		// 5. Decode JPEG frame                                     //
-		//////////////////////////////////////////////////////////////
-		//	gettimeofday(&start, NULL);
-		
-		ret = SsbSipJPEGDecodeExe(handle);
-		
-		//	gettimeofday(&stop, NULL);
-		//	time += measureTime(&start, &stop);
-		//	printf("[JPEG Decoding Performance] Elapsed time : %u\n", time);
-		//	time = 0;
-
-		if(ret != JPEG_OK){
-			printf("Decoding failed\n");
-		//	result = FALSE;
-		//	return;
-		}
-		
-		//////////////////////////////////////////////////////////////
-		// 6. get Output buffer address                             //
-		//////////////////////////////////////////////////////////////
-		OutBuf = (char *)SsbSipJPEGGetDecodeOutBuf(handle, &streamSize);
-		if(OutBuf == NULL){
-			printf("Output buffer is NULL\n");
-		//	result = FALSE;
-		//	return;
-		}
-//		printf("OutBuf : 0x%x streamsize : %d\n", OutBuf, streamSize);
-
-		//////////////////////////////////////////////////////////////
-		// 7. get decode config.                                    //
-		//////////////////////////////////////////////////////////////
-		//SsbSipJPEGGetConfig(JPEG_GET_DECODE_WIDTH, &width);
-		//SsbSipJPEGGetConfig(JPEG_GET_DECODE_HEIGHT, &height);
-		//SsbSipJPEGGetConfig(JPEG_GET_SAMPING_MODE, &samplemode);
-		
-//		printf("width : %d height : %d samplemode : %d\n", width, height, samplemode);
-		//char *filename = "1234.jpg";
-		//fp = fopen(filename, "wb");
-		//fwrite(OutBuf, 1, streamSize, fp);
-		//fclose(fp);
-		//printf("file saved\n");
-		//char * temp = (char *)malloc(streamSize);
-		//memcpy(temp, OutBuf, streamSize);
-		//OutBuf = temp;
-		//free(temp);
-		return OutBuf;
-}
 
 static int xioctl(int fd, int request, void *arg) {
   int r;
@@ -334,7 +189,7 @@ int v4l2_get_ctrl(const char *name, int *value) {
 int v4l2_open(const char *device) {
   if (device == NULL) {
     // Default video device name
-    device = "/dev/video3";
+    device = "/dev/video0";
   }
 
   // Open video device
@@ -389,11 +244,11 @@ int v4l2_uninit_mmap() {
 int v4l2_init(int resolution) {
 
   if( resolution == 1 ){
-    width = 1280;
-    height = 960;
+    width = 640;
+    height = 480;
   } else {
     width = 1280;
-    height = 960;
+    height = 720;
   }
 
   struct v4l2_capability video_cap;
@@ -422,8 +277,7 @@ int v4l2_init(int resolution) {
   video_fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   video_fmt.fmt.pix.width       = width;
   video_fmt.fmt.pix.height      = height;
-  video_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_MJPEG;
-//  video_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+  video_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
   //video_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_UYVY; // iSight
   video_fmt.fmt.pix.field       = V4L2_FIELD_ANY;
   if (xioctl(video_fd, VIDIOC_S_FMT, &video_fmt) == -1)
@@ -481,7 +335,6 @@ int v4l2_init(int resolution) {
 
   // Initialize memory map
   v4l2_init_mmap();
-  handle = SsbSipJPEGDecodeInit();
 
   return 0;
 }
@@ -514,41 +367,15 @@ int v4l2_stream_off() {
 void * v4l2_get_buffer(int index, size_t *length) {
   if (length != NULL)
     *length = buffers[index].length;
-//  if( invert==1 ) {
-//    return (void *) 
-//	yuyv_rotate( (uint8_t*)buffers[index].start, width, height );
-//  }
-//  printf("before decode buffers[index].start :%08x\n",buffers[index].start);
-  jpgBuffer.size = 0;
-//  SaveJpgBuf((unsigned char *)buffers[index].start, (int )buffers[index].length);
-	SaveJpgBuf((unsigned char *)buffers[index].start, buf0->bytesused);
-//  printf("before handle\n");
-  //handle = SsbSipJPEGDecodeInit();
-//  printf("after handle\n");
-  void *yuyvBuf[nbuffer-1];
-  yuyvBuf[index] = (void *)Decompress(jpgBuffer.buf, jpgBuffer.size);
-//  buffers[index].start = 
-//      mmap(0, // start anywhere
-//          sizeof(temp),
-//          PROT_READ | PROT_WRITE, // required
-//          MAP_SHARED, // recommended
-//          video_fd,
-//          *temp);
-  //Decompress(jpgBuffer.buf, jpgBuffer.size);
-  //SsbSipJPEGDecodeDeInit(handle);
-//  printf("after decode yuyBuf[index] :%08x ,%08x\n",yuyvBuf[index], index);
-  //SsbSipJPEGDecodeDeInit(handle);
-//  return buffers[index].start;
   if( invert==1 ) {
     return (void *) 
-	yuyv_rotate( (uint8_t*)yuyvBuf[index], width, height );
+	yuyv_rotate( (uint8_t*)buffers[index].start, width, height );
   }
-		  return yuyvBuf[index];
+  return buffers[index].start;
 }
 
 int v4l2_read_frame() {
   struct v4l2_buffer buf;
-  buf0 = &buf;
   buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   buf.memory = V4L2_MEMORY_MMAP;
   if (xioctl(video_fd, VIDIOC_DQBUF, &buf) == -1) {
@@ -569,14 +396,7 @@ int v4l2_read_frame() {
   // process image
   // Give out the pointer, and hope they give it back to us soon!
   void *ptr = buffers[buf.index].start;
-  
-/*  char *Jpgbuf;
-  handle = SsbSipJPEGDecodeInit();
-  int bufsize = buffers[buf.index].length;
-  memcpy(Jpgbuf, ptr, bufsize);
-  char *temp = Decompress((unsigned char *)Jpgbuf, bufsize);
-	memcpy(buffers[buf.index].start,temp,buffers[buf.index].length);
-*/
+
   if (xioctl(video_fd, VIDIOC_QBUF, &buf) == -1){
     fprintf(stderr, "QBUF Problem %d\n", errno);
     fprintf(stderr, "Buf Index: %d\n",buf.index);
@@ -593,7 +413,6 @@ int v4l2_close() {
   if (close(video_fd) == -1)
     v4l2_error("Closing video device");
   video_fd = -1;
-  SsbSipJPEGDecodeDeInit(handle);
 }
 
 int v4l2_get_width(){
@@ -642,49 +461,6 @@ uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
   //So that we do not directly rewrite on camera buffer address
 
   static uint8_t frame2[640*480*4];
-  int *pr=NULL;
-  int *pf=NULL;
-  int *pr2=NULL;
-  int *pf2=NULL;
-  int x1,x2,x3,x4;
-
-  //printf("WIDTH HEIGHT:%d %d\n",width,height);
-
-  int siz = width*height/2;
-  pr=(int *)(frame);
-  pf=(int *)(frame+(siz-1)*4);
-  pr2=(int *)(frame2);
-  pf2=(int *)(frame2+(siz-1)*4);
-
-  for (int i=0;i<siz/2;i++){
-	x1 = *pr;
-	x2 = *pf;
-	x3 = x1 & 0xff00ff00;
-	x3 |= (((x1>>16)&0x000000ff)|((x1<<16)&0x00ff0000));
-	x4 = x2 & 0xff00ff00;
-	x4 |= (((x2>>16)&0x000000ff)|((x2<<16)&0x00ff0000));
- 	*pr2=x4;
-	*pf2=x3;
-	pr++;
-	pf--;
-	pr2++;
-	pf2--;
-	}
-		//char *filename = "1234.jpg";
-		//FILE *fp = fopen(filename, "wb");
-		//fwrite(frame2, 1, 614400, fp);
-		//fclose(fp);
-		//printf("file saved\n");
-		
-	return frame2;
-}
- 
-/*uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
-  int i;
-  //SJ: I maintain a second buffer here
-  //So that we do not directly rewrite on camera buffer address
-
-  static uint8_t frame2[640*480*4];
 
   //printf("WIDTH HEIGHT:%d %d\n",width,height);
 
@@ -705,7 +481,7 @@ uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
 
   }
   return frame2;
-*/
+
 
 /*
   uint32_t* frame32 = (uint32_t*)frame;
@@ -729,50 +505,5 @@ uint8_t* yuyv_rotate(uint8_t* frame, int width, int height) {
   }
 */
 
-//}
-
-int IsHuffman(unsigned char *buf)
-{
-  unsigned char* ptbuf;
-  int i = 0;
-  ptbuf = buf;
-  while (((ptbuf[0] << 8) | ptbuf[1]) != 0xffda) {	
-    if(i++ > 2048) 
-      return 0;
-    if(((ptbuf[0] << 8) | ptbuf[1]) == 0xffc4)
-      return 1;
-    ptbuf++;
-  }
-  return 0;
 }
 
-int SaveJpgBuf(unsigned char *buf,int size)
-{
-  unsigned char *ptdeb,*ptcur = buf;
-  int sizein;
-//  printf("is Huffman?\n");
-  if(!IsHuffman(buf)) {
-//	printf("is not Huffman\n");
-    ptdeb = ptcur = buf;
-    while (((ptcur[0] << 8) | ptcur[1]) != 0xffc0) {
-      ptcur++;
-    }
-    sizein = ptcur-ptdeb;
-//	printf("size in is : %08x\n",sizein);
-    memcpy(jpgBuffer.buf, buf, sizein);
-    jpgBuffer.size += sizein;
-//	printf("jpgBuffer.size 01 : %08x \n",jpgBuffer.size);
-    memcpy(jpgBuffer.buf + jpgBuffer.size, dht_data, DHT_SIZE);
-    jpgBuffer.size += DHT_SIZE;
-//	printf("jpgBuffer.size 02 : %08x \n",jpgBuffer.size);
-    memcpy(jpgBuffer.buf + jpgBuffer.size, ptcur, size - sizein);
-    jpgBuffer.size += size - sizein;
-//	printf("jpgBuffer.size 03 : %08x \n",jpgBuffer.size);
-  }
-  else {
-//	printf("is Huffman\n");
-    memcpy(jpgBuffer.buf, ptcur, size);
-    jpgBuffer.size += size;
-  }
-  return 0;		
-}

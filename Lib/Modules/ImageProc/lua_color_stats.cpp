@@ -13,6 +13,95 @@ extern "C" {
 #include <stdint.h>
 #include <math.h>
 #include <vector>
+#include <iostream>
+
+int lua_bounding_field_stats(lua_State *L) {
+
+  uint8_t *im_ptr = (uint8_t *)lua_touserdata(L,1);
+  if ((im_ptr == NULL) || !lua_islightuserdata(L, 1)) {
+    return luaL_error(L, "Input image not light user data");
+  }
+
+  int width = luaL_checkint(L, 2);
+  int height = luaL_checkint(L, 3);
+  uint8_t color = luaL_optinteger(L, 4, 1);
+
+  // bouding box
+  int i0 = 0;
+  int i1 = width-1;
+  int j0 = 0;
+  int j1 = height-1;
+
+	float rate = 0.0;
+	int cntr = 0;
+
+	/*
+  for (int j = 0; j < height; j++)	
+	{
+		//std::cout << j ;
+		for (int i = 0; i < width; i++)
+		{
+			std::cout << int(im_ptr[j*width +i]) << ",";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+	*/
+
+  if (lua_gettop(L) >= 5) {
+    if (!lua_istable(L, 5)) {
+      return luaL_error(L, "Bounding box input missing");
+    }
+
+    lua_rawgeti(L, 5, 1);
+    i0 = luaL_checknumber(L, -1);
+    if (i0 < 0) i0 = 0;
+    lua_rawgeti(L, 5, 2);
+    i1 = luaL_checknumber(L, -1);
+    if (i1 > width-1) i1 = width-1;
+    lua_rawgeti(L, 5, 3);
+    j0 = luaL_checknumber(L, -1);
+    if (j0 < 0) j0 = 0;
+    lua_rawgeti(L, 5, 4);
+    j1 = luaL_checknumber(L, -1);
+    if (j1 > height-1) j1 = height-1;
+    lua_pop(L, 4);
+  }
+
+	//std::cout << "color result:";
+	for (int i = i0; i <= i1; i++)
+	{
+		if(im_ptr[j0*width+i] == color)
+			cntr++;
+		if(im_ptr[j1*width+i] == color)
+			cntr++;
+		//std::cout << (int)im_ptr[j0*width +i] << ","<< (int)im_ptr[j1*width + i] << ",";
+	}
+	//std::cout << std::endl;
+
+	//std::cout << "color result:";
+	for(int j = j0; j <= j1; j++)
+	{
+		if(im_ptr[j*width+i0] == color)
+			cntr++;
+		if(im_ptr[j*width+i1] == color)
+			cntr++;
+		//std::cout << (int)im_ptr[j*width +i0] << ","<< (int)im_ptr[j*width + i1] << ",";
+	}
+	//std::cout << std::endl;
+	//std::cout << "cntr = " <<cntr <<std::endl;
+
+	rate = (float)cntr/(2*(i1-i0)+2*(j1-j0));
+  // return stats	
+  lua_createtable(L, 0, 1);
+  
+  // area field
+  lua_pushstring(L, "backgroundRatio");
+  lua_pushnumber(L, rate);
+  lua_settable(L, -3);
+
+  return 1;
+}
 
 int lua_color_stats(lua_State *L) {
 
@@ -150,17 +239,6 @@ int lua_color_stats(lua_State *L) {
   return 1;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 int lua_tilted_color_stats(lua_State *L) {
 
   uint8_t *im_ptr = (uint8_t *)lua_touserdata(L,1);
@@ -291,3 +369,4 @@ int lua_tilted_color_stats(lua_State *L) {
 
   return 1;
 }
+

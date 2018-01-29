@@ -18,53 +18,50 @@ require('Body');
 
 obs_challenge_enable = Config.obs_challenge or 0;
 enable_lut_for_obstacle = Config.vision.enable_lut_for_obstacle or 0;
+black_depth = Config.vision.black_depth or 8
+black_width = Config.vision.black_width or 8
+lut_stage = Config.vision.lut_stage or 64
+use_arbitrary_ball = Config.vision.use_arbitrary_ball or false;
 
 currVel = vector.zeros(3);
 
-if use_gps_only==0 then
-  require('Camera');
-  require('Detection');
+require('Camera');
+require('Detection');
 
-  if (Config.camera.width ~= Camera.get_width()
-      or Config.camera.height ~= Camera.get_height()) then
-    print('Camera width/height mismatch');
-    print('Config width/height = ('..Config.camera.width..', '..Config.camera.height..')');
-    print('Camera width/height = ('..Camera.get_width()..', '..Camera.get_height()..')');
-    error('Config file is not set correctly for this camera. Ensure the camera width and height are correct.');
-  end
-  vcm.set_image_width(Config.camera.width);
-  vcm.set_image_height(Config.camera.height);
-
-  camera = {};
-
-  camera.width = Camera.get_width();
-  camera.height = Camera.get_height();
-  camera.npixel = camera.width*camera.height;
-  camera.image = Camera.get_image();
-  camera.status = Camera.get_camera_status();
-  camera.switchFreq = Config.camera.switchFreq;
-  camera.ncamera = Config.camera.ncamera;
-  -- Initialize the Labeling
-  labelA = {};
-  -- labeled image is 1/4 the size of the original
-  labelA.m = camera.width/2;
-  labelA.n = camera.height/2;
-  labelA.npixel = labelA.m*labelA.n;
-  if  webots == 1 then
-    labelA.m = camera.width;
-    labelA.n = camera.height;
-    labelA.npixel = labelA.m*labelA.n;
-  end
-  scaleB = Config.vision.scaleB;
-  labelB = {};
-  labelB.m = labelA.m/scaleB;
-  labelB.n = labelA.n/scaleB;
-  labelB.npixel = labelB.m*labelB.n;
-	vcm.set_image_scaleB(Config.vision.scaleB);
-  print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
-  print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
-
+if (Config.camera.width ~= Camera.get_width()
+    or Config.camera.height ~= Camera.get_height()) then
+  print('Camera width/height mismatch');
+  print('Config width/height = ('..Config.camera.width..', '..Config.camera.height..')');
+  print('Camera width/height = ('..Camera.get_width()..', '..Camera.get_height()..')');
+  error('Config file is not set correctly for this camera. Ensure the camera width and height are correct.');
 end
+vcm.set_image_width(Config.camera.width);
+vcm.set_image_height(Config.camera.height);
+
+camera = {};
+
+camera.width = Camera.get_width();
+camera.height = Camera.get_height();
+camera.npixel = camera.width*camera.height;
+camera.image = Camera.get_image();
+camera.status = Camera.get_camera_status();
+camera.switchFreq = Config.camera.switchFreq;
+camera.ncamera = Config.camera.ncamera;
+-- Initialize the Labeling
+labelA = {};
+-- labeled image is 1/4 the size of the original
+labelA.m = camera.width/2;
+labelA.n = camera.height/2;
+labelA.npixel = labelA.m*labelA.n;
+
+scaleB = Config.vision.scaleB;
+labelB = {};
+labelB.m = labelA.m/scaleB;
+labelB.n = labelA.n/scaleB;
+labelB.npixel = labelB.m*labelB.n;
+vcm.set_image_scaleB(Config.vision.scaleB);
+print('Vision LabelA size: ('..labelA.m..', '..labelA.n..')');
+print('Vision LabelB size: ('..labelB.m..', '..labelB.n..')');
 
 colorOrange = Config.color.orange;
 colorYellow = Config.color.yellow;
@@ -89,7 +86,7 @@ vcm.set_debug_store_all_images(Config.vision.store_all_images);
 -- Timing
 count = 0;
 lastImageCount = {0,0};
-t0 = unix.time()
+t0 = unix.time();
 
 function entry()
   --Temporary value.. updated at body FSM at next frame
@@ -101,19 +98,34 @@ function entry()
   -- Start the HeadTransform machine
   HeadTransform.entry();
 
-  --If we are only using gps info, skip camera init 	
-  if use_gps_only>0 then
-    return;
-  end
-
   -- Initiate Detection
   Detection.entry();
-  
+
   --set to switch cameras. 
   -- Load the lookup table
-  print('loading lut: '..Config.camera.lut_file);
-  camera.lut = carray.new('c', 262144);
-  load_lut(Config.camera.lut_file);
+
+	if(use_arbitrary_ball) then
+		print('loading environment lut: '..Config.camera.lut_file);
+		camera.lut = load_general_lut(Config.camera.lut_file);
+
+		print('loading ball lut: '..Config.camera.lut_ball_file);
+		camera.lut_ball = load_general_lut(Config.camera.lut_ball_file);
+		--writeSplittedBallLut('ballLut.txt', camera.lut_ball)
+
+		print('creating splitted ball lut');
+		camera.splittedBallLut = split_ball_lut(camera.lut,camera.lut_ball);
+		--writeSplittedBallLut('splittedLut.txt', camera.splittedBallLut)
+		--print('exiting the test routine')
+		--os.exit()
+
+		print('temp test for transfering of field color from ball lut to env lut');
+		camera.lut = add_ballfield_lut(camera.lut,camera.lut_ball);
+		--writeSplittedBallLut('envLut.txt', camera.lut)
+		--print('exiting the test routine')
+		--os.exit()
+	else
+		camera.lut = load_general_lut(Config.camera.lut_file);
+	end
 
   --ADDED to prevent crashing with old camera config
   if Config.camera.lut_file_obs == null then
@@ -127,11 +139,7 @@ function entry()
     load_lut_obs(Config.camera.lut_file_obs);
   end
 
-  if Config.platform.name=="NaoV4" then
-    camera_init_naov4();
-  else
-    camera_init();
-  end 
+  camera_init();
 
   -- in default, use prelearned colortable
   vcm.set_image_learn_lut(0);
@@ -227,55 +235,31 @@ function update()
     labelA.data = Camera.get_labelA( carray.pointer(camera.lut) );
   else
 
-    labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
-                                          carray.pointer(camera.lut),
-                                          camera.width/2,
-                                          camera.height);
+		if(use_arbitrary_ball) then
+			labelA.data, labelA.dataBall  = ImageProc.yuyv_to_label_ball(vcm.get_image_yuyv(),
+																						carray.pointer(camera.lut),
+																						carray.pointer(camera.splittedBallLut),
+																						camera.width/2,
+																						camera.height);
+		else
+			labelA.data  = ImageProc.yuyv_to_label(vcm.get_image_yuyv(),
+																						carray.pointer(camera.lut),
+																						camera.width/2,
+																						camera.height);
+		end
+
   end
+
+	--print('exiting the test routine')
+	--os.exit()
 
   -- determine total number of pixels of each color/label
   colorCount = ImageProc.color_count(labelA.data, labelA.npixel);
 
-
   -- bit-or the segmented image
   labelB.data = ImageProc.block_bitor(labelA.data, labelA.m, labelA.n, scaleB, scaleB);
 
-  -- perform label process for obstacle specific lut
-  if enable_lut_for_obstacle == 1 then
-    -- label A
-    if webots == 1 then
-      labelA.data_obs = Camera.get_labelA_obs( carray.pointer(camera.lut_obs) );
-    else
-      labelA.data_obs  = ImageProc.yuyv_to_label_obs(vcm.get_image_yuyv(),
-                                    carray.pointer(camera.lut_obs), camera.width/2, camera.height);
-    end
-    -- count color pixels
-    colorCount_obs = ImageProc.color_count_obs(labelA.data_obs, labelA.npixel);
-    -- label B
-    labelB.data_obs = ImageProc.block_bitor_obs(labelA.data_obs, labelA.m, labelA.n, scaleB, scaleB);
-  end
-
   update_shm(status, headAngles)
-
-  -- Learn ball color from mask and rebuild colortable
-  if obs_challenge_enable == 1 then
---    print('enable obs challenge')
-    if vcm.get_image_learn_lut() == 1 then
-      print("learn new colortable for random ball from mask");
-      vcm.set_image_learn_lut(0);
-      mask = ImageProc.label_to_mask(labelA.data_obs, labelA.m, labelA.n);
-      if webots == 1 then
-        print("learn in webots")
-        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut_obs));
---        lut_update = Camera.get_lut_update(mask, carray.pointer(camera.lut));
-      else
-        print("learn in op")
-        lut_update = ImageProc.yuyv_mask_to_lut(vcm.get_image_yuyv(), mask, camera.lut, 
-                                                labelA.m, labelA.n);
-      end
-      print(type(mask),type(labelB.data))
-    end
-  end
 
   vcm.refresh_debug_message();
 
@@ -366,43 +350,44 @@ function update_shm(status, headAngles)
 
   if vcm.get_debug_enable_shm_copy() == 1 then
     if ((vcm.get_debug_store_all_images() == 1)
-        or (ball.detect == 1
-            and vcm.get_debug_store_ball_detections() == 1)
-        or ((goalCyan.detect == 1 or goalYellow.detect == 1) 
-            and vcm.get_debug_store_goal_detections() == 1)) then
+      or (ball.detect == 1
+          and vcm.get_debug_store_ball_detections() == 1)
+      or ((goalCyan.detect == 1 or goalYellow.detect == 1)
+          and vcm.get_debug_store_goal_detections() == 1)) then
 
-	if webots == 1  then
-          vcm.set_camera_yuyvType(1);
+	    if webots == 1  then
+        vcm.set_camera_yuyvType(1);
+        vcm.set_image_labelA(labelA.data);
+        vcm.set_image_labelB(labelB.data);
+--        vcm.set_image_labelA_obs(labelA.data_obs);
+--        vcm.set_image_labelB_obs(labelB.data_obs);
+	    end
+
+      if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
+	      if vcm.get_camera_broadcast() == 1 then
+	    --Level 1: 1/4 yuyv, labelB
+          vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
+          vcm.get_image_yuyv(),
+	        camera.width/2, camera.height,4));
+          vcm.set_image_labelB(labelB.data);
+        elseif vcm.get_camera_broadcast() == 2 then
+	    --Level 2: 1/2 yuyv, labelA, labelB
+          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+          vcm.get_image_yuyv(),
+          camera.width/2, camera.height,2));
           vcm.set_image_labelA(labelA.data);
           vcm.set_image_labelB(labelB.data);
---          vcm.set_image_labelA_obs(labelA.data_obs);
---          vcm.set_image_labelB_obs(labelB.data_obs);
-	end
-        if vcm.get_camera_broadcast() > 0 then --Wired monitor broadcasting
-	  if vcm.get_camera_broadcast() == 1 then
-	    --Level 1: 1/4 yuyv, labelB
-            vcm.set_image_yuyv3(ImageProc.subsample_yuyv2yuyv(
-  	    vcm.get_image_yuyv(),
-	    camera.width/2, camera.height,4));
-            vcm.set_image_labelB(labelB.data);
-	  elseif vcm.get_camera_broadcast() == 2 then
-	    --Level 2: 1/2 yuyv, labelA, labelB
-            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
-  	      vcm.get_image_yuyv(),
-  	      camera.width/2, camera.height,2));
-            vcm.set_image_labelA(labelA.data);
-            vcm.set_image_labelB(labelB.data);
-	  else
+	      else
 	    --Level 3: 1/2 yuyv
-            vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
-  	    vcm.get_image_yuyv(),
-  	    camera.width/2, camera.height,2));
-	  end
+          vcm.set_image_yuyv2(ImageProc.subsample_yuyv2yuyv(
+          vcm.get_image_yuyv(),
+          camera.width/2, camera.height,2));
+	      end
 
-	elseif vcm.get_camera_teambroadcast() > 0 then --Wireless Team broadcasting
+	    elseif vcm.get_camera_teambroadcast() > 0 then --Wireless Team broadcasting
           --Only copy labelB
           vcm.set_image_labelB(labelB.data);
-        end
+      end
     end
   end
 
@@ -464,6 +449,10 @@ function bboxStats(color, bboxB, rollAngle, scale)
   end
 end
 
+function ballColorBboxStats(color, bboxA)
+  return ImageProc.ball_color_stats(labelA.ballData, labelA.m, labelA.n, color, bboxA);
+end
+
 function bboxB2A(bboxB)
   bboxA = {};
   bboxA[1] = scaleB*bboxB[1];
@@ -477,7 +466,7 @@ function bboxArea(bbox)
   return (bbox[2] - bbox[1] + 1) * (bbox[4] - bbox[3] + 1);
 end
 
-function load_lut(fname)
+function load_lut_camera(fname)
   local cwd = unix.getcwd();
   if string.find(cwd, "WebotsController") then
     cwd = cwd.."/Player";
@@ -489,6 +478,54 @@ function load_lut(fname)
   for i = 1,string.len(s) do
     camera.lut[i] = string.byte(s,i,i);
   end
+end
+
+function load_lut_ball(fname)
+  local cwd = unix.getcwd();
+  cwd = cwd.."/Data/";
+  local f = io.open(cwd..fname, "r");
+  assert(f, "Could not open lut ball file");
+  local s = f:read("*a");
+  for i = 1,string.len(s) do
+    camera.lut_ball[i] = string.byte(s,i,i);
+  end
+end
+
+function writeSplittedBallLut(fname,lutContents)
+  local cwd = unix.getcwd();
+  cwd = cwd.."/Data/";
+
+  local f = io.open(cwd..fname, "w");
+  assert(f, "Could not open lut file");
+
+	local lutLength = #lutContents;
+  for i = 1, lutLength do
+    f:write(lutContents[i], ",");
+  end
+
+	f:write("\n");
+	
+end
+
+function load_general_lut(fname)
+	local ta = carray.new('c',262144)
+
+  local cwd = unix.getcwd();
+  if string.find(cwd, "WebotsController") then
+    cwd = cwd.."/Player";
+  end
+  cwd = cwd.."/Data/";
+
+  local f = io.open(cwd..fname, "r");
+  assert(f, "Could not open lut file");
+  local s = f:read("*a");
+
+	print('raw file length ='.. string.len(s))
+  for i = 1,string.len(s) do
+    ta[i] = string.byte(s,i,i);
+  end
+	
+	return ta;
 end
 
 function load_lut_obs(fname)
@@ -519,3 +556,154 @@ function save_rgb(rgb)
   end
   f:close();
 end
+
+function isAlsoBlackColor(y,u,v)
+	uvRange = {(lut_stage-black_width)/2,(lut_stage+black_width)/2}
+
+	if((u-uvRange[1])*(u-uvRange[2])<0 and
+			(v-uvRange[1])*(v-uvRange[2])<0 and
+			y<black_depth) then
+		--print("black color found in ball", y, u, v)
+		return true;
+	end
+	return false;
+end
+
+function add_ballfield_lut(envLut, ballLut)
+  local ta = carray.new('c', 262144);
+
+	for i = 1, 64 do
+    for j = 1, 64 do
+      for k = 1, 64 do
+
+				local ind = (i-1)*64*64 + (j-1)*64 + k;
+				ta[ind] = envLut[ind];
+
+				if(ta[ind] == 8) then
+					ta[ind] = 0
+				end
+
+				if (ballLut[ind] == 8 and ta[ind] == 0) then
+					ta[ind] = ballLut[ind];
+				end
+
+      end
+    end
+  end
+
+  return ta;
+end
+
+function split_ball_lut(envLut, ballLut)
+  local ta = carray.new('c', 262144);
+
+	for i = 1, 64 do
+    for j = 1, 64 do
+      for k = 1, 64 do
+				local ind = (i-1)*64*64 + (j-1)*64 + k;
+				--ta[ind] = ballLut[ind];
+				if (ballLut[ind]==1) then
+					if(envLut[ind]==2 or envLut[ind]==16) then
+						ta[ind] = 4
+					elseif(isAlsoBlackColor(i,j,k)) then
+						ta[ind] = 2
+					else
+						ta[ind] = 1
+					end
+				end
+      end
+    end
+  end
+
+	print("splitted lut for the ball is")
+	print(ta)
+
+  return ta;
+end
+
+--[[
+function substract_lut(lut1, lut2, color1, color2)
+  local lut = {};
+  local validPoints = {};
+
+  for i = 1, 64 do
+    lut[i] = {};
+    for j = 1, 64 do
+      lut[i][j] = {};
+      for k = 1, 64 do
+        if lut1[i][j][k] == color1 then
+          if lut2[i][j][k] ~= color2 then
+            lut[i][j][k] = color1;
+            validPoints = vector.new({i, j, k, color1});
+          else
+            lut[i][j][k] = 0;
+          end
+        else
+          lut[i][j][k] = 0;
+        end
+      end
+    end
+  end
+  return validPoints, lut; 
+end
+
+-- Create lutBall, include all ball color; lutWhite, include white and green; and lutBlack, only include black;
+function create_diff_lut()
+  local lutBall = {};
+  local lutWhite = {};
+  local lutBlack = {};
+  local vpBall = {};
+  local vpWhite = {};
+  local vpBlack = {};
+  local x = 1;
+  local y = 1;
+
+  for i = 1, 64 do
+    lutBall[i] = {};
+    lutWhite[i] = {};
+    lutBlack[i] = {};
+    for j = 1, 64 do
+      lutBall[i][j] = {};
+      lutWhite[i][j] = {};
+      lutBlack[i][j] = {};
+      for k = 1, 64 do
+        if camera.lut_ball[(i-1)*64*64 + (j-1)*64 + k] ~= 0 then
+          lutBall[i][j][k] = camera.lut_ball[(i-1)*64*64 + (j-1)*64 + k];
+          vpBall[x] = vector.new({i, j, k, camera.lut_ball[(i-1)*64*64 + (j-1)*64 + k]});
+          x = x + 1;
+        else
+          lutBall[i][j][k] = 0;
+        end
+
+        if camera.lut[(i-1)*64*64 + (j-1)*64 + k] ~= 0 then
+          lutWhite[i][j][k] = camera.lut[(i-1)*64*64 + (j-1)*64 + k];
+          vpWhite[y] = vector.new({i, j, k, camera.lut[(i-1)*64*64 + (j-1)*64 + k]});
+          y = y + 1;
+        else
+          lutWhite[i][j][k] = 0;
+        end
+
+        lutBlack[i][j][k] = 0;
+      end
+    end
+  end
+  vpBlack, lutBlack = create_black_lut(lutBlack);
+
+  return vpBall, lutBall, vpWhite, lutWhite, vpBlack, lutBlack;
+end
+
+-- this function can be omitted because it is an rect area
+function create_black_lut(stage, tag, blackWidth, blackDepth)
+	local ta = carray.new(stage*stage*stage);
+	local uvRange=fix([(stage-blackWidth)/2,(stage+blackWidth)/2]);
+
+for i = uvRange(1):uvRange(2)
+    for j = uvRange(1):uvRange(2)
+        for k = 1:blackDepth
+            lut(i,j,k)=uint8(tag);
+            validPoints=[validPoints;i,j,k,lut(i,j,k)];
+  
+  return ta;
+end
+--]]
+
