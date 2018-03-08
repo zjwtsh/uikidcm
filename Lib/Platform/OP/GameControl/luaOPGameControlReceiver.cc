@@ -40,7 +40,7 @@ void mexExit(void)
     close(sock_fd);
 }
 */
-  
+
 
 static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *data) {
   if (data == NULL) {
@@ -60,61 +60,73 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
   // version field
   lua_pushstring(L, "version");
   lua_pushnumber(L, data->version);
+  //printf("data->version: %d\n", data->version);
   lua_settable(L, -3);
 
   lua_pushstring(L, "playersPerTeam");
   lua_pushnumber(L, data->playersPerTeam);
+  //printf("data->playersPerTeam: %d\n", data->playersPerTeam);
   lua_settable(L, -3);
 
   lua_pushstring(L, "state");
   lua_pushnumber(L, data->state);
+  //printf("data->state: %d\n", data->state);
   lua_settable(L, -3);
 
   lua_pushstring(L, "firstHalf");
   lua_pushnumber(L, data->firstHalf);
+  //printf("data->firstHalf: %d\n", data->firstHalf);
   lua_settable(L, -3);
 
   lua_pushstring(L, "kickOffTeam");
   lua_pushnumber(L, data->kickOffTeam);
+  //printf("data->kickOffTeam: %d\n", data->kickOffTeam);
   lua_settable(L, -3);
 
   lua_pushstring(L, "secondaryState");
   lua_pushnumber(L, data->secondaryState);
+  //printf("data->secondaryState: %d\n", data->secondaryState);
   lua_settable(L, -3);
 
   lua_pushstring(L, "dropInTeam");
   lua_pushnumber(L, data->dropInTeam);
+  //printf("data->dropInTeam: %d\n", data->dropInTeam);
   lua_settable(L, -3);
 
   lua_pushstring(L, "dropInTime");
   lua_pushnumber(L, data->dropInTime);
+  //printf("data->dropInTime: %d\n", data->dropInTime);
   lua_settable(L, -3);
 
   lua_pushstring(L, "secsRemaining");
   lua_pushnumber(L, data->secsRemaining);
+  //printf("data->secsRemaining: %d\n", data->secsRemaining);
   lua_settable(L, -3);
 
   lua_pushstring(L, "teams");
   lua_createtable(L, 2, 0);
 
   for (int iteam = 0; iteam < 2; iteam++) {
-    lua_createtable(L, 0, 4);
+    lua_createtable(L, 0, 3);
 
     lua_pushstring(L, "teamNumber");
     lua_pushnumber(L, data->teams[iteam].teamNumber);
+    //printf("data->teams[%d].teamNumber: %d\n", iteam, data->teams[iteam].teamNumber);
     lua_settable(L, -3);
 
     lua_pushstring(L, "teamColour");
     lua_pushnumber(L, data->teams[iteam].teamColour);
+    //printf("data->teams[%d].teamColour: %d\n", iteam, data->teams[iteam].teamColour);
     lua_settable(L, -3);
 
     // OP has a different goal color than its team color sometimes...
-    lua_pushstring(L, "goalColour");
-    lua_pushnumber(L, data->teams[iteam].goalColour);
-    lua_settable(L, -3);
+    //lua_pushstring(L, "goalColour");
+    //lua_pushnumber(L, data->teams[iteam].goalColour);
+    //lua_settable(L, -3);
 
     lua_pushstring(L, "score");
     lua_pushnumber(L, data->teams[iteam].score);
+    //printf("data->teams[%d].score: %d\n", iteam, data->teams[iteam].score);
     lua_settable(L, -3);
 
     lua_pushstring(L, "player");
@@ -125,10 +137,12 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
 
       lua_pushstring(L, "penalty");
       lua_pushnumber(L, data->teams[iteam].players[iplayer].penalty);
+      //printf("data->teams[%d].players[%d].penalty: %d\n", iteam, iplayer, data->teams[iteam].players[iplayer].penalty);
       lua_settable(L, -3);
 
       lua_pushstring(L, "secsRemaining");
       lua_pushnumber(L, data->teams[iteam].players[iplayer].secsTillUnpenalised);
+      //printf("data->teams[%d].players[%d].secsTillUnpenalised: %d\n", iteam, iplayer, data->teams[iteam].players[iplayer].secsTillUnpenalised);
       lua_settable(L, -3);
 
       lua_rawseti(L, -2, iplayer+1);
@@ -189,7 +203,7 @@ static int lua_gamecontrolpacket_receive(lua_State *L) {
 
     // Verify game controller header:
     if (memcmp(data, GAMECONTROLLER_STRUCT_HEADER, sizeof(GAMECONTROLLER_STRUCT_HEADER) - 1) == 0) {
-      memcpy(&gameControlData, data, sizeof(RoboCupGameControlData));    
+      memcpy(&gameControlData, data, sizeof(RoboCupGameControlData));
       nGameControlData++;
       //printf("Game control: %d received.\n", nGameControlData);
     }
@@ -198,11 +212,12 @@ static int lua_gamecontrolpacket_receive(lua_State *L) {
 		recvTime = time_scalar();
   }
 
+  //printf("nGameControlData: %d\n", nGameControlData);
   if (nGameControlData == 0) {
     // no messages received yet
-    lua_pushnil(L); 
+    lua_pushnil(L);
   } else {
-    return lua_gamecontrolpacket_parse(L, &gameControlData); 
+    return lua_gamecontrolpacket_parse(L, &gameControlData);
   }
 
   return 1;
@@ -222,4 +237,3 @@ int luaopen_OPGameControlReceiver (lua_State *L) {
 
   return 1;
 }
-

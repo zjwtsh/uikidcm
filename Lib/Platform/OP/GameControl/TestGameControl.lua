@@ -1,31 +1,26 @@
 module(... or "", package.seeall)
 
-require('Config')
-require('util')
-require('gcm')
-require('Speak')
+require('unix')
 receiver = require('OPGameControlReceiver')
 
-teamNumber = Config.game.teamNumber;
-playerID = gcm.get_team_player_id();
+teamNumber = 22;
+playerID = 1;
 teamIndex = 0;
-nPlayers = Config.game.nPlayers;
+nPlayers = 2;
 --teamColor = -1;
-teamColor = Config.game.teamColor;  --tse
-gcm.set_team_color(Config.game.teamColor);
+teamColor = 0;  --tse
 
 gamePacket = nil;
 gameState = 0;
 timeRemaining = 0;
 lastUpdate = 0;
-lastUpdate = unix.time(); --SJ:omitting this makes button not working
 
 buttonPressed = 0;
 
 kickoff = -1;
 half = 1;
 
-teamPenalty = vector.zeros(Config.game.nPlayers);
+teamPenalty = {};
 
 penalty = {};
 
@@ -68,11 +63,9 @@ function set_team_color(color)
   if teamColor ~= color then
     teamColor = color;
     if (teamColor == 1) then
-      Speak.talk('I am on the red team');
---      Body.set_actuator_ledFootLeft({1, 0, 0});
+      print('I am on the red team');
     else
-      Speak.talk('I am on the blue team');
---      Body.set_actuator_ledFootLeft({0, 0, 1});
+      print('I am on the blue team');
     end
   end
 end
@@ -81,11 +74,9 @@ function set_kickoff(k)
   if (kickoff ~= k) then
     kickoff = k;
     if (kickoff == 1) then
-      Speak.talk('We have kickoff');
---      Body.set_actuator_ledFootRight({1, 1, 1});
+      print('We have kickoff');
     else
-      Speak.talk('Opponents have kickoff');
---      Body.set_actuator_ledFootRight({0, 0, 0});
+      print('Opponents have kickoff');
     end
   end
 end
@@ -104,12 +95,11 @@ function update()
   gamePacket = receive();
   count = count + 1;
 
-  if (gamePacket and unix.time() - gamePacket.time < 10) then
-    -- if the game control state has not been set check for the teamIndex
     teamIndex = 0;
     OtherTeamIndex = 0;
 
-
+  if (gamePacket) then
+    print("Game State: "..gamePacket.state)
     for i = 1,2 do
       if gamePacket.teams[i].teamNumber == teamNumber then
         teamIndex = i;
@@ -124,9 +114,6 @@ function update()
 
     if teamIndex ~= 0 then
       updateCount = count;
-
-      -- we received a game control packet
-      lastUpdate = unix.time();
 
       -- upadate game state
       gameState = gamePacket.state;
@@ -145,14 +132,15 @@ function update()
       if gamePacket.kickOffTeam ==2 then
         --Dropball, robots should be OUTSIDE center circle, can score directly
         --Set it to 1 for now
-        set_kickoff(1);
+        print("kick off team = 2")
       else
         if (gamePacket.teams[gamePacket.kickOffTeam+1].teamNumber == teamNumber) then
           --Kickoff, robot inside center circle, cannot score directly
           set_kickoff(1);
+          print("kick off team 1")
         else
           --Waiting, robot outside center circle, cannot move for 10sec
-          set_kickoff(0);
+          print("kick off team 0")
         end
       end
 
@@ -173,65 +161,12 @@ function update()
     end
   end
 
-  gcm.set_game_our_score(our_score);
-  gcm.set_game_opponent_score(opponent_score);
-
-  --GameController Latency
-  gcm.set_game_gc_latency(math.min(999, unix.time() - lastUpdate));
-
-  if (unix.time() - lastUpdate > 10.0) then
-    -- we have not received a game control packet in over 10 seconds
-    if (updateCount < count - 1 ) then
-      Speak.talk('Off Game Controller');
-    end
-    updateCount = count;
-    teamIndex = 0;
-
-    -- update team color (it is set in gameInitial)
-    set_team_color(gcm.get_team_color());
-
-    -- update kickoff
-    set_kickoff(gcm.get_game_kickoff());
-
-    -- use buttons to advance states IF not paused
-    if gcm.get_game_paused()==0 then
-      if (Body.get_change_state() == 0) then
-        if buttonPressed == 1 then
-          -- advance state when button is released
-          if (gameState < 3) then
-            gameState = gameState + 1;
-          elseif (gameState == 3) then
-            -- playing - toggle penalty state
-            teamPenalty[playerID] = 1 - teamPenalty[playerID];
-          end
-        end
-        buttonPressed = 0;
-      else
-        buttonPressed = 1;
-      end
-    end
-
-  end
-
-  -- update shm
-  if (updateCount == count) then
-    update_shm();
-  end
-end
-
-function update_shm()
-  -- update the shm values
-  gcm.set_game_state(gameState);
-  gcm.set_game_nplayers(nPlayers);
-  gcm.set_game_kickoff(kickoff);
-  gcm.set_game_half(half);
-  gcm.set_game_penalty(get_penalty());
-  gcm.set_game_time_remaining(timeRemaining);
-  gcm.set_game_last_update(lastUpdate);
-
-  gcm.set_team_number(teamNumber);
-  gcm.set_team_color(teamColor);
 end
 
 function exit()
+end
+
+while 1 do
+  update();
+  unix.usleep(10000);
 end
