@@ -102,11 +102,16 @@ static int lua_visionModeling_ball(lua_State *L) {
   return 1;
 }
 
+static int lua_resetModeling_ball(lua_State *L) {
+	return 1;
+}
+
 static int lua_visionModeling_self(lua_State *L) {
 	return 1;
 }
 
 static const struct luaL_reg visionModeling_lib [] = {
+  {"ResetModelingBall", lua_resetModeling_ball},
   {"modelingBall", lua_visionModeling_ball},
   {"modelingSelf", lua_visionModeling_self},
   {NULL, NULL}
