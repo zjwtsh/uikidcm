@@ -24,6 +24,7 @@ extern "C" {
 
 #include "preprocessedObservation.h"
 #include "ballModelingObject.h"
+#include "particleFilterConfig.h"
 
 ballModelingObject::ballModelingObject()
 {
@@ -33,6 +34,7 @@ ballModelingObject::ballModelingObject()
 	pmeas_model = NULL;
 	pprior_discr = NULL;
 	pfilter = NULL;
+	pobs = NULL;
 }
 
 void ballModelingObject::clearBootstrap()
@@ -49,6 +51,17 @@ void ballModelingObject::clearBootstrap()
 		delete psys_model;
 	if(psys_pdf != NULL)
 		delete psys_pdf;
+	if(pobs != NULL)
+		delete pobs;
+
+	psys_pdf = NULL;
+	psys_model = NULL;
+	pmeas_pdf = NULL;
+	pmeas_model = NULL;
+	pprior_discr = NULL;
+	pfilter = NULL;
+	pobs = NULL;
+
 	return;
 }
 
@@ -59,6 +72,7 @@ ballModelingObject::~ballModelingObject()
 
 bool ballModelingObject::InitializeBootStrapFilter(MatrixWrapper::ColumnVector initState)
 {
+	pobs = new preprocessedObservation(50*M_PI/180, 90, 5*M_PI/180, 0.3, 1.2);
 	//copy code from mouseBehaviorGenerator
 	MatrixWrapper::ColumnVector sys_noise_Mu(STATE_SIZE);
 	sys_noise_Mu(1) = MU_SYSTEM_NOISE_X;
@@ -104,7 +118,7 @@ bool ballModelingObject::InitializeBootStrapFilter(MatrixWrapper::ColumnVector i
 	prior_cont.SampleFrom(prior_samples,NUM_SAMPLES,CHOLESKY,NULL);
 	pprior_discr->ListOfSamplesSet(prior_samples);
 
-	vector<BFL::Sample<MatrixWrapper::ColumnVector>>::const_iterator iter; 
+	vector< BFL::Sample<MatrixWrapper::ColumnVector> >::const_iterator iter; 
 	for (iter = prior_samples.begin(); iter != prior_samples.end(); iter++)
 	{
 		std::cout<< iter->ValueGet() << std::endl;
@@ -121,8 +135,29 @@ bool ballModelingObject::InitializeBootStrapFilter(MatrixWrapper::ColumnVector i
 	return true;
 }
 
-bool ballModelingObject::RunOneStep()
+bool ballModelingObject::UpdateBallParameters()
 {
+	//images are processed to obtain observations
+	/*
+	cameraAngleSpead = 50*M_PI/180;
+	physicalRadiusOfBall = 90;
+	horizonLimit = 5*M_PI/180;
+	noiseRate = 0.3;
+	radiusRate = 1.2;
+	*/
+
+	pobs->refineParameters(50*M_PI/180.0, 90, 5*M_PI/180.0, 0.3, 1.2);
+	return true;
+}
+
+bool ballModelingObject::RunOneStep(uint8_t *label, int width, int height, double headPitch)
+{
+	//old interface wrapped into preprocessedObservation
+
+	pobs->refineObservation(label, width, height, headPitch);
+
+	//the next step is update of particle filter
+	
 	return true;
 }
 

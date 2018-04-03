@@ -1,5 +1,5 @@
-#ifndef lua_accumulate_ball_h_DEFINED
-#define lua_accumulate_ball_h_DEFINED
+#ifndef BALL_MODELING_OBJECT_H
+#define BALL_MODELING_OBJECT_H
 
 #include <stdint.h>
 
@@ -10,7 +10,7 @@ public:
 	~ballModelingObject();
 	//bool InitializeEnvironment();
 	bool InitializeBootStrapFilter(MatrixWrapper::ColumnVector initState);
-	bool RunOneStep();
+	bool RunOneStep(uint8_t *label, int width, int height, double headPitch);
 
 protected:
 	void clearBootstrap(void);
@@ -23,6 +23,7 @@ protected:
 	BFL::MeasurementModel<preprocessObservation, MatrixWrapper::ColumnVector> *pmeas_model;
 	BFL::MCPdf<MatrixWrapper::ColumnVector> *pprior_discr;
 	BFL::BootstrapFilter<MatrixWrapper::ColumnVector, preprocessedObservation> *pfilter;
+	preprocessedObservation *pobs;
 
 };
 
