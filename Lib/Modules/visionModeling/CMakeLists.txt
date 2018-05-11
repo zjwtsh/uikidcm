@@ -21,6 +21,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 # set library prefix to "" otherwise it will create libImageProc.so
 set_target_properties(VisionModeling PROPERTIES PREFIX "")
 
-# link to math library 
+# link to math library
 target_link_libraries(VisionModeling m orocos-bfl)
+
+install_targets(/ VisionModeling)
 

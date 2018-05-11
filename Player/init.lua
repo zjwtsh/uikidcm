@@ -20,7 +20,7 @@ package.path = cwd.."/Motion/keyframes/?.lua;"..package.path;
 package.path = cwd.."/Vision/?.lua;"..package.path;
 package.path = cwd.."/World/?.lua;"..package.path;
 
-
+--[[
 require('serialization')
 require('string')
 require('vector')
@@ -29,5 +29,8 @@ require('util')
 require('unix')
 require('cutil')
 require('shm')
+]]--
 
+require('VisionModeling')
 
+ballObject = VisionModeling.new();

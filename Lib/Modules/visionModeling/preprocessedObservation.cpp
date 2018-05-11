@@ -5,6 +5,8 @@
 #include <fstream>
 #include <stdint.h>
 
+#include <wrappers/rng/rng.h> // Wrapper around several rng libraries
+
 #include "preprocessedObservation.h"
 #include "block_bitor.h"
 #include "ConnectRegions.h"
@@ -54,7 +56,7 @@ bool preprocessedObservation::refineObservation(uint8_t *label, int width, int h
 	return true;
 }
 
-bool getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate)
+bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate) const
 {
 	return true;
 }

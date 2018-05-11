@@ -165,7 +165,7 @@ int luaopen_VisionModeling (lua_State *L) {
   luaL_register(L, NULL, visionModeling_methods);
   
   //register the whole module
-  luaL_register(L, "visionModeling", visionModeling_lib);
+  luaL_register(L, "VisionModeling", visionModeling_lib);
 
   return 1;
 }
