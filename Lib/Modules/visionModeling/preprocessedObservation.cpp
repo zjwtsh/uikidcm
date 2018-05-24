@@ -53,6 +53,18 @@ bool preprocessedObservation::refineParameters(
 
 bool preprocessedObservation::refineObservation(uint8_t *label, int width, int height, double headPitch)
 {
+	AccumulateParaIn in;
+
+	in.cameraAngleSpead = paraCameraAngleSpead;
+	in.physicalRadiusOfBall = paraPhysicalRadiusOfBall;
+	in.horizonLimit = paraHorizonLimit;
+	in.noiseRate = paraNoiseRate;
+	in.radiusRate = paraRadiusRate;
+	in.cameraTilt = headPitch; 
+
+	ballCandidates.clear();
+	lua_accumulate_ball(ballCandidates, label, width, height, in);
+
 	return true;
 }
 
