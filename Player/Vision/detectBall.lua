@@ -118,7 +118,7 @@ headAngle[2]+10*math.pi/180
 
 		if(check_passed) then
 
-			Kcolor = 0.2;
+			Kcolor = 0.2/3;
 			Kradius = 0.2;
 			Kground = 0.2;
 			Ksquare = 0.2;
