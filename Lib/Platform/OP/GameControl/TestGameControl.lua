@@ -8,7 +8,7 @@ playerID = 1;
 teamIndex = 0;
 nPlayers = 2;
 --teamColor = -1;
-teamColor = 0;  --tse
+teamColor = 0;
 
 gamePacket = nil;
 gameState = 0;
@@ -63,9 +63,9 @@ function set_team_color(color)
   if teamColor ~= color then
     teamColor = color;
     if (teamColor == 1) then
-      print('I am on the red team');
+      --print('I am on the red team');
     else
-      print('I am on the blue team');
+      --print('I am on the blue team');
     end
   end
 end
@@ -74,9 +74,9 @@ function set_kickoff(k)
   if (kickoff ~= k) then
     kickoff = k;
     if (kickoff == 1) then
-      print('We have kickoff');
+      --print('We have kickoff');
     else
-      print('Opponents have kickoff');
+      --print('Opponents have kickoff');
     end
   end
 end
@@ -99,7 +99,7 @@ function update()
     OtherTeamIndex = 0;
 
   if (gamePacket) then
-    print("Game State: "..gamePacket.state)
+    --print("Game State: "..gamePacket.state)
     for i = 1,2 do
       if gamePacket.teams[i].teamNumber == teamNumber then
         teamIndex = i;
@@ -129,19 +129,13 @@ function update()
 
       -- update kickoff team
       -- Dropball Handling
-      if gamePacket.kickOffTeam ==2 then
-        --Dropball, robots should be OUTSIDE center circle, can score directly
-        --Set it to 1 for now
-        print("kick off team = 2")
+      if (gamePacket.kickingTeam == teamNumber) then
+        --Kickoff, robot inside center circle, cannot score directly
+        set_kickoff(1);
+        --print("we are kick off team")
       else
-        if (gamePacket.teams[gamePacket.kickOffTeam+1].teamNumber == teamNumber) then
-          --Kickoff, robot inside center circle, cannot score directly
-          set_kickoff(1);
-          print("kick off team 1")
-        else
-          --Waiting, robot outside center circle, cannot move for 10sec
-          print("kick off team 0")
-        end
+        --Waiting, robot outside center circle, cannot move for 10sec
+        --print("others are kick off team")
       end
 
       -- update which half it is
