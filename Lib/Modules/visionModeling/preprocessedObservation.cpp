@@ -81,17 +81,16 @@ void coor_trans(SegmentStats s[], State STATE)
 	double tran_x = STATE.x;
 	double tran_y=  STATE.y;
 	double tran_theta = STATE.theta*pi/180;
-	for (int i = 0; i < MAX_SEGMENTS; i++) {
-		cout << s[i].x0 << " " << s[i].y0 << " " << s[i].x1 << " " << s[i].y1 << endl;
+	for (int i = 0; i < MAX_SEGMENTS; i++)
+	{
 		double x0_temp=s[i].x0;
 		double y0_temp=s[i].y0 ;
 		double x1_temp=s[i].x1 ;
 		double y1_temp=s[i].y1 ;
 		s[i].x0 = cos(tran_theta)*x0_temp - sin(tran_theta)*y0_temp + tran_x;
-	    s[i].y0 = sin(tran_theta)*x0_temp + cos(tran_theta)*y0_temp + tran_y;
+	  s[i].y0 = sin(tran_theta)*x0_temp + cos(tran_theta)*y0_temp + tran_y;
 		s[i].x1 = cos(tran_theta)*x1_temp - sin(tran_theta)*y1_temp + tran_x;
 		s[i].y1 = sin(tran_theta)*x1_temp + cos(tran_theta)*y1_temp + tran_y;
-		cout << s[i].x0 << " " << s[i].y0 << " " << s[i].x1 << " " << s[i].y1 <<endl;
 	}
 }
 
@@ -99,115 +98,133 @@ void coor_trans(SegmentStats s[], State STATE)
 int plot_lines() 
 {
 	int p = 0;
-	for (int num = 0; num < valid_segments; num++) {
+	for (int num = 0; num < valid_segments; num++)
+	{
 		double kx0 = available_segments[num].x0;
 		double kx1 = available_segments[num].x1;
 		double ky0 = available_segments[num].y0;
 		double ky1 = available_segments[num].y1;
 		//line is vertical
-		if (kx0 == kx1) {
+		if (kx0 == kx1)
+		{
 			int x_temp = round((kx0 - leftboudary) / divided_length) + 1;
 			int y_s, y_e;
-			if (ky0 <= ky1) {
+			if (ky0 <= ky1) 
+			{
 				y_s = ceil((ky0 - lowboundary) / divided_length) + 1;
 				y_e = floor((ky1 - lowboundary) / divided_length) + 1;
 			}
-			else {
+			else
+			{
 				y_s = ceil((ky1 - lowboundary) / divided_length) + 1;
 				y_e = floor((ky0 - lowboundary) / divided_length) + 1;
 			}
-			for (int j = y_s; j <= y_e; j++) {
+			for (int j = y_s; j <= y_e; j++) 
+			{
 				Line_points TEMPRO1 = { x_temp ,j ,num ,0 };
 				linepoint.push_back(TEMPRO1);
 				p++;
-				//cout << x_temp << " " << j << " " << (p - 1) << endl;
 			}
 		}
 		//line is horizontal
-		else if (ky0 == ky1) {
+		else if (ky0 == ky1)
+		{
 			int y_temp = round((ky0 - lowboundary) / divided_length) + 1;
 			int x_s, x_e;
-			if (kx0 <= kx1) {
+			if (kx0 <= kx1) 
+			{
 				x_s = ceil((kx0 - leftboudary) / divided_length) + 1;
 				x_e = floor((kx1 - leftboudary) / divided_length) + 1;
 			}
-			else {
+			else 
+			{
 				x_s = ceil((kx1 - leftboudary) / divided_length) + 1;
 				x_e = floor((kx0 - leftboudary) / divided_length) + 1;
 			}
-			for (int j = x_s; j <= x_e; j++) {
+			for (int j = x_s; j <= x_e; j++)
+			{
 				Line_points TEMPRO1 = { j ,y_temp ,num ,90 };
 				linepoint.push_back(TEMPRO1);
 				p++;
-				//cout << j << " " << y_temp << " " << (p - 1) << endl;
 			}
 		}
-		else {
+		else 
+		{
 			double grad = (ky1 - ky0) / (kx1 - kx0);
 			double theta0 = atan(grad) * 180 / pi;
 			double b = ky0 - grad*kx0;
 			double agrad = fabs(grad);
 			//the y direction is the main direction in the increase of step
-			if (agrad >= 1) {
+			if (agrad >= 1) 
+			{
 				int y_s, y_e;
 				if (grad > 0)
 				{
-					if (ky0 <= ky1) {
+					if (ky0 <= ky1)
+					{
 						y_s = ceil((ky0 - lowboundary) / divided_length) + 1;
 						y_e = floor((ky1 - lowboundary) / divided_length) + 1;
 					}
-					else {
+					else 
+					{
 						y_s = ceil((ky1 - lowboundary) / divided_length) + 1;
 						y_e = floor((ky0 - lowboundary) / divided_length) + 1;
 					}
 					double y_rs = divided_length*(y_s - 1) + lowboundary;
 					double x_rt = 1 / grad*(y_rs - b);
-					for (int j = y_s; j <= y_e; j++) {
+					for (int j = y_s; j <= y_e; j++) 
+					{
 						int x_t = round((x_rt - leftboudary) / divided_length) + 1;
 						Line_points TEMPRO1 = { x_t ,j ,num ,theta0 };
 						linepoint.push_back(TEMPRO1);
 						p++;
 						x_rt = x_rt + 1 / grad*divided_length;
-						//cout << x_t << " " << j << " " << (p - 1) << endl;
 					}
 				}
 				else if (grad < 0)
 				{
-					if (ky0 <= ky1) {
+					if (ky0 <= ky1)
+					{
 						y_s = floor((ky1 - lowboundary) / divided_length) + 1;
 						y_e = ceil((ky0 - lowboundary) / divided_length) + 1;
 					}
-					else {
+					else
+					{
 						y_s = floor((ky0 - lowboundary) / divided_length) + 1;
 						y_e = ceil((ky1 - lowboundary) / divided_length) + 1;
 					}
 					double y_rs = divided_length*(y_s - 1) + lowboundary;
 					double x_rt = 1 / grad*(y_rs - b);
-					for (int j = y_s; j >= y_e; j--) {
+					for (int j = y_s; j >= y_e; j--)
+					{
 						int x_t = round((x_rt - leftboudary) / divided_length) + 1;
 						Line_points TEMPRO1 = { x_t ,j ,num ,theta0 };
 						linepoint.push_back(TEMPRO1);
 						p++;
 						x_rt = x_rt - 1 / grad*divided_length;
-						//cout << x_t << " " << j << " " << (p-1) << endl;
 					}
 				}
 			}
-			else if (agrad < 1) {
+			else if (agrad < 1)
+			{
 				//the x direction is the main direction in the increase of step
 				int x_s, x_e;
-				if (grad > 0) {
-					if (kx0 <= kx1) {
+				if (grad > 0)
+				{
+					if (kx0 <= kx1)
+					{
 						x_s = ceil((kx0 - leftboudary) / divided_length) + 1;
 						x_e = floor((kx1 - leftboudary) / divided_length) + 1;
 					}
-					else {
+					else 
+					{
 						x_s = ceil((kx1 - leftboudary) / divided_length) + 1;
 						x_e = floor((kx0 - leftboudary) / divided_length) + 1;
 					}
 					double x_rs = divided_length*(x_s - 1) + leftboudary;
 					double y_rt = grad*x_rs + b;
-					for (int i = x_s; i <= x_e; i++) {
+					for (int i = x_s; i <= x_e; i++) 
+					{
 						int y_t = round((y_rt - lowboundary) / divided_length)+ 1;
 						Line_points TEMPRO1 = { i ,y_t ,num ,theta0 };
 						linepoint.push_back(TEMPRO1);
@@ -216,24 +233,27 @@ int plot_lines()
 						//cout << i << " " << y_t << " " << (p-1) << endl;
 					}
 				}
-				else if (grad < 0) {
-					if (kx0 <= kx1) {
+				else if (grad < 0)
+				{
+					if (kx0 <= kx1)
+					{
 						x_s = floor((kx1 - leftboudary) / divided_length) + 1;
 						x_e = ceil((kx0 - leftboudary) / divided_length) + 1;
 					}
-					else {
+					else 
+					{
 						x_s = floor((kx0 - leftboudary) / divided_length) + 1;
 						x_e = ceil((kx1 - leftboudary) / divided_length) + 1;
 					}
 					double x_rs = divided_length*(x_s - 1) + leftboudary;
 					double y_rt = grad*x_rs + b;
-					for (int i = x_s; i >= x_e; i--) {
+					for (int i = x_s; i >= x_e; i--) 
+					{
 						int y_t = round((y_rt - lowboundary) / divided_length)+ 1;
 						Line_points TEMPRO1 = { i ,y_t ,num ,theta0 };
 						linepoint.push_back(TEMPRO1);
 						p++;
 						y_rt = y_rt - grad*divided_length;
-						//cout << i << " " << y_t << " " << (p-1) << endl;
 					}
 				}
 			}
@@ -244,37 +264,6 @@ int plot_lines()
 
 
 static uint8_t ***lut_graph;
-
-//read in the probability lut of map
-void read2lut() 
-{
-	ifstream fin;
-	//init lut_graph
-	lut_graph = new uint8_t **[row];
-	for (int i = 0; i < row; i++) {
-		lut_graph[i] = new uint8_t *[col];
-		for (int j = 0; j < col; j++) {
-			lut_graph[i][j] = new uint8_t[row];
-		}
-	}
-	//read in the lut_graph
-	fin.open("E:\\2017-2018\\lut_graph.txt");
-	if (!fin.is_open())
-		cout << "fail to read ";
-	int temp;
-	for (int c = 0; c < pag; c++)
-	{
-		for (int a = 0; a < row; a++)
-		{
-			for (int b = 0; b < col; b++)
-			{
-				fin >> temp;
-				lut_graph[a][b][c] = temp;
-			}
-		}
-	}
-	fin.close();
-}
 
 preprocessedObservation::preprocessedObservation(
 			double cameraAngleSpead,
@@ -314,7 +303,7 @@ bool preprocessedObservation::refineObservation(uint8_t *label, int width, int h
 
 bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate) const
 {
-	read2lut();
+	getprolut2map();
 	State state1;
 	coor_trans(segments, state1);
 	available_segments_init();
@@ -336,7 +325,8 @@ bool preprocessedObservation::getprolut2map()
 	ifstream fin;
 	//initial lut_graph
 	lut_graph = new uint8_t **[row];
-	for (int i = 0; i < row; i++) {
+	for (int i = 0; i < row; i++)
+	{
 		lut_graph[i] = new uint8_t *[col];
 		for (int j = 0; j < col; j++) {
 			lut_graph[i][j] = new uint8_t[row];
@@ -345,7 +335,10 @@ bool preprocessedObservation::getprolut2map()
 	//load txt uint_8t style
 	fin.open("home/zhangjiwen/Desktop/lut_graph.txt");
 	if (!fin.is_open())
+	{
 		cout << "fail to read ";
+		return false;
+	}
 	int temp;
 		for (int c = 0; c < pag; c++)
 		{
@@ -359,7 +352,6 @@ bool preprocessedObservation::getprolut2map()
 			}
 		}
 	fin.close();
-	return 0;
-
+	return true;
 }
 
