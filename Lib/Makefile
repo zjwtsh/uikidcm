@@ -153,6 +153,19 @@ Comm/fast:
 .PHONY : Comm/fast
 
 #=============================================================================
+# Target rules for targets named ImageProc
+
+# Build rule for target.
+ImageProc: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ImageProc
+.PHONY : ImageProc
+
+# fast build rule for target.
+ImageProc/fast:
+	$(MAKE) -f Modules/ImageProc/CMakeFiles/ImageProc.dir/build.make Modules/ImageProc/CMakeFiles/ImageProc.dir/build
+.PHONY : ImageProc/fast
+
+#=============================================================================
 # Target rules for targets named VisionModeling
 
 # Build rule for target.
@@ -256,6 +269,7 @@ help:
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... Comm"
+	@echo "... ImageProc"
 	@echo "... VisionModeling"
 	@echo "... carray"
 	@echo "... cutil"

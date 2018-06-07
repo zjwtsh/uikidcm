@@ -20,6 +20,82 @@ extern "C" {
 #include "ballModelingObject.h"
 #include "particleFilterConfig.h"
 
+bool ballModelingObject::ExtractLineInfoByLua(lua_State *L, int li)
+{
+	std::string str;
+	size_t sz = 0;
+	int detect = 0;
+	double nlines = 0;
+	//unsigned char indices[][5] = {"v"}
+	//std::cout << "extraction function in ballModelingObject is called" << std::endl;
+
+	if(pobs==NULL)
+		return false;
+
+	if(!lua_istable(L,li))
+		luaL_error(L,"invalid observations for vision modeling");
+
+	lua_getfield(L,li,"name");
+	str = luaL_checklstring(L,-1,&sz);
+	lua_pop(L,1);
+
+	lua_getfield(L,li,"detect");
+	detect = (int)(luaL_checknumber(L,-1)+0.5);
+	lua_pop(L,1);
+
+	lua_getfield(L,li,"nLines");
+	nlines = luaL_checknumber(L,-1);
+	lua_pop(L,1);
+
+	std::cout << str << " " <<detect << " "<< nlines<<std::endl;
+	pobs->lineInfo.clear();
+
+	if(detect==0)
+	{
+		return true;
+	}
+
+	int ts = 0;
+	lua_getfield(L,li,"v");
+	if(!lua_istable(L,-1))
+		luaL_error(L,"invalid observations for vision modeling");
+	ts = lua_objlen(L,-1);
+
+	for(int i = 0; i<ts; i++)
+	{
+		int ts2=0;
+		struct LineInfo lf;
+		lua_rawgeti(L, -1,i+1);
+		if(!lua_istable(L,-1))
+			luaL_error(L,"invalid observations for vision modeling");
+		ts2 = lua_objlen(L,-1);
+
+		for(int j= 0;j<ts2;j++)
+		{
+			double value = 0;
+			lua_rawgeti(L,-1,j+1);
+			value = luaL_checknumber(L, -1);
+			lf.v[j] = value;
+			//std::cout << lf.v[j] << ", ";
+			lua_pop(L,1);
+		}
+		pobs->lineInfo.push_back(lf);
+		//std::cout << std::endl;
+		lua_pop(L,1);
+	}
+	lua_pop(L,1);
+
+	for(int i=0;i<pobs->lineInfo.size();i++)
+	{
+		std::cout << i << ":";
+		for(int j=0;j<4;j++)
+			std::cout<<pobs->lineInfo[i].v[j] << " ";
+		std::cout<<std::endl;
+	}
+
+	return true;
+}
+
 ballModelingObject::ballModelingObject()
 {
 	psys_pdf = NULL;
@@ -144,14 +220,15 @@ bool ballModelingObject::UpdateBallParameters()
 	return true;
 }
 
-bool ballModelingObject::RunOneStep(uint8_t *label, int width, int height, double headPitch)
+bool ballModelingObject::RunOneStep()
 {
-	//old interface wrapped into preprocessedObservation
-
-	pobs->refineObservation(label, width, height, headPitch);
-
 	//the next step is update of particle filter
-	
+	MatrixWrapper::ColumnVector input(2);
+	input(1) = 0.0;
+	input(2) = 0.0;
+
+	pfilter->Update(psys_model, input, pmeas_model, *pobs);
+
 	return true;
 }
 

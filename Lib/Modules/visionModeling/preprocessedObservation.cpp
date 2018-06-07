@@ -70,6 +70,8 @@ bool preprocessedObservation::refineObservation(uint8_t *label, int width, int h
 
 bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate) const
 {
+	modelMatchRate = 0.0;
+	observationMatchRate = 0.0;
 	return true;
 }
 

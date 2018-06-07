@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include <filter/bootstrapfilter.h>
 
@@ -11,6 +12,11 @@
 
 #include "particleFilterConfig.h"
 #include "lua_accumulate_ball.h"
+
+struct LineInfo
+{
+	double v[4];
+};
 
 class preprocessedObservation
 {
@@ -33,6 +39,9 @@ public:
 			double radiusRate = 1.2
 			);
 	bool getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate) const;
+
+public:
+	std::vector<struct LineInfo> lineInfo;
 
 protected:
 	double paraCameraAngleSpead;
