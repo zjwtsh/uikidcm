@@ -123,7 +123,7 @@ namespace BFL
 	else if(conf(6)<-0.06)
 		conf(6) = -0.06;
 	*/
-	cout << "after: "<<conf <<endl;
+	//cout << "after: "<<conf <<endl;
 
     // store results in one_sample
     one_sample.ValueSet(conf);

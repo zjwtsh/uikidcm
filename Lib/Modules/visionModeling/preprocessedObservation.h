@@ -13,9 +13,19 @@
 #include "particleFilterConfig.h"
 #include "lua_accumulate_ball.h"
 
+/*
 struct LineInfo
 {
 	double v[4];
+};
+*/
+
+struct SegmentStats {
+	double x0;
+	double y0;//start point
+	double x1;
+	double y1;//end point
+	double length;
 };
 
 class preprocessedObservation
@@ -39,9 +49,23 @@ public:
 			double radiusRate = 1.2
 			);
 	bool getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate) const;
+	
+	bool getprolut2map();
+	void clearLutGraph(void);
+
+	~preprocessedObservation();
+
+protected:
+	uint8_t ***lut_graph;
+
+protected:
+	int row;	//row of lut_graph
+	int col;	//column of lut_graph
+	int pag;	//page of lut_graph
 
 public:
-	std::vector<struct LineInfo> lineInfo;
+	//std::vector<struct LineInfo> lineInfo;
+	std::vector <SegmentStats> available_segments;	//the real effect number of line segments
 
 protected:
 	double paraCameraAngleSpead;
@@ -49,8 +73,8 @@ protected:
 	double paraHorizonLimit;
 	double paraNoiseRate;
 	double paraRadiusRate;
-	std::vector<Candidate> ballCandidates;
-
+	
+	//std::vector<Candidate> ballCandidates;
 	/*
 	void drawCurrentModel(MatrixWrapper::ColumnVector &state, cv::Mat &model);
 	void drawModelObservation(cv::Mat &img, MatrixWrapper::ColumnVector &state);

@@ -23,43 +23,24 @@
 //#include "lua_robots.h"
 #include "lua_accumulate_ball.h"
 
-using namespace std;
-
 #define divided_length 5  //the size of devided cell
 #define Minlength 25          //minimum length of avalable segments
 #define leftboudary -580      //left border in standard field(cm)
 #define lowboundary -370      //lower border in standard field(cm)
-#define MAX_SEGMENTS 50       //Maximum number of segments to consider
+//#define MAX_SEGMENTS 50       //Maximum number of segments to consider
 #define pi 3.1415926          //size of lut_graph
 
-const int row = 149;//row of lut_graph
-const int col = 233;//column of lut_graph
-const int pag = 19; //page of lut_graph
-
-static int valid_segments = 0;
-struct SegmentStats {
-	double x0;
-	double y0;//start point
-	double x1;
-	double y1;//end point
-	double length;
-};
-struct State {
-	double x;//x-coordinate in world 
-	double y;//y_coordinete in world
-	double theta;//theta in world coordinate
-};
 struct Line_points{
 	int x;
 	int y;
 	int index;
 	double theta;
 };
+
+static std::vector <Line_points> linepoint;	//the points number&location of the effect lines
+
+/*
 static struct SegmentStats segments[MAX_SEGMENTS];//the number of line segments
-static vector <SegmentStats> available_segments;//the real effect number of line segments
-static vector <Line_points> linepoint;//the points number&location of the effect lines
-
-
 //find the available segments to be statistic points:
 void available_segments_init()
 {
@@ -74,30 +55,40 @@ void available_segments_init()
 		}
 	}
 }
+*/
 
 //transfer the points from the robotic coordinate to world coordinate:
-void coor_trans(SegmentStats s[], State STATE)
+void coor_trans(const MatrixWrapper::ColumnVector state)
 {
-	double tran_x = STATE.x;
-	double tran_y=  STATE.y;
-	double tran_theta = STATE.theta*pi/180;
-	for (int i = 0; i < MAX_SEGMENTS; i++)
+	double tran_x = state(1);
+	double tran_y=  state(2);
+	double tran_theta = state(3);
+
+	int valid_segments = (int)available_segments.size();
+	vector<SegmentStats> &s = available_segments;
+
+	for (int i = 0; i < valid_segments; i++)
 	{
 		double x0_temp=s[i].x0;
-		double y0_temp=s[i].y0 ;
-		double x1_temp=s[i].x1 ;
-		double y1_temp=s[i].y1 ;
+		double y0_temp=s[i].y0;
+		double x1_temp=s[i].x1;
+		double y1_temp=s[i].y1;
+
 		s[i].x0 = cos(tran_theta)*x0_temp - sin(tran_theta)*y0_temp + tran_x;
 	  s[i].y0 = sin(tran_theta)*x0_temp + cos(tran_theta)*y0_temp + tran_y;
 		s[i].x1 = cos(tran_theta)*x1_temp - sin(tran_theta)*y1_temp + tran_x;
 		s[i].y1 = sin(tran_theta)*x1_temp + cos(tran_theta)*y1_temp + tran_y;
 	}
+
+	return;
 }
 
 //carculate the number of points in lines:
 int plot_lines() 
 {
 	int p = 0;
+	int valid_segments = (int)available_segments.size();
+
 	for (int num = 0; num < valid_segments; num++)
 	{
 		double kx0 = available_segments[num].x0;
@@ -230,7 +221,7 @@ int plot_lines()
 						linepoint.push_back(TEMPRO1);
 						p++;
 						y_rt = y_rt + grad*divided_length;
-						//cout << i << " " << y_t << " " << (p-1) << endl;
+						std::cout << i << " " << y_t << " " << (p-1) << std::endl;
 					}
 				}
 				else if (grad < 0)
@@ -263,21 +254,26 @@ int plot_lines()
 }
 
 
-static uint8_t ***lut_graph;
-
 preprocessedObservation::preprocessedObservation(
 			double cameraAngleSpead,
 			double physicalRadiusOfBall,
 			double horizonLimit,
 			double noiseRate,
 			double radiusRate
-			)
+			):row(149),col(233),pag(19)
 {
 	paraCameraAngleSpead = cameraAngleSpead;
 	paraPhysicalRadiusOfBall = physicalRadiusOfBall;
 	paraHorizonLimit = horizonLimit;
 	paraNoiseRate = noiseRate;
 	paraRadiusRate = radiusRate;
+
+	lut_graph=NULL;
+}
+
+preprocessedObservation::~preprocessedObservation()
+{
+	clearLutGraph();
 }
 
 bool preprocessedObservation::refineParameters(
@@ -307,8 +303,10 @@ bool preprocessedObservation::refineObservation(uint8_t *label, int width, int h
 	in.radiusRate = paraRadiusRate;
 	in.cameraTilt = headPitch; 
 
+	/*
 	ballCandidates.clear();
 	lua_accumulate_ball(ballCandidates, label, width, height, in);
+	*/
 
 	return true;
 }
@@ -318,10 +316,11 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 	modelMatchRate = 0.0;
 	observationMatchRate = 0.0;
 	
-	getprolut2map();
-	State state1;
-	coor_trans(segments, state1);
-	available_segments_init();
+	//getprolut2map();
+	//State state1;
+	coor_trans(state);
+	//available_segments_init();
+
 	int size = plot_lines();
 	int realweight = 0;
 	for (int num_0 = 0; num_0 < size; num_0++) {
@@ -332,42 +331,67 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 		if (((1 <= x_temp) && (x_temp <= col)) && ((1 <= y_temp) && (y_temp <= row)))
 			realweight = realweight + lut_graph[y_temp - 1][x_temp - 1][theta_temp];
 	}
-	
+
 	return true;
+}
+
+void preprocessedObservation::clearLutGraph(void)
+{
+	if(lut_graph==NULL)
+		return;
+
+	for (int i = 0; i < row; i++)
+	{
+		for (int j = 0; j < col; j++) {
+			delete[] lut_graph[i][j];
+		}
+		delete[] lut_graph[i];
+	}
+	delete[] lut_graph;
+	lut_graph = NULL;
+	return;
 }
 
 bool preprocessedObservation::getprolut2map()
 {
-	ifstream fin;
+	std::ifstream fin;
+	
 	//initial lut_graph
+	clearLutGraph();
+	
 	lut_graph = new uint8_t **[row];
 	for (int i = 0; i < row; i++)
 	{
 		lut_graph[i] = new uint8_t *[col];
 		for (int j = 0; j < col; j++) {
-			lut_graph[i][j] = new uint8_t[row];
+			lut_graph[i][j] = new uint8_t[pag];
 		}
 	}
+	
 	//load txt uint_8t style
-	fin.open("home/zhangjiwen/Desktop/lut_graph.txt");
+	fin.open("./Data/lut_graph.txt");
 	if (!fin.is_open())
 	{
-		cout << "fail to read ";
+		std::cout << "fail to read " << std::endl;
 		return false;
 	}
-	int temp;
-		for (int c = 0; c < pag; c++)
+	
+	int temp = 0;
+	for (int c = 0; c < pag; c++)
+	{
+		for (int a = 0; a < row; a++)
 		{
-			for (int a = 0; a < row; a++)
+			for (int b = 0; b < col; b++) 
 			{
-				for (int b = 0; b < col; b++) 
-				{
-						fin >> temp;
-						lut_graph[a][b][c] = temp;
-				}
+				temp = 0;
+				fin >> temp;
+				lut_graph[a][b][c] = (uint8_t)temp;
 			}
 		}
+	}
 	fin.close();
+	std::cout << "lut graph read successfully" << std::endl;
+
 	return true;
 }
 

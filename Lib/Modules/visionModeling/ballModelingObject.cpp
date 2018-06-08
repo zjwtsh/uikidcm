@@ -143,6 +143,7 @@ ballModelingObject::~ballModelingObject()
 bool ballModelingObject::InitializeBootStrapFilter(MatrixWrapper::ColumnVector initState)
 {
 	pobs = new preprocessedObservation(50*M_PI/180, 90, 5*M_PI/180, 0.3, 1.2);
+	pobs->getprolut2map();
 	//copy code from mouseBehaviorGenerator
 	MatrixWrapper::ColumnVector sys_noise_Mu(STATE_SIZE);
 	sys_noise_Mu(1) = MU_SYSTEM_NOISE_X;
@@ -191,7 +192,7 @@ bool ballModelingObject::InitializeBootStrapFilter(MatrixWrapper::ColumnVector i
 	std::vector< BFL::Sample<MatrixWrapper::ColumnVector> >::const_iterator iter; 
 	for (iter = prior_samples.begin(); iter != prior_samples.end(); iter++)
 	{
-		std::cout<< iter->ValueGet() << std::endl;
+		//std::cout<< iter->ValueGet() << std::endl;
 		//drawParticle(img,iter->ValueGet());
 		//cv::imshow("debug2",img);
 		//cv::waitKey(2000);
