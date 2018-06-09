@@ -25,7 +25,14 @@ struct SegmentStats {
 	double y0;//start point
 	double x1;
 	double y1;//end point
-	double length;
+	//double length;
+};
+
+struct Line_points{
+	int x;
+	int y;
+	int index;
+	double theta;
 };
 
 class preprocessedObservation
@@ -51,14 +58,17 @@ public:
 	bool getTwoMatchRate(const MatrixWrapper::ColumnVector state, double &modelMatchRate, double &observationMatchRate) const;
 	
 	bool getprolut2map();
-	void clearLutGraph(void);
-
 	~preprocessedObservation();
 
 protected:
-	uint8_t ***lut_graph;
+	void clearLutGraph(void);
+	void coor_trans(MatrixWrapper::ColumnVector state) const;
+	int plot_lines(void) const;
 
 protected:
+	uint8_t ***lut_graph;
+	std::vector <Line_points> linepoint;	//the points number&location of the effect lines
+	
 	int row;	//row of lut_graph
 	int col;	//column of lut_graph
 	int pag;	//page of lut_graph

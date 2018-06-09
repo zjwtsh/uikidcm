@@ -30,15 +30,6 @@
 //#define MAX_SEGMENTS 50       //Maximum number of segments to consider
 #define pi 3.1415926          //size of lut_graph
 
-struct Line_points{
-	int x;
-	int y;
-	int index;
-	double theta;
-};
-
-static std::vector <Line_points> linepoint;	//the points number&location of the effect lines
-
 /*
 static struct SegmentStats segments[MAX_SEGMENTS];//the number of line segments
 //find the available segments to be statistic points:
@@ -58,14 +49,16 @@ void available_segments_init()
 */
 
 //transfer the points from the robotic coordinate to world coordinate:
-void coor_trans(const MatrixWrapper::ColumnVector state)
+void preprocessedObservation::coor_trans(MatrixWrapper::ColumnVector state) const
 {
 	double tran_x = state(1);
 	double tran_y=  state(2);
 	double tran_theta = state(3);
 
 	int valid_segments = (int)available_segments.size();
-	vector<SegmentStats> &s = available_segments;
+
+	/*
+	std::vector<SegmentStats> &s = available_segments;
 
 	for (int i = 0; i < valid_segments; i++)
 	{
@@ -79,15 +72,17 @@ void coor_trans(const MatrixWrapper::ColumnVector state)
 		s[i].x1 = cos(tran_theta)*x1_temp - sin(tran_theta)*y1_temp + tran_x;
 		s[i].y1 = sin(tran_theta)*x1_temp + cos(tran_theta)*y1_temp + tran_y;
 	}
+	*/
 
 	return;
 }
 
 //carculate the number of points in lines:
-int plot_lines() 
+int preprocessedObservation::plot_lines(void) const 
 {
 	int p = 0;
 	int valid_segments = (int)available_segments.size();
+	linepoint.clear();
 
 	for (int num = 0; num < valid_segments; num++)
 	{
@@ -315,14 +310,17 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 {
 	modelMatchRate = 0.0;
 	observationMatchRate = 0.0;
-	
+
+	MatrixWrapper::ColumnVector thisState(state);
 	//getprolut2map();
 	//State state1;
-	coor_trans(state);
+	coor_trans(thisState);
 	//available_segments_init();
 
-	int size = plot_lines();
+	int size =0 ;
 	int realweight = 0;
+	
+	size = plot_lines();
 	for (int num_0 = 0; num_0 < size; num_0++) {
 		double theta1= linepoint[num_0].theta / 10;
 		int theta_temp = round(theta1) + 9;

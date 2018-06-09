@@ -48,7 +48,7 @@ bool ballModelingObject::ExtractLineInfoByLua(lua_State *L, int li)
 	lua_pop(L,1);
 
 	std::cout << str << " " <<detect << " "<< nlines<<std::endl;
-	pobs->lineInfo.clear();
+	pobs->available_segments.clear();
 
 	if(detect==0)
 	{
@@ -64,7 +64,9 @@ bool ballModelingObject::ExtractLineInfoByLua(lua_State *L, int li)
 	for(int i = 0; i<ts; i++)
 	{
 		int ts2=0;
-		struct LineInfo lf;
+		struct SegmentStats lf;
+		double *plf = (double *)&lf;
+
 		lua_rawgeti(L, -1,i+1);
 		if(!lua_istable(L,-1))
 			luaL_error(L,"invalid observations for vision modeling");
@@ -75,21 +77,23 @@ bool ballModelingObject::ExtractLineInfoByLua(lua_State *L, int li)
 			double value = 0;
 			lua_rawgeti(L,-1,j+1);
 			value = luaL_checknumber(L, -1);
-			lf.v[j] = value;
+			plf[j] = value;
 			//std::cout << lf.v[j] << ", ";
 			lua_pop(L,1);
 		}
-		pobs->lineInfo.push_back(lf);
+		pobs->available_segments.push_back(lf);
 		//std::cout << std::endl;
 		lua_pop(L,1);
 	}
 	lua_pop(L,1);
 
-	for(int i=0;i<pobs->lineInfo.size();i++)
+	for(int i=0;i<pobs->available_segments.size();i++)
 	{
 		std::cout << i << ":";
-		for(int j=0;j<4;j++)
-			std::cout<<pobs->lineInfo[i].v[j] << " ";
+		std::cout<<pobs->available_segments[i].x0 << " ";
+		std::cout<<pobs->available_segments[i].y0 << " ";
+		std::cout<<pobs->available_segments[i].x1 << " ";
+		std::cout<<pobs->available_segments[i].y1 << " ";
 		std::cout<<std::endl;
 	}
 
