@@ -25,7 +25,7 @@
 
 using namespace std;
 
-<BS>#define divided_length 5  //the size of devided cell
+#define divided_length 5  //the size of devided cell
 #define Minlength 25          //minimum length of avalable segments
 #define leftboudary -580      //left border in standard field(cm)
 #define lowboundary -370      //lower border in standard field(cm)
@@ -59,9 +59,8 @@ static struct SegmentStats segments[MAX_SEGMENTS];//the number of line segments
 static vector <SegmentStats> available_segments;//the real effect number of line segments
 static vector <Line_points> linepoint;//the points number&location of the effect lines
 
-
 //find the available segments to be statistic points:
-void available_segments_init()
+void preprocessedObservation::available_segments_init()
 {
 	for (int k = 0; k < MAX_SEGMENTS; k++) {
 		int dx = segments[k].x1 - segments[k].x0;
@@ -76,7 +75,7 @@ void available_segments_init()
 }
 
 //transfer the points from the robotic coordinate to world coordinate:
-void coor_trans(SegmentStats s[], State STATE)
+void preprocessedObservation::coor_trans(SegmentStats s[], State STATE)
 {
 	double tran_x = STATE.x;
 	double tran_y=  STATE.y;
@@ -95,7 +94,7 @@ void coor_trans(SegmentStats s[], State STATE)
 }
 
 //carculate the number of points in lines:
-int plot_lines() 
+int preprocessedObservation::plot_lines() 
 {
 	int p = 0;
 	for (int num = 0; num < valid_segments; num++)
