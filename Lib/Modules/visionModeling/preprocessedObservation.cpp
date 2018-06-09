@@ -57,7 +57,6 @@ void preprocessedObservation::coor_trans(MatrixWrapper::ColumnVector state) cons
 
 	int valid_segments = (int)available_segments.size();
 
-	/*
 	std::vector<SegmentStats> &s = available_segments;
 
 	for (int i = 0; i < valid_segments; i++)
@@ -72,7 +71,6 @@ void preprocessedObservation::coor_trans(MatrixWrapper::ColumnVector state) cons
 		s[i].x1 = cos(tran_theta)*x1_temp - sin(tran_theta)*y1_temp + tran_x;
 		s[i].y1 = sin(tran_theta)*x1_temp + cos(tran_theta)*y1_temp + tran_y;
 	}
-	*/
 
 	return;
 }
@@ -311,6 +309,7 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 	modelMatchRate = 0.0;
 	observationMatchRate = 0.0;
 
+	std::vector <Line_points> linepoint;
 	int size =0 ;
 	int realweight = 0;
 
@@ -318,7 +317,7 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 	coor_trans(state);
 	size = plot_lines();
 	*/
-	size = coor_tans_and_plot_lines(state);
+	//size = coor_tans_and_plot_lines(state, linepoint);
 
 	for (int num_0 = 0; num_0 < size; num_0++) {
 		double theta1= linepoint[num_0].theta / 10;

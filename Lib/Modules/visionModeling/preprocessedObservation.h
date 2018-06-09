@@ -64,11 +64,10 @@ protected:
 	void clearLutGraph(void);
 	void coor_trans(MatrixWrapper::ColumnVector state);
 	int plot_lines(void);
-	int coor_tans_and_plot_lines(MatrixWrapper::ColumnVector state) const;
+	//int coor_tans_and_plot_lines(MatrixWrapper::ColumnVector state) const;
 
 protected:
 	uint8_t ***lut_graph;
-	std::vector <Line_points> linepoint;	//the points number&location of the effect lines
 	
 	int row;	//row of lut_graph
 	int col;	//column of lut_graph
