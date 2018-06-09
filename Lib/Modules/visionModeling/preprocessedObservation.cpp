@@ -311,16 +311,15 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 	modelMatchRate = 0.0;
 	observationMatchRate = 0.0;
 
-	MatrixWrapper::ColumnVector thisState(state);
-	//getprolut2map();
-	//State state1;
-	coor_trans(thisState);
-	//available_segments_init();
-
 	int size =0 ;
 	int realweight = 0;
-	
+
+	/*
+	coor_trans(state);
 	size = plot_lines();
+	*/
+	size = coor_tans_and_plot_lines(state);
+
 	for (int num_0 = 0; num_0 < size; num_0++) {
 		double theta1= linepoint[num_0].theta / 10;
 		int theta_temp = round(theta1) + 9;
