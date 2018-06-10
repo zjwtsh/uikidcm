@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
 
 ADD_SUBDIRECTORY(Comm)
+ADD_SUBDIRECTORY(ImageProc)
 ADD_SUBDIRECTORY(visionModeling)
 ADD_SUBDIRECTORY(Util)
 

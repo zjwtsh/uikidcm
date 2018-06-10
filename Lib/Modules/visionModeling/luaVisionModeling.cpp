@@ -46,74 +46,48 @@ static ballModelingObject * lua_checkvm(lua_State *L, int narg) {
   return *(ballModelingObject **)ud;
 }
 
-static int lua_vm_resetBallModeling(lua_State *L) {
+static int lua_vm_resetModeling(lua_State *L) {
 	ballModelingObject *vm = lua_checkvm(L, 1);
 	vm->clearBootstrap();
 
 	return 0;
 }
 
-static int lua_vm_modelingBall(lua_State *L) {
+static int lua_vm_initModeling(lua_State *L) {
 	ballModelingObject *vm = lua_checkvm(L, 1);
+	
+	MatrixWrapper::ColumnVector initState(3);
+	initState(1) = 0.0;
+	initState(2) = 0.0;
+	initState(3) = 0.0;
+	vm->InitializeBootStrapFilter(initState);
 
-	//parameters transfered from lua
-	uint8_t *x = (uint8_t *) lua_touserdata(L, 1);
-	if ((x == NULL) || !lua_islightuserdata(L, 1)) {
-		return luaL_error(L, "Input image not light user data");
-	}
-	int mx = luaL_checkint(L, 2);
-	int nx = luaL_checkint(L, 3);
-	double headPitch = luaL_checknumber(L, 4);
-
-	vm->RunOneStep(x, mx, nx, headPitch);
-	/*
-	lua_createtable(L, nball, 0);
-	for (int i = 0; i < nball; i++) {
-		lua_createtable(L, 0, 5);
-
-		lua_pushstring(L, "blCntr");
-		lua_pushnumber(L, ballCandidates[i].blCntr);
-		lua_settable(L, -3);
-
-		lua_pushstring(L, "wtCntr");
-		lua_pushnumber(L, ballCandidates[i].wtCntr);
-		lua_settable(L, -3);
-
-		lua_pushstring(L, "bkCntr");
-		lua_pushnumber(L, ballCandidates[i].bkCntr);
-		lua_settable(L, -3);
-
-		lua_pushstring(L, "radiusRate");
-		lua_pushnumber(L, ballCandidates[i].evaluation);
-		lua_settable(L, -3);
-
-		// boundingBox field
-		lua_pushstring(L, "boundingBox");
-		lua_createtable(L, 4, 0);
-		lua_pushnumber(L, ballCandidates[i].bBox[0].x);
-		lua_rawseti(L, -2, 1);
-		lua_pushnumber(L, ballCandidates[i].bBox[1].x);
-		lua_rawseti(L, -2, 2);
-		lua_pushnumber(L, ballCandidates[i].bBox[0].y);
-		//lua_pushnumber(L, props[i].minJ + rowOffset);
-		lua_rawseti(L, -2, 3);
-		lua_pushnumber(L, ballCandidates[i].bBox[1].y);
-		//lua_pushnumber(L, props[i].maxJ + rowOffset);
-		lua_rawseti(L, -2, 4);
-		lua_settable(L, -3);
-
-		lua_rawseti(L, -2, i+1);
-	}
-	*/
-
-	return 1;
+	return 0;
 }
 
-static int lua_vm_modelingSelf(lua_State *L) {
+static int lua_vm_updateBallObservation(lua_State *L) {
+	//1. get the user object
+	ballModelingObject *vm = lua_checkvm(L, 1);
+	//2. convert the lua table into cpp structure
+
+	//3. call update function of vm
+	return 0;
+
+}
+
+static int lua_vm_runStep(lua_State *L) {
+	ballModelingObject *vm = lua_checkvm(L, 1);
+
+	if(!vm->ExtractLineInfoByLua(L,-1))
+		return 0;
+
+	//change the interface for line observation
+	vm->RunOneStep();
 	return 1;
 }
 
 static int lua_vm_create(lua_State *L) {
+	std::cout << "starting to create the objectModeling according to input: ball or robot" << std::endl;
 	ballModelingObject **ud = (ballModelingObject **)
 		lua_newuserdata(L, sizeof(ballModelingObject *));
 	
@@ -125,12 +99,14 @@ static int lua_vm_create(lua_State *L) {
 }
 
 static int lua_vm_delete(lua_State *L) {
+	std::cout << "the ballModelingObject will be deleted " <<std::endl;
 	ballModelingObject *vm = lua_checkvm(L, 1);
 	delete vm;
 	return 0;
 }
 
 static int lua_vm_destroy(lua_State *L) {
+	//use the module to delete object, ommitted here
 	return 0;
 }
 
@@ -147,9 +123,10 @@ static const struct luaL_reg visionModeling_lib [] = {
 static const struct luaL_reg visionModeling_methods[] = {
   {"__gc", lua_vm_delete},
   {"__tostring", lua_vm_tostring},
-  {"ResetModelingBall", lua_vm_resetBallModeling},
-  {"modelingBall", lua_vm_modelingBall},
-  {"modelingSelf", lua_vm_modelingSelf},
+  {"init", lua_vm_initModeling},
+  {"reset", lua_vm_resetModeling},
+  {"runstep", lua_vm_runStep},
+  {"updateBallObservation", lua_vm_updateBallObservation},
   {NULL, NULL}
 };
 

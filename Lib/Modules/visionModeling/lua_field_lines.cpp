@@ -15,6 +15,7 @@ extern "C" {
 
 #include <vector>
 
+//add a new line for git test
 static uint8_t colorLine = 0x10;
 //field 0x08 and ball 0x01 are all considered field
 static uint8_t colorField = 0x08;

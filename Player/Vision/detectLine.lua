@@ -132,6 +132,7 @@ function detect()
 
   nLines = linecount;
 
+--[[
   line.equalTable = {};
   for i = 1, nLines do line.equalTable[i] = i; end
 
@@ -214,6 +215,7 @@ function detect()
       line.angle[rootind] = angle;
     end
   end
+	--]]
 
   local validcount = 0;
   for i = 1, nLines do

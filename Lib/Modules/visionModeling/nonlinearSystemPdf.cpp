@@ -21,7 +21,8 @@
 #include <wrappers/rng/rng.h> // Wrapper around several rng libraries
 
 #define SYSMODEL_NUMCONDARGUMENTS_MOBILE 2
-#define SYSMODEL_DIMENSION_MOBILE        6
+//#define SYSMODEL_DIMENSION_MOBILE        6
+#define SYSMODEL_DIMENSION_MOBILE        3
 
 namespace BFL
 {
@@ -48,6 +49,8 @@ namespace BFL
 	xk = conf(1);
 	yk = conf(2);
 	thetak = conf(3);
+
+	/*
 	velk = conf(4);
 	extk = conf(5);
 	rhok = conf(6);
@@ -59,21 +62,11 @@ namespace BFL
 		conf(2) += velk*sin(thetak+omegak/2);
 	}else
 	{
-		/*
-		cos_thetak = cos(thetak);
-		sin_thetak = sin(thetak);
-		cos_omegak = cos(omegak);
-		sin_omegak = sin(omegak);
-		conf(1) += cos_thetak*sin_omegak/rhok-sin_thetak/rhok+sin_thetak*cos_omegak/rhok;
-		conf(2) += sin_thetak*sin_omegak/rhok+cos_thetak/rhok-cos_thetak*cos_omegak/rhok;
-		*/
-		//conf(1) += sin(thetak+omegak)/rhok -sin(thetak)/rhok;
-		//conf(2) += -cos(thetak+omegak)/rhok + cos(thetak)/rhok;
 		conf(1) += 2*sin(omegak/2)/rhok*cos(thetak+omegak/2);
 		conf(2) += 2*sin(omegak/2)/rhok*sin(thetak+omegak/2);
 	}
-
 	conf(3) += omegak;
+	*/
 	
     // sample from additive noise
     Sample<ColumnVector> noise;
@@ -113,6 +106,7 @@ namespace BFL
 		//cout << "posterious:" <<conf(3)*180/M_PI<<endl;
 	}
 
+	/*
 	if(conf(4)<-1)
 		conf(4) = -1;
 	else if(conf(4)>20)
@@ -128,7 +122,7 @@ namespace BFL
 		conf(6) = 0.06;
 	else if(conf(6)<-0.06)
 		conf(6) = -0.06;
-
+	*/
 	//cout << "after: "<<conf <<endl;
 
     // store results in one_sample
