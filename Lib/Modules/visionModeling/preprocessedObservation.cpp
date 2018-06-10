@@ -309,7 +309,8 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 		if (((1 <= x_temp) && (x_temp <= col)) && ((1 <= y_temp) && (y_temp <= row)))
 			realweight = realweight + lut_graph[y_temp - 1][x_temp - 1][theta_temp];
 	}
-
+    realweight = realweight/point_size;
+    observationMatchRate=realweight;
 	return true;
 }
 
