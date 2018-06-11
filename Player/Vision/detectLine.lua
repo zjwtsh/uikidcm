@@ -52,17 +52,26 @@ function detect()
 
   linePropsB = ImageProc.field_lines(Vision.labelB.data, Vision.labelB.m,
 		 Vision.labelB.n, max_width, connect_th, max_gap, min_length);
+--  linePropsB = ImageProc.field_lines(Vision.labelA.data, Vision.labelA.m,
+--		 Vision.labelA.n, max_width, connect_th, max_gap, min_length);
 
   if #linePropsB==0 then 
-    --print('linePropsB nil')
+    print('linePropsB nil')
     return line; 
   end
+
+	--[[
+	do
+		return line;
+	end
+	--]]
 
   line.propsB=linePropsB;
 	nLines=math.min(#line.propsB,12);
 
   vcm.add_debug_message(string.format(
     "Total %d lines detected\n" ,nLines));
+	print("Total "..nLines.."lines detected");
 
   line.detect = 1;
   line.v={};
@@ -131,6 +140,7 @@ function detect()
   end
 
   nLines = linecount;
+	print("Total "..nLines.."lines passed");
 
 --[[
   line.equalTable = {};
@@ -219,13 +229,13 @@ function detect()
 
   local validcount = 0;
   for i = 1, nLines do
-    if line.equalTable[i] == i then
+    --if line.equalTable[i] == i then
       validcount = validcount + 1;
 	    line.endpoint[validcount] = line.endpoint[i];
       line.meanpoint[validcount] = line.meanpoint[i];
 	    line.v[validcount] = line.v[i];
 	    line.angle[validcount] = line.angle[i];
-    end
+    --end
   end
   line.nLines = validcount;
 

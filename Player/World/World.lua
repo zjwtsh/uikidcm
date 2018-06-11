@@ -110,7 +110,7 @@ function entry()
   PoseFilter.corner_init();
 	if(useModelingMatchingLocalization) then
 		modelingObject = VisionModeling.new();
-		modelingObject.reset();
+		modelingObject:reset();
 	end
 end
 
@@ -234,7 +234,7 @@ function update_odometry()
 
 			end
 		end
-		modelingObject.RunOneStep(line);
+		modelingObject:runstep(line);
 	end
 end
 

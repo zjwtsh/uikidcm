@@ -293,7 +293,9 @@ static int lua_yuyv_to_label_ball(lua_State *L) {
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
+	*/
 
+	/*
   for (int j = 0; j < n; j++)			//此处里层应该循环width	
 	{
 		//std::cout << j ;

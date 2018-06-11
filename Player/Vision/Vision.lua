@@ -119,7 +119,7 @@ function entry()
 		--os.exit()
 
 		print('temp test for transfering of field color from ball lut to env lut');
-		camera.lut = add_ballfield_lut(camera.lut,camera.lut_ball);
+		--camera.lut = add_ballfield_lut(camera.lut,camera.lut_ball);
 		--writeSplittedBallLut('envLut.txt', camera.lut)
 		--print('exiting the test routine')
 		--os.exit()
@@ -197,6 +197,8 @@ function update()
   tstart = unix.time();
   
   headAngles = {Body.get_sensor_headpos()[2],Body.get_sensor_headpos()[1]};	--b51
+	headAngles = {25*math.pi/180.0,25*math.pi/180.0};	--zjwtsh for single image test
+
 --  compensateY = Body.get_sensor_bodypos()[3];
 --  currVel = Body.get_sensor_velocity();
 --  if currVel[1] == 0 and currVel[2] == 0 and currVel[3] == 0 then

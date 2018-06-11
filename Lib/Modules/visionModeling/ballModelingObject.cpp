@@ -32,6 +32,8 @@ bool ballModelingObject::ExtractLineInfoByLua(lua_State *L, int li)
 	if(pobs==NULL)
 		return false;
 
+	pobs->available_segments.clear();
+
 	if(!lua_istable(L,li))
 		luaL_error(L,"invalid observations for vision modeling");
 
@@ -43,17 +45,16 @@ bool ballModelingObject::ExtractLineInfoByLua(lua_State *L, int li)
 	detect = (int)(luaL_checknumber(L,-1)+0.5);
 	lua_pop(L,1);
 
+	if(detect==0)
+	{
+		return true;
+	}
+
 	lua_getfield(L,li,"nLines");
 	nlines = luaL_checknumber(L,-1);
 	lua_pop(L,1);
 
 	std::cout << str << " " <<detect << " "<< nlines<<std::endl;
-	pobs->available_segments.clear();
-
-	if(detect==0)
-	{
-		return true;
-	}
 
 	int ts = 0;
 	lua_getfield(L,li,"v");
