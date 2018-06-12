@@ -120,6 +120,7 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 	std::vector <SegmentStats> worked_segments;//segments in world coordinate
 	SegmentStats tempor;
 
+	//std::cout << "preprocessedObservation::getTwoMatchRate called" << std::endl;
 	//transfer the points from the robotic coordinate to world coordinate
 	for (int i = 0; i < valid_segments; i++)
 	{
@@ -306,9 +307,15 @@ bool preprocessedObservation::getTwoMatchRate(const MatrixWrapper::ColumnVector 
 		if (((1 <= x_temp) && (x_temp <= col)) && ((1 <= y_temp) && (y_temp <= row)))
 			realweight = realweight + lut_graph[y_temp - 1][x_temp - 1][theta_temp];
 	}
-    realweight = realweight/point_size;
+	
+	if(point_size >0 )
+		realweight = realweight/point_size;
+	else
+		realweight = 0.0;
+
     observationMatchRate=realweight;
 	return true;
+	
 }
 
 void preprocessedObservation::clearLutGraph(void)
