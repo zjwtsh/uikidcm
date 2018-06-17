@@ -45,6 +45,8 @@ bool ballModelingObject::ExtractLineInfoByLua(lua_State *L, int li)
 	detect = (int)(luaL_checknumber(L,-1)+0.5);
 	lua_pop(L,1);
 
+	std::cout << str << " " <<detect << " "<< nlines<<std::endl;
+
 	if(detect==0)
 	{
 		return true;

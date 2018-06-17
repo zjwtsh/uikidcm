@@ -197,7 +197,7 @@ function update()
   tstart = unix.time();
   
   headAngles = {Body.get_sensor_headpos()[2],Body.get_sensor_headpos()[1]};	--b51
-	headAngles = {25*math.pi/180.0,25*math.pi/180.0};	--zjwtsh for single image test
+	headAngles = {0*math.pi/180.0,25*math.pi/180.0};	--zjwtsh for single image test
 
 --  compensateY = Body.get_sensor_bodypos()[3];
 --  currVel = Body.get_sensor_velocity();

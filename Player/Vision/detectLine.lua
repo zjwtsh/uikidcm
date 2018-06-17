@@ -94,10 +94,14 @@ function detect()
 
   for i=1, nLines do
     local valid = true;
+		
+		print(line.propsB[i].endpoint[1]..","..line.propsB[i].endpoint[2]..","..line.propsB[i].endpoint[3]..","..line.propsB[i].endpoint[4]);
 
+		---[[
     if line.propsB[i].endpoint[3] < HeadTransform.get_horizonB() or line.propsB[i].endpoint[4] < HeadTransform.get_horizonB() then
       valid = false;
     end
+		--]]
 
     if vcm.get_spot_detect() == 1 then
     	local spotbboxB = vcm.get_spot_bboxB()
@@ -110,6 +114,7 @@ function detect()
     if valid then
       local ratio = line.propsB[i].length/line.propsB[i].max_width;
       if ratio<=lwratio then 
+				print("line "..i.. " beyond the ratio ".. ratio);
       	valid = false
       end
     end 
@@ -140,7 +145,13 @@ function detect()
   end
 
   nLines = linecount;
-	print("Total "..nLines.."lines passed");
+	print("Total "..nLines.." lines passed");
+
+	--[[
+	for i=1,nLines do
+		print(line.v[i][1][1]..","..line.v[i][1][2]..","..line.v[i][2][1]..","..line.v[i][2][2]);
+	end
+	--]]
 
 --[[
   line.equalTable = {};

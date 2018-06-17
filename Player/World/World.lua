@@ -12,7 +12,7 @@ require('mcm');
 
 -- intialize sound localization if needed
 useSoundLocalization = Config.world.enable_sound_localization or 0;
-useModelingMatchingLocalization = Config.world.enable_modelmatching_localization or 0;
+useModelingMatchingLocalization = Config.world.enable_modelmatching_localization or 1;
 
 if (useSoundLocalization > 0) then
   require('SoundFilter');
@@ -110,7 +110,7 @@ function entry()
   PoseFilter.corner_init();
 	if(useModelingMatchingLocalization) then
 		modelingObject = VisionModeling.new();
-		modelingObject:reset();
+		modelingObject:init();
 	end
 end
 
@@ -178,6 +178,7 @@ function update_odometry()
   end
 
 	if (useModelingMatchingLocalization > 0) then
+		print("start to process line based localization")
 		local line={};
 		line.name = 'line';
 		line.detect = vcm.get_line_detect();
@@ -213,13 +214,13 @@ function update_odometry()
 
 			for i=1,line.nLines do
 				line.v[i] = {};
-				line.v[i][1] = {};
-				line.v[i][2] = {};
+				--line.v[i][1] = {};
+				--line.v[i][2] = {};
 
-				line.v[i][1][1] = v1x[i];
-				line.v[i][1][2] = v1y[i];
-				line.v[i][2][1] = v2x[i];
-				line.v[i][2][2] = v2y[i];
+				line.v[i][1] = v1x[i];
+				line.v[i][2] = v1y[i];
+				line.v[i][3] = v2x[i];
+				line.v[i][4] = v2y[i];
 			
 				line.endpoint[i] = {};
 

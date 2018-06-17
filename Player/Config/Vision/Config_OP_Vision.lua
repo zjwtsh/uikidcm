@@ -15,7 +15,7 @@ vision.ballColor = color.orange;
 vision.goal1Color = color.yellow;
 vision.goal2Color = color.cyan;
 vision.maxFPS = 30;
-vision.scaleB = 4;
+vision.scaleB = 2;
 
 -- use this to enable yellow goal in vision
 vision.enable_2_yellow_goals =0;
@@ -24,7 +24,7 @@ vision.enable_line_detection = 1;
 -- enable corner detection
 vision.enable_corner_detection = 0;
 -- use this to enable spot detection
-vision.enable_spot_detection = 1;
+vision.enable_spot_detection = 0;
 -- use this to enable midfield landmark detection
 vision.enable_midfield_landmark_detection = 0;
 -- use this to enable copying images to shm (for colortables, testing)
@@ -120,12 +120,12 @@ vision.landmark.th_angle = 45*math.pi/180;
 
 
 vision.line={};
-vision.line.max_width = 10;
-vision.line.connect_th = 1.4;
-vision.line.lwratio = 1.5;
-vision.line.max_gap=0;
-vision.line.min_length=10;
-vision.line.min_angle_diff = 3;
+vision.line.max_width = 28;
+vision.line.connect_th = 4.8;
+vision.line.lwratio = 1.0;
+vision.line.max_gap=3;
+vision.line.min_length=5;
+vision.line.min_angle_diff = 5;
 vision.line.max_angle_diff = 90;
 
 vision.spot={}
