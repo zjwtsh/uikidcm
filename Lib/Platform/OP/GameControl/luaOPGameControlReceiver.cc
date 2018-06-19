@@ -34,9 +34,9 @@ static int nGameControlData = 0;
 static double recvTime = 0;
 static bool logOut = false;
 
+  //do { if (logOut) printf(fmt, ##__VA_ARGS__); } while(0)
 #define LOG_WHEN_MSG_RECV(fmt, ...)\
-        do { ; } while(0)
-        //do { if (logOut) printf(fmt, ##__VA_ARGS__); } while(0)
+  do { ; } while(0)
 
 /*
 void mexExit(void)
@@ -56,7 +56,7 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
     return 0;
   }
 
-  lua_createtable(L, 0, 16);
+  lua_createtable(L, 0, 15);
 
   lua_pushstring(L, "time");
   lua_pushnumber(L, recvTime);
@@ -80,22 +80,10 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
   LOG_WHEN_MSG_RECV("data->playersPerTeam: %d\n", data->playersPerTeam);
   lua_settable(L, -3);
 
-  // uint8_t competitionPhase, phase of the competition (COMPETITION_PHASE_ROUNDROBIN, COMPETITION_PHASE_PLAYOFF)
-  lua_pushstring(L, "competitionPhase");
-  lua_pushnumber(L, data->competitionPhase);
-  LOG_WHEN_MSG_RECV("data->competitionPhase: %d\n", data->competitionPhase);
-  lua_settable(L, -3);
-
-  // uint8_t competitionType, type of the competition (COMPETITION_TYPE_NORMAL, COMPETITION_TYPE_MIXEDTEAM, COMPETITION_TYPE_GENERAL_PENALTY_KICK)
-  lua_pushstring(L, "competitionType");
-  lua_pushnumber(L, data->competitionType);
-  LOG_WHEN_MSG_RECV("data->competitionType: %d\n", data->competitionType);
-  lua_settable(L, -3);
-
-  // uint8_t gamePhase, phase of the game (GAME_PHASE_NORMAL, GAME_PHASE_PENALTYSHOOT, etc)
-  lua_pushstring(L, "gamePhase");
-  lua_pushnumber(L, data->gamePhase);
-  LOG_WHEN_MSG_RECV("data->gamePhase: %d\n", data->gamePhase);
+  // uint8_t gameType, type of the game (GAME_ROUNDROBIN, GAME_PLAYOFF, GAME_DROPIN)
+  lua_pushstring(L, "gameType");
+  lua_pushnumber(L, data->gameType);
+  LOG_WHEN_MSG_RECV("data->gameType: %d\n", data->gameType);
   lua_settable(L, -3);
 
   // uint8_t state, state of the game (STATE_READY, STATE_PLAYING, etc)
@@ -104,22 +92,28 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
   LOG_WHEN_MSG_RECV("data->state: %d\n", data->state);
   lua_settable(L, -3);
 
-  // uint8_t setPlay, active set play (SET_PLAY_NONE, SET_PLAY_GOAL_FREE_KICK, etc)
-  lua_pushstring(L, "setPlay");
-  lua_pushnumber(L, data->setPlay);
-  LOG_WHEN_MSG_RECV("data->setPlay: %d\n", data->setPlay);
-  lua_settable(L, -3);
-
   // uint8_t firstHalf, 1 = game in first half, 0 otherwise
   lua_pushstring(L, "firstHalf");
   lua_pushnumber(L, data->firstHalf);
   LOG_WHEN_MSG_RECV("data->firstHalf: %d\n", data->firstHalf);
   lua_settable(L, -3);
 
-  // uint8_t kickingTeam, the team number of the next team to kick off, free kick, DROPBALL etc.
-  lua_pushstring(L, "kickingTeam");
-  lua_pushnumber(L, data->kickingTeam);
-  LOG_WHEN_MSG_RECV("data->kickingTeam: %d\n", data->kickingTeam);
+  // uint8_t kickOffTeam, the team number of the next team to kick off or DROPBALL.
+  lua_pushstring(L, "kickOffTeam");
+  lua_pushnumber(L, data->kickOffTeam);
+  LOG_WHEN_MSG_RECV("data->kickOffTeam: %d\n", data->kickOffTeam);
+  lua_settable(L, -3);
+
+  // uint8_t secondaryState, extra state information - (STATE2_NORMAL, STATE2_PENALTYSHOOT, etc)
+  lua_pushstring(L, "secondaryState");
+  lua_pushnumber(L, data->secondaryState);
+  LOG_WHEN_MSG_RECV("data->secondaryState: %d\n", data->secondaryState);
+  lua_settable(L, -3);
+
+  // uint8_t secondaryStateInfo, Extra info on the secondary state
+  lua_pushstring(L, "secondaryStateInfo");
+  lua_pushstring(L, data->secondaryStateInfo);
+  LOG_WHEN_MSG_RECV("data->secondaryStateInfo: %s\n", data->secondaryStateInfo);
   lua_settable(L, -3);
 
   // uint8_t dropInTeam, number of team that caused last drop in
@@ -150,7 +144,7 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
   lua_createtable(L, 2, 0);
 
   for (int iteam = 0; iteam < 2; iteam++) {
-    lua_createtable(L, 0, 6);
+    lua_createtable(L, 0, 8);
 
     lua_pushstring(L, "teamNumber");
     lua_pushnumber(L, data->teams[iteam].teamNumber);
@@ -182,11 +176,23 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
     LOG_WHEN_MSG_RECV("data->teams[%d].singleShots: %d\n", iteam, data->teams[iteam].singleShots);
     lua_settable(L, -3);
 
+    lua_pushstring(L, "coachSequence");
+    lua_pushnumber(L, data->teams[iteam].coachSequence);
+    LOG_WHEN_MSG_RECV("data->teams[%d].coachSequence: %d\n", iteam, data->teams[iteam].coachSequence);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "coachMessage");
+    char coachMessage[SPL_COACH_MESSAGE_SIZE];
+    memcpy(coachMessage, data->teams[iteam].coachMessage, SPL_COACH_MESSAGE_SIZE);
+    lua_pushstring(L, coachMessage);
+    LOG_WHEN_MSG_RECV("data->teams[%d].coachMessage: %s\n", iteam, coachMessage);
+    lua_settable(L, -3);
+
     lua_pushstring(L, "player");
     lua_createtable(L, MAX_NUM_PLAYERS, 0);
     // TODO: Populate robot info tables
     for (int iplayer = 0; iplayer < MAX_NUM_PLAYERS; iplayer++) {
-      lua_createtable(L, 0, 2);
+      lua_createtable(L, 0, 4);
 
       lua_pushstring(L, "penalty");
       lua_pushnumber(L, data->teams[iteam].players[iplayer].penalty);
@@ -196,6 +202,16 @@ static int lua_gamecontrolpacket_parse(lua_State *L, RoboCupGameControlData *dat
       lua_pushstring(L, "secsRemaining");
       lua_pushnumber(L, data->teams[iteam].players[iplayer].secsTillUnpenalised);
       LOG_WHEN_MSG_RECV("data->teams[%d].players[%d].secsTillUnpenalised: %d\n", iteam, iplayer, data->teams[iteam].players[iplayer].secsTillUnpenalised);
+      lua_settable(L, -3);
+
+      lua_pushstring(L, "yellowCardCount");
+      lua_pushnumber(L, data->teams[iteam].players[iplayer].yellowCardCount);
+      LOG_WHEN_MSG_RECV("data->teams[%d].players[%d].yellowCardCount: %d\n", iteam, iplayer, data->teams[iteam].players[iplayer].yellowCardCount);
+      lua_settable(L, -3);
+
+      lua_pushstring(L, "redCardCount");
+      lua_pushnumber(L, data->teams[iteam].players[iplayer].redCardCount);
+      LOG_WHEN_MSG_RECV("data->teams[%d].players[%d].redCardCount: %d\n", iteam, iplayer, data->teams[iteam].players[iplayer].redCardCount);
       lua_settable(L, -3);
 
       lua_rawseti(L, -2, iplayer+1);
