@@ -3,7 +3,7 @@ module(... or "", package.seeall)
 require('unix')
 receiver = require('OPGameControlReceiver')
 
-teamNumber = 22;
+teamNumber = 6;
 playerID = 1;
 teamIndex = 0;
 nPlayers = 2;
@@ -129,13 +129,13 @@ function update()
 
       -- update kickoff team
       -- Dropball Handling
-      if (gamePacket.kickingTeam == teamNumber) then
+      if (gamePacket.kickOffTeam == teamNumber) then
         --Kickoff, robot inside center circle, cannot score directly
         set_kickoff(1);
-        --print("we are kick off team")
+        print("we are kick off team")
       else
         --Waiting, robot outside center circle, cannot move for 10sec
-        --print("others are kick off team")
+        print("others are kick off team")
       end
 
       -- update which half it is
