@@ -191,7 +191,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
         //std::cout << "lineAngle = " <<  lineAngle << "; hozizonLimit = " << horizonLimit << std::endl;
 
         maxRadius = ballRadius * sin(lineAngle);  // need fix
-        maxNoisy = noiseRate * maxRadius; 
+        maxNoisy = noiseRate * maxRadius * maxRadius; 
         currRadius = Max(abs(corners[0].x - corners[1].x), abs(corners[0].y - corners[1].y));
 
 				/*
@@ -201,7 +201,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 					" maxNoisy = " << maxNoisy <<std::endl;
 				*/
 
-        if (nEnd > maxNoisy && currRadius < radiusRate * maxRadius)
+        if (nEnd >= 5 && nEnd > maxNoisy && currRadius < radiusRate * maxRadius)
         {
 					Cluster singleCluster;
           singleCluster.colorTag = tag;
@@ -431,6 +431,26 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
 		*/
 
     int totalCntr = bkCntr + wtCntr + blCntr;
+
+    //this is a better strategy for colored ball
+    int rateCntr = 0;
+    float rate = blCntr/totalCntr;
+
+    if(rate < 0.9 && rate > 0.1)
+        rateCntr = rateCntr+1;
+    
+		rate = wtCntr/totalCntr;
+    if(rate < 0.9 && rate > 0.1)
+        rateCntr = rateCntr+1;
+    
+		rate = bkCntr/totalCntr;
+    if(rate < 0.9 && rate > 0.1)
+        rateCntr = rateCntr+1;
+    
+		if(rateCntr<2)
+        continue;
+
+    /*
     float rate = (float)(blCntr+bkCntr)/totalCntr;
     if (rate < 0.8 && rate > 0.2)
     {
@@ -440,6 +460,7 @@ int lua_accumulate_ball(std::vector <Candidate> &ballCandidates, uint8_t *label,
     }
     else
       continue;
+    */
 
     clusterCenter.y = (ballBBox[0].y + ballBBox[1].y)/2;
 		lineAngle = atan((clusterCenter.y - n/2)/focusLength) + cameraTilt; //need fix

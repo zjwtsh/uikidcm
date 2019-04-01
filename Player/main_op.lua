@@ -2,9 +2,6 @@ module(... or '', package.seeall)
 
 -- Get Platform for package path
 cwd = '.';
-local platform = os.getenv('PLATFORM') or '';
-if (string.find(platform,'webots')) then cwd = cwd .. '/Player';
-end
 
 -- Get Computer for Lib suffix
 local computer = os.getenv('COMPUTER') or '';
@@ -43,12 +40,8 @@ gcm.say_id();
 
 Motion.entry();
 
-darwin = false;
-webots = false;
-
 -- Enable OP specific 
 if(Config.platform.name == 'OP') then
-  darwin = true;
   --SJ: OP specific initialization posing (to prevent twisting)
   Body.set_body_hardness(0.3);
   Body.set_actuator_command(Config.stance.initangle)
@@ -94,45 +87,16 @@ end
 
 function update()
   count = count + 1;
-  t = Body.get_time();
   --Update battery info
   wcm.set_robot_battery_level(Body.get_battery_level());
   vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
 
-  if waiting>0 then --Waiting mode, check role change
-    gcm.set_game_paused(1);
-    if cur_role==0 then
-      gcm.set_team_role(5); --Reserve goalie
-      Body.set_indicator_ball({0,0,1});
-
-      --Both arm up for goalie
-      Body.set_rarm_command({0,0,-math.pi/2});
-      Body.set_rarm_hardness({0,0,0.5});
-      Body.set_larm_command({0,0,-math.pi/2});
-      Body.set_larm_hardness({0,0,0.5});
-
-    else
-      gcm.set_team_role(4); --Reserve player
-      Body.set_indicator_ball({1,1,1});
-
-      --One arm up for goalie
-      Body.set_rarm_command({0,0,0});
-      Body.set_rarm_hardness({0,0,0.5});
-      Body.set_larm_command({0,0,-math.pi/2});
-      Body.set_larm_hardness({0,0,0.5});
-    end
-
-    Motion.update();
-    Body.update();
-
-  else --Playing mode, update state machines  
-    gcm.set_game_paused(0);
-    GameFSM.update();
-    BodyFSM.update();
-    HeadFSM.update();
-    Motion.update();
-    Body.update();
-  end
+  gcm.set_game_paused(0);
+  GameFSM.update();
+  BodyFSM.update();
+  HeadFSM.update();
+  Motion.update();
+  Body.update();
 
   local dcount = 50;
   if (count % 50 == 0) then
@@ -143,10 +107,8 @@ function update()
   
 end
 
-if( darwin ) then
-  local tDelay = 0.005 * 1E6; -- Loop every 5ms
-  while 1 do
-    update();
-    unix.usleep(tDelay);
-  end
+local tDelay = 0.005 * 1E6; -- Loop every 5ms
+while 1 do
+  update();
+  unix.usleep(tDelay);
 end
