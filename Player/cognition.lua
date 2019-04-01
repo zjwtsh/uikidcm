@@ -25,7 +25,8 @@ require('mcm')
 require('Body')
 require('Vision')
 require('World')
-require('Detection') 
+require('Detection')
+
 comm_inited = false;
 vcm.set_camera_teambroadcast(1);
 vcm.set_camera_broadcast(0);
@@ -35,10 +36,6 @@ vcm.set_camera_broadcast(0);
 count = 0;
 nProcessedImages = 0;
 tUpdate = unix.time();
-
-if (string.find(Config.platform.name,'Webots')) then
-  webots = true;
-end
 
 function broadcast()
   broadcast_enable = vcm.get_camera_broadcast();
@@ -65,6 +62,7 @@ function broadcast()
   end
 end
 
+--entry of the whole cognition, instead of independant world and vision
 function entry()
   World.entry();
   Vision.entry();
@@ -75,7 +73,7 @@ function update()
 --  print("imuangle :",Body.get_sensor_imuAngle()[3]*180/math.pi);
   tstart = unix.time();
 
-  -- update vision 
+  -- update vision as a whole, instead of independant world and vision 
   imageProcessed = Vision.update();
   World.update_odometry();
 
@@ -85,11 +83,9 @@ function update()
     World.update_vision();
 
     if (nProcessedImages % 200 == 0) then
-      if not webots then
-        print('fps: '..(200 / (unix.time() - tUpdate)));
-        Detection.print_time(); 
-        tUpdate = unix.time();
-      end
+      print('fps: '..(200 / (unix.time() - tUpdate)));
+      Detection.print_time(); 
+      tUpdate = unix.time();
     end
   end
  
