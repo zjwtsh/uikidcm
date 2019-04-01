@@ -91,49 +91,12 @@ function update()
   wcm.set_robot_battery_level(Body.get_battery_level());
   vcm.set_camera_teambroadcast(1); --Turn on wireless team broadcast
 
-<<<<<<< HEAD
   gcm.set_game_paused(0);
   GameFSM.update();
   BodyFSM.update();
   HeadFSM.update();
   Motion.update();
   Body.update();
-=======
-  if waiting>0 then --Waiting mode, check role change
-    gcm.set_game_paused(1);
-    if cur_role==0 then
-      gcm.set_team_role(5); --Reserve goalie
-      Body.set_indicator_ball({0,0,1});
-
-      --Both arm up for goalie
-      Body.set_rarm_command({0,0,-math.pi/2});
-      Body.set_rarm_hardness({0,0,0.5});
-      Body.set_larm_command({0,0,-math.pi/2});
-      Body.set_larm_hardness({0,0,0.5});
-
-    else
-      gcm.set_team_role(4); --Reserve player
-      Body.set_indicator_ball({1,1,1});
-
-      --One arm up for goalie
-      Body.set_rarm_command({0,0,0});
-      Body.set_rarm_hardness({0,0,0.5});
-      Body.set_larm_command({0,0,-math.pi/2});
-      Body.set_larm_hardness({0,0,0.5});
-    end
-
-    Motion.update();
-    Body.update();
-
-  else --Playing mode, update state machines  
-    gcm.set_game_paused(0);
-    GameFSM.update();
-    BodyFSM.update();
-    HeadFSM.update();
-    Motion.update();
-    Body.update();
-  end
->>>>>>> 1d7b20e6f44cfcaf9bc4f046fc54c8478a070271
 
   local dcount = 50;
   if (count % 50 == 0) then
@@ -144,17 +107,8 @@ function update()
   
 end
 
-<<<<<<< HEAD
 local tDelay = 0.005 * 1E6; -- Loop every 5ms
 while 1 do
   update();
   unix.usleep(tDelay);
-=======
-if( darwin ) then
-  local tDelay = 0.005 * 1E6; -- Loop every 5ms
-  while 1 do
-    update();
-    unix.usleep(tDelay);
-  end
->>>>>>> 1d7b20e6f44cfcaf9bc4f046fc54c8478a070271
 end
