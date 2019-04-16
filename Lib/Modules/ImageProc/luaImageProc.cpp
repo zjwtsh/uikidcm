@@ -671,10 +671,10 @@ static int lua_connected_ballCandidates(lua_State *L) {
   double headPitch = luaL_checknumber(L, 4);
 
 	paraIn.cameraTilt = headPitch;
-	paraIn.cameraAngleSpead = 60*M_PI/180;
+	paraIn.cameraAngleSpead = 50*M_PI/180;
 	paraIn.physicalRadiusOfBall = 90;
 	paraIn.horizonLimit = 5*M_PI/180;
-	paraIn.noiseRate = 0.3;
+	paraIn.noiseRate = 0.15/8;
 	paraIn.radiusRate = 1.2;
 	int nball = lua_accumulate_ball(ballCandidates, x, mx, nx, paraIn);
 
